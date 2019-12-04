@@ -1,8 +1,9 @@
-'use strict';
+//'use strict';
 
 import './popup.css';
 
-(function() {
+
+(function () {
   // We will make use of Storage API to get and store `count` value
   // More information on Storage API can we found at
   // https://developer.chrome.com/extensions/storage
@@ -17,8 +18,7 @@ import './popup.css';
       });
     },
     set: (value, cb) => {
-      chrome.storage.sync.set(
-        {
+      chrome.storage.sync.set({
           count: value,
         },
         () => {
@@ -44,7 +44,9 @@ import './popup.css';
     });
   }
 
-  function updateCounter({ type }) {
+  function updateCounter({
+    type
+  }) {
     counterStorage.get(count => {
       let newCount;
 
@@ -61,12 +63,14 @@ import './popup.css';
 
         // Communicate with content script of
         // active tab by sending a message
-        chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+        chrome.tabs.query({
+          active: true,
+          currentWindow: true
+        }, tabs => {
           const tab = tabs[0];
 
           chrome.tabs.sendMessage(
-            tab.id,
-            {
+            tab.id, {
               type: 'COUNT',
               payload: {
                 count: newCount,
@@ -98,8 +102,7 @@ import './popup.css';
   document.addEventListener('DOMContentLoaded', restoreCounter);
 
   // Communicate with background file by sending a message
-  chrome.runtime.sendMessage(
-    {
+  chrome.runtime.sendMessage({
       type: 'GREETINGS',
       payload: {
         message: 'Hello, my name is Pop. I am from Popup.',
