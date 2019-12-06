@@ -1,105 +1,96 @@
-//'use strict';
-
 import './popup.css';
 
-
 (function () {
-  // We will make use of Storage API to get and store `count` value
-  // More information on Storage API can we found at
-  // https://developer.chrome.com/extensions/storage
-
-  // To get storage access, we have to mention it in `permissions` property of manifest.json file
-  // More information on Permissions can we found at
-  // https://developer.chrome.com/extensions/declare_permissions
-  const counterStorage = {
-    get: cb => {
-      chrome.storage.sync.get(['count'], result => {
-        cb(result.count);
+  const textStorage = {
+    get: callback => {
+      chrome.storage.sync.get(['text'], result => {
+        callback(result.text);
       });
     },
-    set: (value, cb) => {
+    set: (value, callback) => {
       chrome.storage.sync.set({
-          count: value,
+          text: value,
         },
         () => {
-          cb();
-        }
-      );
-    },
+          callback();
+        });
+    }
   };
 
-  function setupCounter(initialValue = 0) {
-    document.getElementById('counter').innerHTML = initialValue;
-
-    document.getElementById('incrementBtn').addEventListener('click', () => {
-      updateCounter({
-        type: 'INCREMENT',
-      });
-    });
-
-    document.getElementById('decrementBtn').addEventListener('click', () => {
-      updateCounter({
-        type: 'DECREMENT',
-      });
+  function restoreTextFeature() {
+    textStorage.get(text => {
+      if (typeof text === 'undefined') {
+        textStorage.set("", () => {
+          setupTextFeature("");
+        });
+      } else {
+        setupTextFeature(text);
+      }
     });
   }
 
-  function updateCounter({
-    type
+  function setupTextFeature(text = "") {
+    document.getElementById('addBtn').addEventListener('click', () => {
+      let newText = document.getElementById('newText').value;
+      console.log("Adding:" + newText);
+      updateText({
+        type: 'ADD',
+        text: newText
+      });
+      document.getElementById('newText').value = "";
+    });
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      console.log("RESET");
+      updateText({
+        type: 'RESET'
+      });
+      document.getElementById('newText').value = "";
+    });
+  }
+
+  function updateText({
+    type,
+    text = ""
   }) {
-    counterStorage.get(count => {
-      let newCount;
+    console.log("type: " + type);
+    console.log("text: " + text);
+    if (type === 'RESET') {
+      textStorage.set("", () => {
+        console.log("Reset!!!");
+      });
+    } else {
+      textStorage.get(storedText => {
+        console.log("text: " + storedText);
+        let newText = storedText + "+" + text;
+        textStorage.set(newText, () => {
+          console.log("Added: " + newText);
 
-      if (type === 'INCREMENT') {
-        newCount = count + 1;
-      } else if (type === 'DECREMENT') {
-        newCount = count - 1;
-      } else {
-        newCount = count;
-      }
 
-      counterStorage.set(newCount, () => {
-        document.getElementById('counter').innerHTML = newCount;
+          // chrome.tabs.query({
+          //   active: true,
+          //   currentWindow: true
+          // }, tabs => {
+          //   const tab = tabs[0];
 
-        // Communicate with content script of
-        // active tab by sending a message
-        chrome.tabs.query({
-          active: true,
-          currentWindow: true
-        }, tabs => {
-          const tab = tabs[0];
-
-          chrome.tabs.sendMessage(
-            tab.id, {
-              type: 'COUNT',
-              payload: {
-                count: newCount,
-              },
-            },
-            response => {
-              console.log('Current count value passed to contentScript file');
-            }
-          );
+          //   chrome.tabs.sendMessage(
+          //     tab.id, {
+          //       type: 'COUNT',
+          //       payload: {
+          //         count: newCount,
+          //       },
+          //     },
+          //     response => {
+          //       console.log('Current count value passed to contentScript file');
+          //     }
+          //   );
+          // });
         });
       });
-    });
-  }
+    }
+  };
 
-  function restoreCounter() {
-    // Restore count value
-    counterStorage.get(count => {
-      if (typeof count === 'undefined') {
-        // Set counter value as 0
-        counterStorage.set(0, () => {
-          setupCounter(0);
-        });
-      } else {
-        setupCounter(count);
-      }
-    });
-  }
-
-  document.addEventListener('DOMContentLoaded', restoreCounter);
+  // loaded
+  document.addEventListener('DOMContentLoaded', restoreTextFeature);
 
   // Communicate with background file by sending a message
   chrome.runtime.sendMessage({

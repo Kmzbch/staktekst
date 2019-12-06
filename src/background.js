@@ -9,6 +9,9 @@ function getMessage(request, sender, sendResponse) {
   });
 }
 
+// const req = new XMLHttpRequest();
+// console.log(req);
+
 
 chrome.contextMenus.onClicked.addListener((menuInfo, tab) => {
   console.log(tab);
@@ -126,9 +129,9 @@ function copyTextWithTitleUrl(text, title, url) {
 
 chrome.contextMenus.removeAll(() => {
   chrome.contextMenus.create({
-    title: "Smmry.com",
+    title: "記事を要約(Smmry.com)",
     id: "smmry",
-    contexts: ["all"]
+    contexts: ["page"]
   });
   chrome.contextMenus.create({
     title: "みらい翻訳（英→日）",
@@ -138,11 +141,6 @@ chrome.contextMenus.removeAll(() => {
   chrome.contextMenus.create({
     title: "A Jump to the Sky Turns to a Riderkick",
     id: "odd",
-    contexts: ["selection"]
-  });
-  chrome.contextMenus.create({
-    title: "Youglish",
-    id: "youglish",
     contexts: ["selection"]
   });
   chrome.contextMenus.create({
@@ -160,7 +158,11 @@ chrome.contextMenus.removeAll(() => {
     id: "dopeoplesayit",
     contexts: ["selection"]
   });
-
+  chrome.contextMenus.create({
+    title: "Youglish",
+    id: "youglish",
+    contexts: ["selection"]
+  });
   chrome.contextMenus.create({
     title: "SKELL",
     id: "skell",
@@ -170,6 +172,21 @@ chrome.contextMenus.removeAll(() => {
     title: "Twitter",
     id: "twitter",
     contexts: ["selection"],
+  });
+  chrome.contextMenus.create({
+    title: "Scrapbox",
+    id: "sc",
+    contexts: ["selection"],
+  });
+  chrome.contextMenus.create({
+    title: "Keep",
+    id: "keep",
+    contexts: ["selection"],
+  });
+  chrome.contextMenus.create({
+    type: 'separator',
+    contexts: ["selection"],
+    id: "sep2"
   });
   chrome.contextMenus.create({
     title: "Vocabulary.com",
@@ -184,16 +201,6 @@ chrome.contextMenus.removeAll(() => {
   chrome.contextMenus.create({
     title: "Urban Dictionary",
     id: "ud",
-    contexts: ["selection"],
-  });
-  chrome.contextMenus.create({
-    title: "Scrapbox",
-    id: "sc",
-    contexts: ["selection"],
-  });
-  chrome.contextMenus.create({
-    title: "Keep",
-    id: "keep",
     contexts: ["selection"],
   });
   chrome.contextMenus.create({
