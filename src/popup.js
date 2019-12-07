@@ -1,15 +1,16 @@
 import './popup.css';
 
 (function () {
-  const textStorage = {
+  // 
+  const stackStorage = {
     get: callback => {
-      chrome.storage.sync.get(['text'], result => {
-        callback(result.text);
+      chrome.storage.sync.get(['raw'], result => {
+        callback(result.raw);
       });
     },
     set: (value, callback) => {
       chrome.storage.sync.set({
-          text: value,
+          raw: value,
         },
         () => {
           callback();
@@ -17,80 +18,92 @@ import './popup.css';
     }
   };
 
-  function restoreTextFeature() {
-    textStorage.get(text => {
-      if (typeof text === 'undefined') {
-        textStorage.set("", () => {
-          setupTextFeature("");
+  function restoreItemList() {
+    stackStorage.get(raw => {
+      if (typeof raw === undefined) {
+        stackStorage.set(JSON.stringify([]), () => {
+          setupItemList([]);
         });
       } else {
-        setupTextFeature(text);
+        setupItemList(JSON.parse(raw));
       }
     });
   }
 
-  function setupTextFeature(text = "") {
+  function setupItemList(raw = []) {
+    let listDOM = document.getElementsByClassName('itemlist')[0];
+    raw.forEach(res => {
+      var elem = document.createElement("div");
+      elem.textContent = res.text;
+      listDOM.appendChild(elem);
+      console.log(res.text);
+    });
+
+
+
     document.getElementById('addBtn').addEventListener('click', () => {
       let newText = document.getElementById('newText').value;
-      console.log("Adding:" + newText);
-      updateText({
+      let newUrl = document.getElementById('newUrl').value;
+      updateStack({
         type: 'ADD',
-        text: newText
+        text: newText,
+        url: newUrl
       });
-      document.getElementById('newText').value = "";
+      let listDOM = document.getElementsByClassName('itemlist')[0];
+      var elem = document.createElement("div");
+      elem.textContent = newText;
+      listDOM.appendChild(elem);
+      clearForm();
     });
     document.getElementById('resetBtn').addEventListener('click', () => {
-      console.log("RESET");
-      updateText({
+      updateStack({
         type: 'RESET'
       });
-      document.getElementById('newText').value = "";
+      let listDOM = document.getElementsByClassName('itemlist')[0];
+      while (listDOM.firstChild) {
+        listDOM.removeChild(listDOM.firstChild);
+      }
+      clearForm();
     });
   }
 
-  function updateText({
+  function clearForm() {
+    document.getElementById('newText').value = "";
+    document.getElementById('newUrl').value = "";
+  }
+
+  function updateStack({
     type,
-    text = ""
+    text = "",
+    url = ""
   }) {
-    console.log("type: " + type);
-    console.log("text: " + text);
     if (type === 'RESET') {
-      textStorage.set("", () => {
-        console.log("Reset!!!");
+      stackStorage.set("[]", () => {
+        console.log("Reset!");
       });
     } else {
-      textStorage.get(storedText => {
-        console.log("text: " + storedText);
-        let newText = storedText + "+" + text;
-        textStorage.set(newText, () => {
-          console.log("Added: " + newText);
-
-
-          // chrome.tabs.query({
-          //   active: true,
-          //   currentWindow: true
-          // }, tabs => {
-          //   const tab = tabs[0];
-
-          //   chrome.tabs.sendMessage(
-          //     tab.id, {
-          //       type: 'COUNT',
-          //       payload: {
-          //         count: newCount,
-          //       },
-          //     },
-          //     response => {
-          //       console.log('Current count value passed to contentScript file');
-          //     }
-          //   );
-          // });
+      stackStorage.get(raw => {
+        // read from storage
+        let itemlist = [];
+        let newItem = {
+          text: text,
+          url: url
+        };
+        if (raw !== undefined) {
+          itemlist = JSON.parse(raw);
+          console.log(itemlist);
+        }
+        itemlist.push(newItem);
+        stackStorage.set(JSON.stringify(itemlist), () => {
+          console.log("Added: " + newItem.text + '&' + newItem.url);
         });
       });
     }
   };
 
-  // loaded
-  document.addEventListener('DOMContentLoaded', restoreTextFeature);
+
+  //
+  document.addEventListener('DOMContentLoaded', restoreItemList);
 
   // Communicate with background file by sending a message
   chrome.runtime.sendMessage({

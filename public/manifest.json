@@ -23,7 +23,7 @@
     }
   ],
   "content_security_policy": "script-src 'self' 'unsafe-eval' chrome-extension-resource: ; object-src 'self' ; child-src 'self' ; style-src 'self' ; default-src 'self' ; img-src 'self' ; connect-src 'self' ",
-  "description": "My Chrome Extension",
+  "description": "A simple clipboard with which you can stack pieces of text while reading",
   "icons": {
     "16": "icons/icon_16.png",
     "19": "icons/icon_19.png",
@@ -31,7 +31,7 @@
     "128": "icons/icon_128.png"
   },
   "manifest_version": 2,
-  "name": "Block Search",
+  "name": "Staktekst",
   "permissions": [
     "storage",
     "activeTab",

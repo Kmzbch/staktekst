@@ -108,12 +108,17 @@ chrome.contextMenus.onClicked.addListener((menuInfo, tab) => {
       case "extendedcopy":
         copyTextWithTitleUrl(words, tab.title, tab.url);
         break;
+        // case "pushtext":
+        //   pushText(words, tab.url);
+        //   break;
+
       default:
         break;
     }
 
   });
 });
+
 
 function copyTextWithTitleUrl(text, title, url) {
   var copyFrom = document.createElement("textarea");
@@ -148,6 +153,12 @@ chrome.contextMenus.removeAll(() => {
     id: "extendedcopy",
     contexts: ["selection"],
   });
+  // chrome.contextMenus.create({
+  //   title: "テキストをプッシュ",
+  //   id: "pushtext",
+  //   contexts: ["selection"],
+  // });
+
   chrome.contextMenus.create({
     type: 'separator',
     contexts: ["selection"],
