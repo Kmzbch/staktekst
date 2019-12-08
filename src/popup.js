@@ -20,7 +20,7 @@ import './popup.css';
 
   function restoreItemList() {
     stackStorage.get(raw => {
-      if (typeof raw === undefined) {
+      if (typeof raw === "undefined") {
         stackStorage.set(JSON.stringify([]), () => {
           setupItemList([]);
         });
@@ -104,6 +104,15 @@ import './popup.css';
 
   //
   document.addEventListener('DOMContentLoaded', restoreItemList);
+
+
+  // chrome.runtime.onMessage.addListener(getMessage);
+
+  // function getMessage(request, sender, sendResponse) {
+  //   console.log(request.greeting);
+  // }
+
+
 
   // Communicate with background file by sending a message
   chrome.runtime.sendMessage({

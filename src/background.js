@@ -1,6 +1,5 @@
 let words = null;
 
-// receive message from contentScript.ks
 chrome.runtime.onMessage.addListener(getMessage);
 
 function getMessage(request, sender, sendResponse) {
@@ -9,116 +8,60 @@ function getMessage(request, sender, sendResponse) {
   });
 }
 
-// const req = new XMLHttpRequest();
-// console.log(req);
-
-
 chrome.contextMenus.onClicked.addListener((menuInfo, tab) => {
-  console.log(tab);
   chrome.tabs.sendMessage(tab.id, {
     /* message: "additional message here" */
   }, response => {
     words = response.selection;
-    switch (menuInfo.menuItemId) {
-      case "mirai":
-        chrome.tabs.create({
-          url: "https://miraitranslate.com/en/trial/"
-        });
-        break;
-      case "odd":
-        chrome.tabs.create({
-          url: "http://www.oddcast.com/ttsdemo/index.php"
-        });
-        break;
-      case "youglish":
-        chrome.windows.create({
-          url: "https://youglish.com/search/" + words,
-          type: "popup",
-          width: 480,
-          height: 700,
-          focused: true,
-        });
-        break;
-      case "smmry":
-        // chrome.windows.create({
-        //   url: "https://smmry.com/" + tab.url + '#&SM_LENGTH=10',
-        //   type: "popup",
-        //   width: 480,
-        //   height: 700,
-        //   focused: true,
-        // });
-        chrome.tabs.create({
-          url: "https://smmry.com/" + tab.url + '#&SM_LENGTH=10',
-        });
-
-        break;
-      case "dopeoplesayit":
-        chrome.tabs.create({
-          url: "https://dopeoplesay.com/q/" + words,
-        });
-        break;
-
-      case "skell":
-        chrome.tabs.create({
-          url: "https://skell.sketchengine.co.uk/run.cgi/concordance?lpos=&query=" + words,
-        });
-        break;
-      case "twitter":
-        chrome.tabs.create({
-          url: "https://twitter.com/search?q=" + words,
-        });
-        break;
-      case "vocabulary":
-        chrome.tabs.create({
-          url: "https://www.vocabulary.com/dictionary/" + words,
-          //          url: "https://www.vocabulary.com/dictionary/definition.ajax?search=" + words,
-        });
-        break;
-      case "powert":
-        chrome.tabs.create({
-          url: "https://www.powerthesaurus.org/" + words + "/synonyms",
-        });
-        break;
-      case "ud":
-
-        chrome.tabs.create({
-          url: "https://www.urbandictionary.com/define.php?term=" + words,
-        });
-        break;
-      case "sc":
-        chrome.tabs.create({
-          url: "https://scrapbox.io/english-idioms/search/page?q=" + words,
-        });
-        break;
-      case "keep":
-        chrome.tabs.create({
-          url: "https://keep.google.com/#search/text%253D" + words,
-        });
-        break;
-      case "wordsketch":
-        chrome.tabs.create({
-          url: "https://skell.sketchengine.co.uk/run.cgi/wordsketch?lpos=&query=" + words,
-        });
-        break;
-      case "hc":
-        chrome.tabs.create({
-          url: "https://hypcol.marutank.net/ja/?d=f&q=" + words,
-        });
-        break;
-      case "extendedcopy":
-        copyTextWithTitleUrl(words, tab.title, tab.url);
-        break;
-        // case "pushtext":
-        //   pushText(words, tab.url);
-        //   break;
-
-      default:
-        break;
+    if (menuInfo.menuItemId === 'extendedcopy') {
+      copyTextWithTitleUrl(words, tab.title, tab.url);
+    } else if (menuInfo.menuItemId === 'pushtext') {
+      pushText(words, tab.url);
+    } else {
+      let url = contextMenuItems.find(engine => engine.id === menuInfo.menuItemId).url;
+      url = url.replace('%s', words);
+      url = url.replace('%u', tab.url);
+      // if (menuInfo === "youglish") {
+      //   chrome.windows.create({
+      //     url: url,
+      //     type: "popup",
+      //     width: 480,
+      //     height: 700,
+      //     focused: true,
+      //   });
+      // } else {
+      //   chrome.tabs.create({
+      //     url: url
+      //   });
+      // }
+      chrome.tabs.create({
+        url: url
+      });
     }
-
   });
 });
 
+createContextMenus();
+
+
+
+function pushText(text, url) {
+  stackStorage.get(raw => {
+    let itemlist = [];
+    let newItem = {
+      text: text,
+      url: url
+    };
+    if (typeof raw !== "undefined") {
+      itemlist = JSON.parse(raw);
+      console.log(itemlist);
+    }
+    itemlist.push(newItem);
+    stackStorage.set(JSON.stringify(itemlist), () => {
+      console.log("Added: " + newItem.text + '&' + newItem.url);
+    });
+  });
+}
 
 function copyTextWithTitleUrl(text, title, url) {
   var copyFrom = document.createElement("textarea");
@@ -130,99 +73,143 @@ function copyTextWithTitleUrl(text, title, url) {
   document.body.removeChild(copyFrom);
 }
 
-
-
-chrome.contextMenus.removeAll(() => {
-  chrome.contextMenus.create({
-    title: "記事を要約(Smmry.com)",
-    id: "smmry",
-    contexts: ["page"]
+function createContextMenus() {
+  chrome.contextMenus.removeAll(() => {
+    contextMenuItems.forEach(item => {
+      let picked = (({
+        id,
+        title,
+        type,
+        contexts
+      }) => ({
+        id,
+        title,
+        type,
+        contexts
+      }))(item);
+      chrome.contextMenus.create(picked);
+    });
   });
-  chrome.contextMenus.create({
-    title: "みらい翻訳（英→日）",
+}
+
+const stackStorage = {
+  get: callback => {
+    chrome.storage.sync.get(['raw'], result => {
+      callback(result.raw);
+    });
+  },
+  set: (value, callback) => {
+    chrome.storage.sync.set({
+        raw: value,
+      },
+      () => {
+        callback();
+      });
+  }
+};
+
+const contextMenuItems = [{
     id: "mirai",
-    contexts: ["selection"]
-  });
-  chrome.contextMenus.create({
-    title: "A Jump to the Sky Turns to a Riderkick",
+    title: "みらい翻訳（英→日）",
+    contexts: ["selection"],
+    url: "https://miraitranslate.com/en/trial/",
+  },
+  {
     id: "odd",
-    contexts: ["selection"]
-  });
-  chrome.contextMenus.create({
-    title: "URL付きでコピー",
+    title: "A Jump to the Sky Turns to a Riderkick",
+    contexts: ["selection"],
+    url: "http://www.oddcast.com/ttsdemo/index.php",
+  },
+  {
     id: "extendedcopy",
+    title: "URL付きでコピー",
     contexts: ["selection"],
-  });
-  // chrome.contextMenus.create({
-  //   title: "テキストをプッシュ",
-  //   id: "pushtext",
-  //   contexts: ["selection"],
-  // });
-
-  chrome.contextMenus.create({
+  },
+  {
+    id: "pushtext",
+    title: "テキストをプッシュ",
+    contexts: ["page", "selection"]
+  },
+  {
+    id: "sep1",
     type: 'separator',
     contexts: ["selection"],
-    id: "sep1"
-  });
-  chrome.contextMenus.create({
-    title: "Do People Say It",
-    id: "dopeoplesayit",
-    contexts: ["selection"]
-  });
-  chrome.contextMenus.create({
-    title: "Youglish",
+  },
+  {
     id: "youglish",
-    contexts: ["selection"]
-  });
-  chrome.contextMenus.create({
-    title: "SKELL",
+    title: "Youglish",
+    contexts: ["selection"],
+    url: "https://youglish.com/search/%s",
+  },
+  {
+    id: "smmry",
+    title: "記事を要約(Smmry.com)",
+    contexts: ["page"],
+    url: "https://smmry.com/%u#&SM_LENGTH=10",
+  },
+  {
+    id: "dopeoplesayit",
+    title: "Do People Say It",
+    contexts: ["selection"],
+    url: "https://dopeoplesay.com/q/%s",
+  },
+  {
     id: "skell",
+    title: "SKELL",
     contexts: ["selection"],
-  });
-  chrome.contextMenus.create({
-    title: "Twitter",
+    url: "https://skell.sketchengine.co.uk/run.cgi/concordance?lpos=&query=%s",
+  },
+  {
     id: "twitter",
+    title: "Twitter",
     contexts: ["selection"],
-  });
-  chrome.contextMenus.create({
-    title: "Scrapbox",
+    url: "https://twitter.com/search?q=%s",
+  },
+  {
+    id: "vocabulary",
+    title: "Vocabulary.com",
+    contexts: ["selection"],
+    url: "https://www.vocabulary.com/dictionary/%s",
+  },
+  {
+    id: "powert",
+    title: "Powere Thesaurus",
+    contexts: ["selection"],
+    url: "https://www.powerthesaurus.org/%s/synonyms",
+  },
+  {
+    id: "ud",
+    title: "Urban Dictionary",
+    url: "https://www.urbandictionary.com/define.php?term=%s",
+    contexts: ["selection"],
+  },
+  {
     id: "sc",
+    title: "Scrapbox",
     contexts: ["selection"],
-  });
-  chrome.contextMenus.create({
-    title: "Keep",
+    url: "https://scrapbox.io/english-idioms/search/page?q=%s",
+  },
+  {
     id: "keep",
+    title: "Keep",
     contexts: ["selection"],
-  });
-  chrome.contextMenus.create({
+    url: "https://keep.google.com/#search/text%253D%s",
+  },
+  {
+    id: "sep2",
     type: 'separator',
     contexts: ["selection"],
-    id: "sep2"
-  });
-  chrome.contextMenus.create({
-    title: "Vocabulary.com",
-    id: "vocabulary",
-    contexts: ["selection"],
-  });
-  chrome.contextMenus.create({
-    title: "Powere Thesaurus",
-    id: "powert",
-    contexts: ["selection"],
-  });
-  chrome.contextMenus.create({
-    title: "Urban Dictionary",
-    id: "ud",
-    contexts: ["selection"],
-  });
-  chrome.contextMenus.create({
-    title: "Word Sketch",
+  },
+  {
     id: "wordsketch",
+    title: "Word Sketch",
     contexts: ["selection"],
-  });
-  chrome.contextMenus.create({
-    title: "Hyper Collocation",
+    url: "https://skell.sketchengine.co.uk/run.cgi/wordsketch?lpos=&query=%s",
+  },
+  {
     id: "hc",
+    title: "Hyper Collocation",
     contexts: ["selection"],
-  });
-
-});
+    url: "https://hypcol.marutank.net/ja/?d=f&q=%s",
+  },
+];
