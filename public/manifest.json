@@ -18,6 +18,7 @@
     },
     {
       "js": ["currentTab.js"],
+      "css": ["currentTab.css"],
       "matches": ["http://*/*", "https://*/*"],
       "run_at": "document_end"
     }

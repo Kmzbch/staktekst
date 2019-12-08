@@ -1,0 +1,19 @@
+.bubble {
+    width: 200px !important;
+    top: 0px;
+    left: 0px;
+    z-index: 1000000 !important;
+    padding: 0px 0px !important;
+    opacity: 0.9 !important;
+    background-color: orange !important;
+    position: fixed !important;
+    display: none;
+    border-width: 1px !important;
+    border-style: solid !important;
+    border-color: black !important;
+    border-radius: 0px !important;
+    font-family: Arial !important;
+    font-style: normal !important;
+    font-variant: normal !important;
+    line-height: 65% !important;
+}
