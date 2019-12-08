@@ -12,38 +12,33 @@ chrome.contextMenus.onClicked.addListener((menuInfo, tab) => {
   chrome.tabs.sendMessage(tab.id, {
     /* message: "additional message here" */
   }, response => {
+    console.log(words);
+
     words = response.selection;
     if (menuInfo.menuItemId === 'extendedcopy') {
       copyTextWithTitleUrl(words, tab.title, tab.url);
     } else if (menuInfo.menuItemId === 'pushtext') {
       pushText(words, tab.url);
     } else {
-      let url = contextMenuItems.find(engine => engine.id === menuInfo.menuItemId).url;
-      url = url.replace('%s', words);
+      let item = contextMenuItems.find(engine => engine.id === menuInfo.menuItemId);
+      let url = item.url.replace('%s', words);
       url = url.replace('%u', tab.url);
-      // if (menuInfo === "youglish") {
-      //   chrome.windows.create({
-      //     url: url,
-      //     type: "popup",
-      //     width: 480,
-      //     height: 700,
-      //     focused: true,
-      //   });
-      // } else {
-      //   chrome.tabs.create({
-      //     url: url
-      //   });
-      // }
-      chrome.tabs.create({
-        url: url
-      });
+      if (item.hasOwnProperty('option')) {
+        item.option({
+          text: words,
+          url: url,
+          tab: tab
+        });
+      } else {
+        chrome.tabs.create({
+          url: url
+        });
+      }
     }
   });
 });
 
 createContextMenus();
-
-
 
 function pushText(text, url) {
   stackStorage.get(raw => {
@@ -128,7 +123,7 @@ const contextMenuItems = [{
   {
     id: "pushtext",
     title: "テキストをプッシュ",
-    contexts: ["page", "selection"]
+    contexts: ["page", "selection"],
   },
   {
     id: "sep1",
@@ -140,6 +135,17 @@ const contextMenuItems = [{
     title: "Youglish",
     contexts: ["selection"],
     url: "https://youglish.com/search/%s",
+    option: ({
+      url
+    }) => {
+      chrome.windows.create({
+        url: url,
+        type: "popup",
+        width: 480,
+        height: 700,
+        focused: true,
+      });
+    }
   },
   {
     id: "smmry",
