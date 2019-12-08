@@ -41,20 +41,23 @@ chrome.contextMenus.onClicked.addListener((menuInfo, tab) => {
 createContextMenus();
 
 function pushText(text, url) {
-  stackStorage.get(raw => {
+  chrome.storage.sync.get(['raw'], result => {
     let itemlist = [];
     let newItem = {
       text: text,
       url: url
     };
-    if (typeof raw !== "undefined") {
-      itemlist = JSON.parse(raw);
+    if (typeof result.raw !== "undefined") {
+      itemlist = JSON.parse(result.raw);
       console.log(itemlist);
     }
     itemlist.push(newItem);
-    stackStorage.set(JSON.stringify(itemlist), () => {
-      console.log("Added: " + newItem.text + '&' + newItem.url);
-    });
+    chrome.storage.sync.set({
+        raw: JSON.stringify(itemlist),
+      },
+      () => {
+        console.log("Added: " + newItem.text + '&' + newItem.url);
+      });
   });
 }
 
@@ -86,22 +89,6 @@ function createContextMenus() {
     });
   });
 }
-
-const stackStorage = {
-  get: callback => {
-    chrome.storage.sync.get(['raw'], result => {
-      callback(result.raw);
-    });
-  },
-  set: (value, callback) => {
-    chrome.storage.sync.set({
-        raw: value,
-      },
-      () => {
-        callback();
-      });
-  }
-};
 
 const contextMenuItems = [{
     id: "mirai",
