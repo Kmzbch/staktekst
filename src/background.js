@@ -3,7 +3,6 @@ let words = null;
 chrome.runtime.onMessage.addListener(getMessage);
 
 function getMessage(request, sender, sendResponse) {
-  console.log("get!!!");
   sendResponse({
     text: words
   });
