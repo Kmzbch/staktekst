@@ -26,15 +26,20 @@
     height: 35px !important;
     top: 0px;
     left: 0px;
-    z-index: 1000000 !important;
+    /* z-index: 1000000 !important; */
+
+    z-index: 1 !important;
+    display: block;
+
     padding: 0px 0px !important;
     opacity: 0.9 !important;
     /* background-color: rgb(255, 165, 0, 1) !important; */
-    background-color: rgba(198, 238, 253, 1) !important;
+    /* background-color: rgba(198, 238, 253, 1) !important; */
+    background-color: rgba(0, 0, 0, 0.8) !important;
 
     position: absolute !important;
-    display: none;
-    color: black !important;
+    /* display: none; */
+    color: white !important;
     border-width: 0px !important;
     border-style: solid !important;
     border-color: black !important;
@@ -55,7 +60,8 @@
     height: 0;
     border: 8px solid transparent;
     /* border-top-color: rgb(255, 165, 0, 1) !important; */
-    border-top-color: rgba(198, 238, 253, 1) !important;
+    /* border-top-color: rgba(198, 238, 253, 1) !important; */
+    border-top-color: rgba(0, 0, 0, 0.8) !important;
 
     border-bottom: 0;
     margin-left: -8px;
