@@ -1,20 +1,40 @@
 .bubble {
-    /* width: 200px !important; */
-    /* height: 20px !important; */
+    width: 150px !important;
+    height: 35px !important;
     top: 0px;
     left: 0px;
     z-index: 1000000 !important;
     padding: 0px 0px !important;
     opacity: 0.9 !important;
-    background-color: rgba(255, 248, 151, 0.747) !important;
-    position: fixed !important;
+    /* background-color: rgb(255, 165, 0, 1) !important; */
+    background-color: rgba(0, 0, 0, 0.8) !important;
+
+    position: absolute !important;
     display: none;
+    color: white !important;
     border-width: 0px !important;
     border-style: solid !important;
     border-color: black !important;
-    border-radius: 0px !important;
+    border-radius: 4px !important;
     font-family: Arial !important;
     font-style: normal !important;
     font-variant: normal !important;
     line-height: 65% !important;
+
+}
+
+.bubble::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border: 8px solid transparent;
+    /* border-top-color: rgb(255, 165, 0, 1) !important; */
+    border-top-color: rgba(0, 0, 0, 0.8) !important;
+
+    border-bottom: 0;
+    margin-left: -8px;
+    margin-bottom: -8px;
 }

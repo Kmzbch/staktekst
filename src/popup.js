@@ -33,7 +33,7 @@ import './popup.css';
   function setupItemList(raw = []) {
     let listDOM = document.getElementsByClassName('itemlist')[0];
     raw.forEach(res => {
-      var elem = document.createElement("div");
+      var elem = document.createElement("li");
       elem.textContent = res.text;
       listDOM.appendChild(elem);
       console.log(res.text);
@@ -50,7 +50,7 @@ import './popup.css';
         url: newUrl
       });
       let listDOM = document.getElementsByClassName('itemlist')[0];
-      var elem = document.createElement("div");
+      var elem = document.createElement("li");
       elem.textContent = newText;
       listDOM.appendChild(elem);
       clearForm();
