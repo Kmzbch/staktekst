@@ -1,3 +1,26 @@
+@font-face {
+    font-family: 'Material Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url('chrome-extension://__MSG_@@extension_id__/images/Material Icons.woff2') format('woff2');
+}
+
+.material-icons {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+}
+
 .bubble {
     width: 150px !important;
     height: 35px !important;
@@ -7,11 +30,11 @@
     padding: 0px 0px !important;
     opacity: 0.9 !important;
     /* background-color: rgb(255, 165, 0, 1) !important; */
-    background-color: rgba(0, 0, 0, 0.8) !important;
+    background-color: rgba(198, 238, 253, 1) !important;
 
     position: absolute !important;
     display: none;
-    color: white !important;
+    color: black !important;
     border-width: 0px !important;
     border-style: solid !important;
     border-color: black !important;
@@ -32,7 +55,7 @@
     height: 0;
     border: 8px solid transparent;
     /* border-top-color: rgb(255, 165, 0, 1) !important; */
-    border-top-color: rgba(0, 0, 0, 0.8) !important;
+    border-top-color: rgba(198, 238, 253, 1) !important;
 
     border-bottom: 0;
     margin-left: -8px;

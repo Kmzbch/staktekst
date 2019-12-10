@@ -32,16 +32,14 @@ const common = {
       },
       // Check for images imported in .js files and
       {
-        test: /\.(png|jpe?g|gif)$/i,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              outputPath: 'images',
-              name: '[name].[ext]',
-            },
+        test: /\.(jpg|JPG|jpeg|png|gif|mp3|svg|ttf|woff2|woff|eot)$/gi,
+        use: [{
+          loader: 'file-loader',
+          options: {
+            outputPath: 'images',
+            name: '[name].[ext]',
           },
-        ],
+        }, ],
       },
     ],
   },
@@ -49,12 +47,10 @@ const common = {
     // Print file sizes
     new SizePlugin(),
     // Copy static assets from `public` folder to `build` folder
-    new CopyWebpackPlugin([
-      {
-        from: '**/*',
-        context: 'public',
-      },
-    ]),
+    new CopyWebpackPlugin([{
+      from: '**/*',
+      context: 'public',
+    }, ]),
     // Extract CSS into separate files
     new MiniCssExtractPlugin({
       filename: '[name].css',
