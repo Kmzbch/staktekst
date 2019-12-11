@@ -79,7 +79,7 @@ function createBubbleDOM() {
     let icon5 = document.createElement("i");
     icon5.setAttribute("class", "material-icons stackButton");
     icon5.setAttribute("title", "テキストをプッシュ");
-    icon5.innerText = "launch";
+    icon5.innerText = "input";
 
     bubbleDOM.appendChild(icon1);
     bubbleDOM.appendChild(icon2);
