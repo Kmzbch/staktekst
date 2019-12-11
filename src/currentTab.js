@@ -49,22 +49,18 @@ function createBubbleDOM() {
     icon1.setAttribute("title", "検索");
     icon1.innerText = "search";
 
-    icon1.addEventListener("click", () => {
-        console.log("clicked");
-        // chrome.runtime.sendMessage({
-        //     selection: sel.toString(),
-        //     },
-        //     response => {
-        //         console.log(response.message);
-        //     }
-        // );
-    });
-
 
     let icon2 = document.createElement("i");
     icon2.setAttribute("class", "material-icons stackButton");
     icon2.setAttribute("title", "英→日翻訳");
     icon2.innerText = "translate";
+    icon2.addEventListener("click", () => {
+        console.log("clicked");
+        chrome.runtime.sendMessage({
+            command: 'mirai'
+        }, response => {});
+    });
+
 
     let icon3 = document.createElement("i");
     icon3.setAttribute("class", "material-icons stackButton");
