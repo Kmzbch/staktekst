@@ -44,30 +44,42 @@ chrome.contextMenus.onClicked.addListener((menuInfo, tab) => {
     /* message: "additional message here" */
   }, response => {
     words = response.selection;
+    executeCommand(menuInfo.menuItemId, words);
 
-    if (menuInfo.menuItemId === 'extendedcopy') {
-      copyTextWithTitleUrl(words, tab.title, tab.url);
-    } else if (menuInfo.menuItemId === 'pushtext') {
-      pushText(words, tab.url);
+  });
+});
+
+function executeCommand(command, words) {
+  chrome.tabs.query({
+    active: true,
+    currentWindow: true
+  }, function (tabs) {
+    console.log(tabs[0]);
+    if (command === 'extendedcopy') {
+      copyTextWithTitleUrl(words, tabs[0].title, tabs[0].url);
+    } else if (command === 'pushtext') {
+      pushText(words, tabs[0].url);
     } else {
-      let item = commandCollection.find(item => item.id === menuInfo.menuItemId);
-
-      let url = item.url.replace('%s', words);
-      url = url.replace('%u', tab.url);
+      let item = commandCollection.find(item => item.id === command);
+      let replacedUrl = item.url.replace('%s', words);
+      replacedUrl = replacedUrl.replace('%u', tabs[0].url);
       if (item.hasOwnProperty('option')) {
         item.option({
           text: words,
-          url: url,
-          tab: tab
+          url: replacedUrl,
+          tab: tabs[0]
         });
       } else {
         chrome.tabs.create({
-          url: url
+          url: replacedUrl
         });
       }
     }
+
   });
-});
+
+}
+
 
 createContextMenus();
 
