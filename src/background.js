@@ -3,6 +3,31 @@ let words = null;
 chrome.runtime.onMessage.addListener(getMessage);
 
 function getMessage(request, sender, sendResponse) {
+  console.log("received message");
+  // words = response.selection;
+
+  // if (response.action === 'extendedcopy') {
+  //   copyTextWithTitleUrl(words, tab.title, tab.url);
+  // } else if (response.action === 'pushtext') {
+  //   pushText(words, tab.url);
+  // } else {
+  //   let item = contextMenuItems.find(item => item.id === response.action);
+  //   let url = item.url.replace('%s', words);
+  //   url = url.replace('%u', tab.url);
+  //   if (item.hasOwnProperty('option')) {
+  //     item.option({
+  //       text: words,
+  //       url: url,
+  //       tab: tab
+  //     });
+  //   } else {
+  //     chrome.tabs.create({
+  //       url: url
+  //     });
+  //   }
+  // }
+
+
   sendResponse({
     text: words
   });
