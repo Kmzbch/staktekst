@@ -1,21 +1,24 @@
-let words = null;
-
 import {
   getCommandCollection
 } from './CommandCollection.js';
+
+let words = null;
 let commandCollection = getCommandCollection();
 
+createContextMenus();
 
 chrome.runtime.onMessage.addListener(getMessage);
 
 function getMessage(request, sender, sendResponse) {
-  console.log("received message");
-  words = request.selection;
-  let command = request.command;
-  executeCommand(command, words);
-  sendResponse({
-    text: words
-  });
+  if (request.selection) {
+    console.log("received message");
+    words = request.selection;
+    executeCommand(request.command, words);
+  } else {
+    sendResponse({
+      text: words
+    });
+  }
 }
 
 chrome.contextMenus.onClicked.addListener((menuInfo, tab) => {
@@ -24,7 +27,6 @@ chrome.contextMenus.onClicked.addListener((menuInfo, tab) => {
   }, response => {
     words = response.selection;
     executeCommand(menuInfo.menuItemId, words);
-
   });
 });
 
@@ -39,6 +41,7 @@ function executeCommand(command, words) {
     } else if (command === 'pushtext') {
       pushText(words, tabs[0].url);
     } else {
+      console.log(words);
       let item = commandCollection.find(item => item.id === command);
       let replacedUrl = item.url.replace('%s', words);
       replacedUrl = replacedUrl.replace('%u', tabs[0].url);
@@ -54,18 +57,12 @@ function executeCommand(command, words) {
         });
       }
     }
-
   });
-
 }
 
 
-createContextMenus();
-
 function createContextMenus() {
   chrome.contextMenus.removeAll(() => {
-
-    // let commandCollection = getCommandCollection();
     commandCollection.forEach(item => {
       let picked = (({
         id,
@@ -80,7 +77,6 @@ function createContextMenus() {
       }))(item);
       chrome.contextMenus.create(picked);
     });
-
   });
 }
 

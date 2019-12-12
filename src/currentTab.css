@@ -30,6 +30,7 @@
 
 .stackButton:hover {
     /* color: orange !important; */
+    transform: scale(0.95);
     color: rgb(141, 223, 253) !important;
     cursor: default;
 }
