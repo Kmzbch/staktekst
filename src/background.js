@@ -1,9 +1,6 @@
-import {
-  getCommandCollection
-} from './CommandCollection.js';
+import CommandPreset from './CommandPreset.js';
 
 let words = null;
-let commandCollection = getCommandCollection();
 
 createContextMenus();
 
@@ -42,7 +39,9 @@ function executeCommand(command, words) {
       pushText(words, tabs[0].url);
     } else {
       console.log(words);
-      let item = commandCollection.find(item => item.id === command);
+
+      let item = CommandPreset.PRESET.find(item => item.id === command);
+
       let replacedUrl = item.url.replace('%s', words);
       replacedUrl = replacedUrl.replace('%u', tabs[0].url);
       if (item.hasOwnProperty('option')) {
@@ -60,10 +59,40 @@ function executeCommand(command, words) {
   });
 }
 
+// function executeCommand(command, words) {
+//   chrome.tabs.query({
+//     active: true,
+//     currentWindow: true
+//   }, function (tabs) {
+//     console.log(tabs[0]);
+//     console.log(words);
+//     let item = CommandPreset.PRESET.find(item => item.id === command);
+//     let replacedUrl = item.url.replace('%s', words);
+//     replacedUrl = replacedUrl.replace('%u', tabs[0].url);
+//     if (item.hasOwnProperty('option')) {
+//       item.option({
+//         text: words,
+//         url: replacedUrl,
+//         tab: tabs[0]
+//       });
+//     } else {
+//       chrome.tabs.create({
+//         url: replacedUrl
+//       });
+//     }
+//     // if (command === 'extendedcopy') {
+//     //   copyTextWithTitleUrl(words, tabs[0].title, tabs[0].url);
+//     // } else if (command === 'pushtext') {
+//     //   pushText(words, tabs[0].url);
+//     // } else {
+//     // }
+//   });
+// }
+
 
 function createContextMenus() {
   chrome.contextMenus.removeAll(() => {
-    commandCollection.forEach(item => {
+    CommandPreset.PRESET.forEach(item => {
       let picked = (({
         id,
         title,

@@ -45,7 +45,7 @@
 
     z-index: 1 !important;
     /* display: block; */
-    display: flex;
+    display: none;
 
     padding: 0px 0px !important;
     opacity: 0.9 !important;
