@@ -43,7 +43,7 @@ import './popup.css';
 
     document.getElementById('addBtn').addEventListener('click', () => {
       let newText = document.getElementById('newText').value;
-      let newUrl = document.getElementById('newUrl').value;
+      let newUrl = document.getElementById('newUrl').value || "";
       updateStack({
         type: 'ADD',
         text: newText,

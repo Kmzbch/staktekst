@@ -33,7 +33,6 @@ function createBubbleDOM() {
     searchEngineDiv.setAttribute("id", "searchEngineDiv");
     bubbleDOM.appendChild(searchEngineDiv);
 
-
     let systemCommandDiv = document.createElement("div");
     systemCommandDiv.setAttribute("id", "systemCommandDiv");
     bubbleDOM.appendChild(systemCommandDiv);
@@ -46,7 +45,7 @@ function createBubbleDOM() {
         chrome.runtime.sendMessage({
             command: 'google',
             selection: window.getSelection().toString()
-        }, response => {});
+        });
 
     });
 
@@ -58,7 +57,7 @@ function createBubbleDOM() {
         chrome.runtime.sendMessage({
             command: 'vocabulary',
             selection: window.getSelection().toString()
-        }, response => {});
+        });
 
     });
 
@@ -70,7 +69,7 @@ function createBubbleDOM() {
         chrome.runtime.sendMessage({
             command: 'dopeoplesayit',
             selection: window.getSelection().toString()
-        }, response => {});
+        });
     });
 
     let icon4 = document.createElement("i");
@@ -80,7 +79,7 @@ function createBubbleDOM() {
         chrome.runtime.sendMessage({
             command: 'wordsketch',
             selection: window.getSelection().toString()
-        }, response => {});
+        });
     });
 
     let icon5 = document.createElement("i");
@@ -90,7 +89,7 @@ function createBubbleDOM() {
         chrome.runtime.sendMessage({
             command: 'twitter',
             selection: window.getSelection().toString()
-        }, response => {});
+        });
     });
 
     let icon6 = document.createElement("i");
@@ -100,7 +99,7 @@ function createBubbleDOM() {
         chrome.runtime.sendMessage({
             command: 'youglish',
             selection: window.getSelection().toString()
-        }, response => {});
+        });
     });
 
     let icon7 = document.createElement("i");
@@ -112,7 +111,7 @@ function createBubbleDOM() {
         chrome.runtime.sendMessage({
             command: 'mirai',
             selection: window.getSelection().toString()
-        }, response => {});
+        });
     });
 
     let icon8 = document.createElement("i");
@@ -123,20 +122,19 @@ function createBubbleDOM() {
         chrome.runtime.sendMessage({
             command: 'odd',
             selection: window.getSelection().toString()
-        }, response => {});
+        });
     });
-
-
 
     let icon9 = document.createElement("i");
     icon9.setAttribute("class", "material-icons stackButton");
     icon9.setAttribute("title", "URL付きコピー");
     icon9.innerText = "assignment";
     icon9.addEventListener("mousedown", () => {
+        bubble.style.transform = "scale(0.95)";
         chrome.runtime.sendMessage({
             command: 'extendedcopy',
             selection: window.getSelection().toString()
-        }, response => {});
+        });
     });
 
     let icon10 = document.createElement("i");
@@ -144,10 +142,13 @@ function createBubbleDOM() {
     icon10.setAttribute("title", "テキストをプッシュ");
     icon10.innerText = "input";
     icon10.addEventListener("mousedown", () => {
+        console.log(window.getSelection().toString());
+        bubble.style.transform = "scale(0.95)";
         chrome.runtime.sendMessage({
             command: 'pushtext',
             selection: window.getSelection().toString()
-        }, response => {});
+        });
+
     });
 
     bubbleDOM.appendChild(icon1);

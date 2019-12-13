@@ -21,6 +21,66 @@
     -webkit-font-smoothing: antialiased;
 }
 
+header {
+    background: lightgray;
+    z-index: 1;
+    text-align: center;
+}
+
+.container {
+    position: fixed;
+    top: 100px !important;
+}
+
+.sticky {
+    position: fixed;
+    top: 0;
+    width: 100%;
+}
+
+ul {
+    margin: 0;
+    padding: 0;
+}
+
+/* Style the list items */
+ul li {
+    font-size: 16px;
+    font-size: 4vw;
+    ;
+    height: 150px;
+    cursor: pointer;
+    position: relative;
+    padding: 12px 8px 12px 40px;
+    background: #eee;
+    font-size: 18px;
+    transition: 0.2s;
+
+    /* make the list items unselectable */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Set all odd list items to a different color (zebra-stripes) */
+ul li:nth-child(odd) {
+    background: #f9f9f9;
+}
+
+/* Darker background-color on hover */
+ul li:hover {
+    background: #ddd;
+}
+
+/* When clicked on, add a background color and strike out text */
+ul li.checked {
+    background: #888;
+    color: #fff;
+    text-decoration: line-through;
+}
+
+
 
 
 
@@ -80,22 +140,15 @@ code {
     border-radius: 2px;
 }
 
-.counter-label {
-    font-size: 12px;
-    margin-bottom: 5px;
-}
 
-.counter {
-    font-size: 36px;
-    font-weight: 700;
-}
 
 .button-container {
     margin-top: 15px;
 }
 
 .button {
-    border: 0;
+    width: 80%;
+    border: 1;
     display: inline-block;
     padding: 10px 20px;
     margin-right: 4px;

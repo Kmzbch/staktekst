@@ -10,6 +10,7 @@ function getMessage(request, sender, sendResponse) {
   if (request.selection) {
     words = request.selection;
     executeCommand(request.command, words);
+    sendResponse({});
   } else {
     sendResponse({
       text: words
