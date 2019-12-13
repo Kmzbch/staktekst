@@ -13,8 +13,8 @@ const config = merge(common, {
     background: PATHS.src + '/background.js',
     currentTab: PATHS.src + "/currentTab.js",
     miraiScript: PATHS.src + "/miraiScript.js",
-    selection: PATHS.src + "/selection.js",
-    commandPreset: PATHS.src + "/CommandPreset.js"
+    commandPreset: PATHS.src + "/CommandPreset.js",
+    common_lib: PATHS.src + "/common_lib.js"
   },
 });
 

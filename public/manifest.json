@@ -1,7 +1,7 @@
 {
   "background": {
     "persistent": false,
-    "scripts": ["background.js"]
+    "scripts": ["background.js", "common_lib.js"]
   },
   "browser_action": {
     "default_title": "A Jump to the Sky Turns to a Riderkick",
@@ -18,12 +18,12 @@
     },
     {
       "js": ["currentTab.js"],
-      "css": ["currentTab.css"],
+      "css": ["currentTab.css", "css/brands.min.css", "css/solid.min.css", "css/font-awesome.min.css"],
       "matches": ["http://*/*", "https://*/*"],
       "run_at": "document_end"
     }
   ],
-  "web_accessible_resources": ["images/*"],
+  "web_accessible_resources": ["images/*", "webfonts/*"],
   "content_security_policy": "script-src 'self' 'unsafe-eval' chrome-extension-resource: ; object-src 'self' ; child-src 'self' ; style-src 'self' ; default-src 'self' ; img-src 'self' ; connect-src 'self' ",
   "description": "A simple clipboard with which you can stack pieces of text while reading",
   "icons": {

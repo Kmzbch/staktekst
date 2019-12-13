@@ -113,6 +113,14 @@ const commands = [{
         contexts: ["selection"],
         url: "https://hypcol.marutank.net/ja/?d=f&q=%s",
     },
+    {
+        id: "google",
+        title: "Google画像検索",
+        contexts: ["selection"],
+        url: "https://encrypted.google.com/search?hl=en&gl=en&tbm=isch&q=%s",
+    },
+
+
 ];
 
 class CommandPreset {
