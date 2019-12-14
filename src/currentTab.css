@@ -1,3 +1,4 @@
+/* material icons */
 @font-face {
     font-family: 'Material Icons';
     font-style: normal;
@@ -21,45 +22,34 @@
     -webkit-font-smoothing: antialiased;
 }
 
+/* modification on font awesome */
 .fab {
-    transform: scale(1) !important;
     margin-top: 5px !important;
     margin-left: auto !important;
     margin-right: auto !important;
-
-    /* margin-bottom: 5px !important; */
+    font-size: 18px !important;
 }
 
 .fas {
     margin-top: 4px !important;
-    align-items: center !important;
+    font-size: 18px !important;
+
 }
 
-
-
-
-
-
+/* bubble styles */
 .stackButton {
-
     transform: scale(0.95);
     flex: 1;
-    padding-left: 5px;
-    padding-right: 5px;
-    padding-top: 5px;
-    padding-bottom: 5px;
-
+    padding: 5px;
 }
 
 .stackButton:hover {
-    /* color: orange !important; */
     transform: scale(0.95);
     color: rgb(141, 223, 253) !important;
     cursor: default;
 }
 
 #searchEngineDiv {
-    color: white !important;
     width: 80%;
     height: 100%;
     display: flex;
@@ -69,19 +59,16 @@
 
 }
 
-
-
 #systemCommandDiv {
-    color: white !important;
     width: 20%;
     height: 100%;
 
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     flex-wrap: wrap;
     border-left: 1px solid rgba(255, 255, 255, 0.4) !important;
     padding-left: 5px;
-    align-items: center;
+    /* align-items: center; */
 
 }
 
@@ -89,51 +76,48 @@
     width: 200px !important;
     height: 70px !important;
 
-    flex-wrap: wrap;
-    align-items: center;
-
     top: 0px;
     left: 0px;
-    /* z-index: 1000000 !important; */
-
     z-index: 1 !important;
-    /* display: block; */
-    display: none;
 
     padding: 0px 0px !important;
-    opacity: 0.9 !important;
-    /* background-color: rgb(255, 165, 0, 1) !important; */
-    /* background-color: rgba(198, 238, 253, 1) !important; */
-    background-color: rgba(0, 0, 0, 0.8) !important;
+
+    flex-wrap: nowrap;
 
     position: absolute !important;
-    /* display: none; */
-    color: white !important;
+    display: none;
+
+    opacity: 0.9 !important;
+    background-color: rgba(0, 0, 0, 0.8) !important;
+
     border-width: 0px !important;
     border-style: solid !important;
     border-color: black !important;
     border-radius: 4px !important;
-    font-family: Arial !important;
+
+    color: white !important;
+
+    /* font-family: Arial !important;
     font-style: normal !important;
     font-variant: normal !important;
-    line-height: 65% !important;
-
+    line-height: 65% !important; */
 }
 
 .bubble::after {
     content: '';
-    position: absolute;
-    bottom: 0;
-    left: 25%;
+
     width: 0;
     height: 0;
-    border: 8px solid transparent;
-    /* border-top-color: rgb(255, 165, 0, 1) !important; */
-    /* border-top-color: rgba(198, 238, 253, 1) !important; */
-    border-top-color: rgba(0, 0, 0, 0.8) !important;
+    left: 25%;
+    bottom: 0;
 
+    position: absolute;
+
+    border: 8px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.8) !important;
     border-bottom: 0;
     border-right: 0;
+
     margin-left: -8px;
     margin-bottom: -8px;
 }
