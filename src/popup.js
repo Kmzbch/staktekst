@@ -3,11 +3,13 @@ import './popup.css';
 (function () {
 
 
+
+
   let addStackSpace = document.getElementById("addStackSpace");
   let addTextArea = document.getElementById("addTextArea");
   let textarea = document.getElementById("addStackText");
 
-  let footer = document.getElementById("footer");
+  let footer = document.getElementsByTagName("footer")[0];
 
   footer.addEventListener("click", () => {
     window.scrollBy(0, 300);
@@ -49,6 +51,24 @@ import './popup.css';
       let listDOM = document.getElementsByClassName('itemlist')[0];
       var elem = document.createElement("li");
       elem.textContent = newText;
+
+      elem.addEventListener("dblclick", () => {
+        console.log("!!!")
+        var nodes = document.getElementsByTagName('li');
+        var parent = document.getElementsByTagName('ul')[0];
+        // plus 1
+        parent.removeChild(nodes[nodes.length]);
+      })
+
+      if (elem.textContent.length > 100) {
+        elem.style.fontSize = "15px";
+        elem.style.height = "200px !important";
+        console.log(elem.style.Height);
+
+      } else {
+        elem.style.fontSize = "18px";
+        elem.style.height = "60px !important";
+      }
       listDOM.appendChild(elem);
       document.getElementById('addStackText').value = "";
       // document.getElementById('addStackText').blur();
@@ -63,7 +83,7 @@ import './popup.css';
       console.log("blur!!");
       textarea.style.display = "none";
       addTextArea.style.display = "block";
-    }, 10);
+    }, 1000);
   });
 
   addTextArea.addEventListener("click", () => {
@@ -98,14 +118,50 @@ import './popup.css';
       } else {
         setupItemList(JSON.parse(raw));
       }
+      // Create a "close" button and append it to each list item
+      var myNodelist = document.getElementsByTagName("li");
+      var i;
+      for (i = 0; i < myNodelist.length; i++) {
+        var span = document.createElement("SPAN");
+        span.className = "close";
+
+        let iconDOM = document.createElement("i");
+        iconDOM.setAttribute("class", "material-icons");
+        iconDOM.innerText = "delete";
+
+        span.appendChild(iconDOM);
+
+        myNodelist[i].appendChild(span);
+      }
+
     });
   }
+
+
 
   function setupItemList(raw = []) {
     let listDOM = document.getElementsByClassName('itemlist')[0];
     raw.forEach(res => {
       var elem = document.createElement("li");
       elem.textContent = res.text;
+      elem.addEventListener("dblclick", () => {
+        console.log("!!!")
+        var nodes = document.getElementsByTagName('li');
+        var parent = document.getElementsByTagName('ul')[0];
+        // plus 1
+        parent.removeChild(nodes[nodes.length - 1]);
+      })
+
+      if (elem.textContent.length > 100) {
+        elem.style.fontSize = "15px";
+        elem.style.height = "200px !important";
+        console.log(elem.style.Height);
+
+      } else {
+        elem.style.fontSize = "18px";
+        elem.style.height = "60px !important";
+      }
+
       listDOM.appendChild(elem);
       console.log(res.text);
     });

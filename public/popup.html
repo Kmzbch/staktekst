@@ -5,49 +5,27 @@
   <meta charset="UTF-8">
   <title>Staktekst</title>
   <link rel="stylesheet" href="popup.css" type='text/css' />
-  <style>
-    body {
-      height: 100% !important;
-    }
-
-    html {
-      height: 600px !important;
-      width: 380px;
-      /* height: 700px; */
-      padding: 10px;
-      box-sizing: border-box;
-      overflow: hidden;
-      font-size: 125%;
-      padding: 0;
-      background: #ffffff;
-    }
-
-    div,
-    p,
-    a {
-      box-sizing: border-box;
-    }
-  </style>
-
 </head>
 
 <body>
   <div id="container">
     <header class="sticky">
-      <div class="button-container">
-        <button id="resetBtn" class="button">Reset</button>
-      </div>
-      <div id="addStackSpace">
-        <i id="addTextArea" class="material-icons">add</i>
-        <textarea id="addStackText"></textarea>
-      </div>
+      <input id="searchbox" placeholder="テキストを検索" />
     </header>
     <div id="main">
+      <div id="addStackSpace">
+        <i id="addTextArea" class="material-icons">add</i>
+        <textarea id="addStackText" placeholder="テキストを追加"></textarea>
+      </div>
+
       <ul class="itemlist">
       </ul>
     </div>
 
-    <footer id="footer">
+    <footer>
+      <div class="button-container">
+        <button id="resetBtn" class="button">Reset</button>
+      </div>
       <i class="material-icons" id="scrollButton">arrow_downward</i>
     </footer>
   </div>
