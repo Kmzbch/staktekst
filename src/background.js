@@ -29,7 +29,7 @@ function sendMessage(info, tab) {
 
 function createContextMenus() {
   chrome.contextMenus.removeAll(() => {
-    CommandPreset.PRESET.forEach(item => {
+    CommandPreset.PRESET_CONTEXT_MENUS.forEach(item => {
       let picked = (({
         id,
         title,
@@ -57,7 +57,7 @@ function executeCommand(command, words) {
     } else if (command === 'pushtext') {
       pushText(words, tabs[0].url);
     } else {
-      let item = CommandPreset.PRESET.find(item => item.id === command);
+      let item = CommandPreset.PRESET_CONTEXT_MENUS.find(item => item.id === command);
       let replacedUrl = item.url.replace('%s', words);
       replacedUrl = replacedUrl.replace('%u', tabs[0].url);
       if (item.hasOwnProperty('option')) {

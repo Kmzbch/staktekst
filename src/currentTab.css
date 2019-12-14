@@ -85,9 +85,8 @@
 
 }
 
-.bubble {
+#bubble {
     width: 200px !important;
-    /* height: 35px !important; */
     height: 70px !important;
 
     flex-wrap: wrap;
