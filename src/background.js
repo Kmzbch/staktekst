@@ -6,6 +6,7 @@ import {
 
 let words = null;
 
+/* communicate with other scripts */
 function getMessage(request, sender, sendResponse) {
   if (request.selection) {
     words = request.selection;
@@ -50,8 +51,7 @@ function executeCommand(command, words) {
   chrome.tabs.query({
     active: true,
     currentWindow: true
-  }, function (tabs) {
-    console.log(tabs[0]);
+  }, tabs => {
     if (command === 'extendedcopy') {
       copyTextWithTitleUrl(words, tabs[0].title, tabs[0].url);
     } else if (command === 'pushtext') {
@@ -75,8 +75,7 @@ function executeCommand(command, words) {
   });
 }
 
-chrome.runtime.onMessage.addListener(getMessage);
-
-chrome.contextMenus.onClicked.addListener(sendMessage);
-
 createContextMenus();
+
+chrome.runtime.onMessage.addListener(getMessage);
+chrome.contextMenus.onClicked.addListener(sendMessage);

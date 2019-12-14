@@ -18,7 +18,7 @@
     },
     {
       "js": ["currentTab.js"],
-      "css": ["currentTab.css", "css/brands.min.css", "css/solid.min.css", "css/font-awesome.min.css"],
+      "css": ["currentTab.css", "css/brands.min.css", "css/solid.min.css", "css/font-awesome.min.css", "css/material-icons.css"],
       "matches": ["http://*/*", "https://*/*"],
       "run_at": "document_end"
     }

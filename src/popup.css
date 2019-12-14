@@ -201,7 +201,7 @@ ul li.checked {
     font-family: 'Material Icons';
     font-style: normal;
     font-weight: 400;
-    src: url('./Material Icons.woff2') format('woff2');
+    src: url('chrome-extension://__MSG_@@extension_id__/webfonts/Material Icons.woff2') format('woff2');
 }
 
 .material-icons {
