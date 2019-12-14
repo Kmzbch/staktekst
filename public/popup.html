@@ -4,12 +4,16 @@
 <head>
   <meta charset="UTF-8">
   <title>Staktekst</title>
-  <link rel="stylesheet" type="text/css" href="nomarize.css" />
   <link rel="stylesheet" href="popup.css" type='text/css' />
   <style>
+    body {
+      height: 100% !important;
+    }
+
     html {
+      height: 600px !important;
       width: 380px;
-      height: 700px;
+      /* height: 700px; */
       padding: 10px;
       box-sizing: border-box;
       overflow: hidden;
@@ -28,20 +32,26 @@
 </head>
 
 <body>
-  <header class="sticky">
-    <div class="button-container">
-      <input id="newText" type="text">
-      <input id="newUrl" type="text">
-      <button id="addBtn" class="button">Add</button>
-      <button id="resetBtn" class="button">Reset</button>
+  <div id="container">
+    <header class="sticky">
+      <div class="button-container">
+        <button id="resetBtn" class="button">Reset</button>
+      </div>
+      <div id="addStackSpace">
+        <i id="addTextArea" class="material-icons">add</i>
+        <textarea id="addStackText"></textarea>
+      </div>
+    </header>
+    <div id="main">
+      <ul class="itemlist">
+      </ul>
     </div>
-  </header>
-  <div class="container">
-    <ul class="itemlist">
-    </ul>
+
+    <footer id="footer">
+      <i class="material-icons" id="scrollButton">arrow_downward</i>
+    </footer>
   </div>
-  <!-- <div class="app">
-  </div> -->
+
   <script src="popup.js"></script>
 </body>
 

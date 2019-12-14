@@ -1,6 +1,77 @@
 import './popup.css';
 
 (function () {
+
+
+  let addStackSpace = document.getElementById("addStackSpace");
+  let addTextArea = document.getElementById("addTextArea");
+  let textarea = document.getElementById("addStackText");
+
+  let footer = document.getElementById("footer");
+
+  footer.addEventListener("click", () => {
+    window.scrollBy(0, 300);
+    var scrollHeight, totalHeight;
+    scrollHeight = document.body.scrollHeight;
+    totalHeight = window.scrollY + window.innerHeight;
+
+    if (totalHeight >= scrollHeight) {
+      let scrollButton = document.getElementById("scrollButton");
+      console.log(scrollButton);
+      footer.removeChild(scrollButton);
+      let newScrollButton = document.createElement("i");
+      newScrollButton.setAttribute("class", "material-icons");
+      newScrollButton.innerText = "arrow_upward";
+      footer.appendChild(newScrollButton);
+      console.log("at the bottom");
+    }
+  });
+
+
+  textarea.addEventListener("mouseout", (e) => {
+    textarea.style.display = "none";
+    addTextArea.style.display = "block";
+
+  });
+  textarea.addEventListener("keyup", (e) => {
+
+    console.log("asdfasd");
+    // If the user has pressed enter
+    if (e.keyCode === 13 + e.shiftKey) {
+      let newText = document.getElementById('addStackText').value;
+
+      let newUrl = "";
+      updateStack({
+        type: 'ADD',
+        text: newText,
+        url: newUrl
+      });
+      let listDOM = document.getElementsByClassName('itemlist')[0];
+      var elem = document.createElement("li");
+      elem.textContent = newText;
+      listDOM.appendChild(elem);
+      document.getElementById('addStackText').value = "";
+      // document.getElementById('addStackText').blur();
+      return false;
+    } else {
+      return true;
+    }
+  });
+
+  textarea.addEventListener("blur", () => {
+    setTimeout(() => {
+      console.log("blur!!");
+      textarea.style.display = "none";
+      addTextArea.style.display = "block";
+    }, 10);
+  });
+
+  addTextArea.addEventListener("click", () => {
+    textarea.style.display = "block";
+    addTextArea.style.display = "none";
+  });
+
+
   // 
   const stackStorage = {
     get: callback => {
@@ -39,22 +110,6 @@ import './popup.css';
       console.log(res.text);
     });
 
-
-
-    document.getElementById('addBtn').addEventListener('click', () => {
-      let newText = document.getElementById('newText').value;
-      let newUrl = document.getElementById('newUrl').value || "";
-      updateStack({
-        type: 'ADD',
-        text: newText,
-        url: newUrl
-      });
-      let listDOM = document.getElementsByClassName('itemlist')[0];
-      var elem = document.createElement("li");
-      elem.textContent = newText;
-      listDOM.appendChild(elem);
-      clearForm();
-    });
     document.getElementById('resetBtn').addEventListener('click', () => {
       updateStack({
         type: 'RESET'
@@ -68,8 +123,8 @@ import './popup.css';
   }
 
   function clearForm() {
-    document.getElementById('newText').value = "";
-    document.getElementById('newUrl').value = "";
+    document.getElementById('addStackText').value = "";
+    document.getElementById('addStackText').value = document.getElementById('addStackText').value.replace(/^(\r\n)|(\n)/, '');
   }
 
   function updateStack({
@@ -104,25 +159,4 @@ import './popup.css';
 
   //
   document.addEventListener('DOMContentLoaded', restoreItemList);
-
-
-  // chrome.runtime.onMessage.addListener(getMessage);
-
-  // function getMessage(request, sender, sendResponse) {
-  //   console.log(request.greeting);
-  // }
-
-
-
-  // Communicate with background file by sending a message
-  // chrome.runtime.sendMessage({
-  //     type: 'GREETINGS',
-  //     payload: {
-  //       message: 'Hello, my name is Pop. I am from Popup.',
-  //     },
-  //   },
-  //   response => {
-  //     console.log(response.message);
-  //   }
-  // );
 })();

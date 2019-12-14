@@ -131,6 +131,9 @@ function createBubbleDOM() {
     icon9.innerText = "assignment";
     icon9.addEventListener("mousedown", () => {
         bubble.style.transform = "scale(0.95)";
+        setTimeout(() => {
+            bubble.style.transform = "scale(1)";
+        }, 100);
         chrome.runtime.sendMessage({
             command: 'extendedcopy',
             selection: window.getSelection().toString()
@@ -144,6 +147,10 @@ function createBubbleDOM() {
     icon10.addEventListener("mousedown", () => {
         console.log(window.getSelection().toString());
         bubble.style.transform = "scale(0.95)";
+        setTimeout(() => {
+            bubble.style.transform = "scale(1)";
+        }, 100);
+
         chrome.runtime.sendMessage({
             command: 'pushtext',
             selection: window.getSelection().toString()
@@ -173,6 +180,8 @@ function createBubbleDOM() {
 
     systemCommandDiv.appendChild(icon9);
     systemCommandDiv.appendChild(icon10);
+
+
 
     return bubbleDOM;
 }

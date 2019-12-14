@@ -21,22 +21,74 @@
     -webkit-font-smoothing: antialiased;
 }
 
+#footer {
+    width: 100%;
+    background: yellow;
+    position: fixed;
+    top: 550px;
+    height: 50px;
+    text-align: center;
+    /* position: absolute;
+    bottom: 0px;
+    width: 100%;
+    height: 50px; */
+}
+
+
+
 header {
     background: lightgray;
     z-index: 1;
     text-align: center;
 }
 
-.container {
-    position: fixed;
+#container {
+    position: relative;
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+
+    /* position: fixed; */
     top: 100px !important;
 }
 
+#main {
+
+    padding-bottom: 50px
+}
+
 .sticky {
+    display: block;
     position: fixed;
     top: 0;
     width: 100%;
 }
+
+#addStackSpace {
+    opacity: 0.1;
+    display: block;
+
+}
+
+#addStackSpace:hover {
+    opacity: 1;
+}
+
+#addStackText {
+    white-space: pre-wrap;
+    width: 80%;
+    height: 70px;
+    display: none;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    font-family: inherit !important;
+    font-size: inherit !important;
+}
+
+
+
 
 ul {
     margin: 0;
