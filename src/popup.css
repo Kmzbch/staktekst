@@ -43,6 +43,7 @@ body {
     height: 100%;
     /* position: fixed; */
     top: 60px !important;
+    margin-bottom: 70px;
 }
 
 header {
@@ -69,7 +70,7 @@ footer {
     width: 100%;
     background: rgba(0, 0, 0, 0.8);
     position: fixed;
-    top: 530px;
+    bottom: 0px;
     height: 70px;
     text-align: center;
 }
