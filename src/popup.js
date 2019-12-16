@@ -12,10 +12,29 @@ let itemList = [];
 
 const updateItemListDOM = item => {
   const html = `
-  <li>${item}</li>
+  <li class="shrinkByWidth">${item}</li>
   `;
-
   itemListDOM.innerHTML += html;
+
+  // increase the hight to avoid overflow
+  let lastChild = itemListDOM.lastElementChild;
+  while (isOverflown(lastChild)) {
+    let replacement = document.createElement('li');
+    replacement.innerHTML = lastChild.innerHTML;
+    replacement.style.height = lastChild.offsetHeight + 10 + "px";
+    itemListDOM.removeChild(lastChild);
+    itemListDOM.appendChild(replacement);
+    lastChild = replacement;
+  }
+}
+
+const isOverflown = ({
+  clientWidth,
+  clientHeight,
+  scrollWidth,
+  scrollHeight
+}) => {
+  return scrollHeight > clientHeight || scrollWidth > clientWidth;
 }
 
 function updateStack(text) {
@@ -24,6 +43,7 @@ function updateStack(text) {
   });
   stackStorage.set(JSON.stringify(itemList));
 };
+
 
 (function () {
   document.addEventListener('DOMContentLoaded', function restoreItemList() {
