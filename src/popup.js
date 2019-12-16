@@ -18,6 +18,7 @@ const updateItemListDOM = item => {
 
   // increase the hight to avoid overflow
   let lastChild = itemListDOM.lastElementChild;
+
   while (isOverflown(lastChild)) {
     let replacement = document.createElement('li');
     replacement.innerHTML = lastChild.innerHTML;
