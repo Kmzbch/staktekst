@@ -17,7 +17,7 @@ const createItem = item => {
   //  saveTaskToLocalStorage(item, html);
 }
 
-let stayingList = [];
+let itemList = [];
 
 (function () {
   document.addEventListener('DOMContentLoaded', function restoreItemList() {
@@ -25,11 +25,10 @@ let stayingList = [];
       if (typeof raw === "undefined") {
         stackStorage.reset();
       } else {
-        stayingList = JSON.parse(raw);
-        stayingList.forEach(res => {
+        itemList = JSON.parse(raw);
+        itemList.forEach(res => {
           createItem(res.text);
         });
-
       }
     });
   });
@@ -37,9 +36,7 @@ let stayingList = [];
   // initialize eventListeners
   textarea.addEventListener("keyup", (e) => {
     if (e.keyCode === 13) {
-      updateStack({
-        text: textarea.value,
-      });
+      updateStack(textarea.value);
       createItem(textarea.value);
       textarea.value = "";
       return false;
@@ -52,21 +49,16 @@ let stayingList = [];
       list.removeChild(list.firstChild);
     }
     textarea.value = "";
+    itemList = [];
   });
 
 })();
 
-function updateStack({
-  text = "",
-  url = ""
-}) {
-  stackStorage.get(raw => {
-    stayingList.push({
-      text,
-      url
-    });
-    stackStorage.set(JSON.stringify(stayingList));
+function updateStack(text) {
+  itemList.push({
+    text,
   });
+  stackStorage.set(JSON.stringify(itemList));
 };
 
 const stackStorage = {
