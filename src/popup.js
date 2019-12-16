@@ -6,9 +6,7 @@ const textarea = document.querySelector("#addStackText");
 const footer = document.getElementsByTagName("footer")[0];
 const resetBtn = document.querySelector('#resetBtn');
 const itemListDOM = document.querySelector('.itemlist');
-
 const searchbox = document.querySelector('#searchbox');
-
 
 let itemList = [];
 
@@ -19,6 +17,13 @@ const updateItemListDOM = item => {
 
   itemListDOM.innerHTML += html;
 }
+
+function updateStack(text) {
+  itemList.push({
+    text,
+  });
+  stackStorage.set(JSON.stringify(itemList));
+};
 
 (function () {
   document.addEventListener('DOMContentLoaded', function restoreItemList() {
@@ -35,30 +40,6 @@ const updateItemListDOM = item => {
   });
 
 })();
-
-// // 削除機能
-// list.addEventListener('click', e => {
-//   if (e.target.classList.contains('delete')) {
-//       e.target.parentElement.remove();
-//       // ########## 追加 ###########
-//       const task = e.target.parentElement.textContent.trim()
-//       deleteTaskFromLocalStorage(task);
-//   }
-// });
-// const deleteTaskFromLocalStorage = task => {
-//   localStorage.removeItem(task);
-//   return;
-// }
-
-const filterTasks = (term) => {
-  Array.from(itemListDOM.children)
-    .filter((todo) => !todo.textContent.toLowerCase().includes(term))
-    .forEach((todo) => todo.classList.add('filtered'));
-
-  Array.from(itemListDOM.children)
-    .filter((todo) => todo.textContent.toLowerCase().includes(term))
-    .forEach((todo) => todo.classList.remove('filtered'));
-};
 
 searchbox.addEventListener('keyup', () => {
   // 空白削除かつ、小文字に変換(大文字・小文字の区別をなくす)
@@ -86,11 +67,14 @@ resetBtn.addEventListener('click', () => {
   itemList = [];
 });
 
-function updateStack(text) {
-  itemList.push({
-    text,
-  });
-  stackStorage.set(JSON.stringify(itemList));
+const filterTasks = (term) => {
+  Array.from(itemListDOM.children)
+    .filter((item) => !item.textContent.toLowerCase().includes(term))
+    .forEach((item) => item.classList.add('filtered'));
+
+  Array.from(itemListDOM.children)
+    .filter((item) => item.textContent.toLowerCase().includes(term))
+    .forEach((item) => item.classList.remove('filtered'));
 };
 
 const stackStorage = {
