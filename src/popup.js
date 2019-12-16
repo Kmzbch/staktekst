@@ -6,13 +6,16 @@ const textarea = document.querySelector("#addStackText");
 const footer = document.getElementsByTagName("footer")[0];
 const resetBtn = document.querySelector('#resetBtn');
 const itemListDOM = document.querySelector('.itemlist');
-const searchbox = document.querySelector('#searchbox');
+const searchbox = document.querySelector('.searchbox');
 
 let itemList = [];
 
 const updateItemListDOM = item => {
+  // listitem template
   const html = `
-  <li class="shrinkByWidth">${item}</li>
+  <li class="shrinkByWidth">
+  <span>${item}</span>
+  </li>
   `;
   itemListDOM.innerHTML += html;
 
@@ -45,7 +48,6 @@ function updateStack(text) {
   stackStorage.set(JSON.stringify(itemList));
 };
 
-
 (function () {
   document.addEventListener('DOMContentLoaded', function restoreItemList() {
     stackStorage.get(raw => {
@@ -59,13 +61,11 @@ function updateStack(text) {
       }
     });
   });
-
 })();
 
-searchbox.addEventListener('keyup', () => {
-  // 空白削除かつ、小文字に変換(大文字・小文字の区別をなくす)
+searchbox.addEventListener('input', () => {
   const term = searchbox.value.trim().toLowerCase();
-  filterTasks(term);
+  filterItems(term);
 })
 
 // initialize eventListeners
@@ -79,6 +79,16 @@ textarea.addEventListener("keyup", (e) => {
   }
 });
 
+textarea.addEventListener('focusout', (e) => {
+  textarea.style.display = "none";
+  addTextArea.style.display = "block";
+});
+addTextArea.addEventListener('click', () => {
+  textarea.style.display = "flex";
+  textarea.focus();
+  addTextArea.style.display = "none";
+});
+
 resetBtn.addEventListener('click', () => {
   stackStorage.reset();
   while (itemListDOM.firstChild) {
@@ -88,7 +98,7 @@ resetBtn.addEventListener('click', () => {
   itemList = [];
 });
 
-const filterTasks = (term) => {
+const filterItems = (term) => {
   Array.from(itemListDOM.children)
     .filter((item) => !item.textContent.toLowerCase().includes(term))
     .forEach((item) => item.classList.add('filtered'));

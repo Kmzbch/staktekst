@@ -31,6 +31,7 @@ function createIconDOM({
         sendCommandMessage(command)
     });
 
+
     return iconDOM;
 }
 
