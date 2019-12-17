@@ -63,8 +63,25 @@ function updateStack(text) {
   });
 })();
 
+
+const searchCancelButton = document.querySelector('.searchCancelButton');
+
+searchCancelButton.addEventListener("click", () => {
+  searchbox.value = "";
+  // fire event
+  let event = new Event('input');
+  searchbox.dispatchEvent(event);
+})
+
 searchbox.addEventListener('input', () => {
   const term = searchbox.value.trim().toLowerCase();
+
+  if (term === "") {
+    searchCancelButton.style = "display: none !important;";
+  } else {
+    searchCancelButton.style = "display: block !important;";
+  }
+
   filterItems(term);
 })
 

@@ -1,14 +1,8 @@
-.filtered {
-    display: none !important;
-}
-
+/* popup.html */
 html {
-    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif;
-    color: #222;
-    height: 530px;
+    font-size: 125%;
     box-sizing: border-box;
     overflow: hidden;
-    font-size: 125%;
     background: rgba(0, 0, 0, 0.7);
 }
 
@@ -16,56 +10,79 @@ html::-webkit-scrollbar {
     display: none;
 }
 
+/* body */
 body {
-    /* width: 350px; */
     width: 450px;
-    /* height: 300px; */
     height: 530px;
-    margin: 0px !important;
+    margin: 0px;
 }
 
 #container {
+    height: auto;
     position: relative;
-    min-height: 100%;
-    height: auto !important;
-    height: 100%;
-    /* position: fixed; */
-    top: 60px !important;
+    top: 60px;
     margin-bottom: 70px;
 }
 
 header {
     height: 60px;
-    background: rgba(0, 0, 0, 1);
     z-index: 1;
-    text-align: center;
     display: flex;
     flex-direction: column;
+    /* text-align: center; */
+    background: rgba(0, 0, 0, 1);
 }
 
+/* remove focus border(outline) */
+textarea:focus,
+input:focus {
+    outline: none;
+}
 
-.searchbox::-webkit-search-decoration {
+/* search */
+/* .searchbox::-webkit-search-decoration {
+    -webkit-appearance: none;
+} */
+
+
+.searchbox::-webkit-search-cancel-button {
     -webkit-appearance: none;
 }
 
+.search-overlay {
+    color: rgba(255, 255, 255, 0.5);
+    padding: 2px;
+    position: absolute;
+    top: 19px;
+    left: 20px;
+    font-size: 120% !important;
+}
+
+.searchCancelButton {
+    display: none !important;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 2px;
+    position: absolute;
+    top: 19px;
+    left: 300px;
+    z-index: 1000000 !important;
+    font-size: 120% !important;
+    -webkit-user-select: none;
+    /* Chrome all / Safari all */
+    -moz-user-select: none;
+}
+
 .searchbox {
-    width: 80%;
+
+    border-radius: 30px;
+    width: 70%;
     height: 30px;
-    padding: 5px;
-    margin: 15px !important;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
+    padding: 10px 10px 10px 35px;
+    margin: 15px;
+    color: rgba(255, 255, 255, 0.6);
     border: none;
+    background: rgba(255, 255, 255, 0.2);
 }
-
-.searchbox::-webkit-search-cancel-button {
-    position: relative;
-}
-
-/* .searchbox::-webkit-search-cancel-button,
-button {
-    border: red;
-} */
 
 footer {
     width: 100%;
@@ -86,6 +103,11 @@ footer {
     position: fixed;
     top: 0;
     width: 100%;
+}
+
+
+.filtered {
+    display: none !important;
 }
 
 #addStackSpace {

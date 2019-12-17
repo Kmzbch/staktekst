@@ -23,7 +23,7 @@
       "run_at": "document_end"
     }
   ],
-  "web_accessible_resources": ["images/*", "webfonts/*"],
+  "web_accessible_resources": ["images/*", "webfonts/*", "icons/*"],
   "content_security_policy": "script-src 'self' 'unsafe-eval' chrome-extension-resource: ; object-src 'self' ; child-src 'self' ; style-src 'self' ; default-src 'self' ; img-src 'self' ; connect-src 'self' ",
   "description": "A simple clipboard with which you can stack pieces of text while reading",
   "icons": {
