@@ -55,7 +55,7 @@ function executeCommand(command, words) {
     if (command === 'extendedcopy') {
       copyTextWithTitleUrl(words, tabs[0].title, tabs[0].url);
     } else if (command === 'pushtext') {
-      pushText(words, tabs[0].url);
+      pushText(words, tabs[0].url, tabs[0].title);
     } else {
       let item = CommandPreset.PRESET_CONTEXT_MENUS.find(item => item.id === command);
       let replacedUrl = item.url.replace('%s', words);

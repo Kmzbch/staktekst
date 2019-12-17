@@ -1,3 +1,9 @@
+.highlight {
+    background-color: orange;
+    /* font-weight: bold;
+    color: red; */
+}
+
 /* popup.html */
 html {
     font-size: 125%;
@@ -58,12 +64,15 @@ input:focus {
     font-size: 120% !important;
 }
 
+
 .searchCancelButton {
+    position: absolute;
+    top: 19px;
+
+
     display: none !important;
     color: rgba(255, 255, 255, 0.4);
     padding: 2px;
-    position: absolute;
-    top: 19px;
     left: 300px;
     z-index: 1000000 !important;
     font-size: 120% !important;
@@ -100,6 +109,7 @@ footer {
 
 .sticky {
     display: block;
+
     position: fixed;
     top: 0;
     width: 100%;
@@ -133,13 +143,24 @@ footer {
     font-size: inherit !important;
 }
 
+.source {
+    margin-top: 10px;
+    font-size: 12px !important;
+    align-self: right;
+}
+
+/* li {
+    display: flex;
+    flex-direction: column;
+} */
+
 ul {
     margin: 0;
     padding: 0;
 }
 
 ul li {
-    /* border-radius: 5px; */
+    border-radius: 3px;
     overflow: auto;
     font-size: 16px !important;
 

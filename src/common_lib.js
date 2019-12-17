@@ -9,7 +9,7 @@ function copyTextWithTitleUrl(text, title, url) {
     document.body.removeChild(copyFrom);
 }
 
-function pushText(text, url) {
+function pushText(text, url = "", title = "") {
     chrome.storage.sync.get(['raw'], result => {
         let itemlist = [];
         if (typeof result.raw !== "undefined") {
@@ -17,7 +17,8 @@ function pushText(text, url) {
         }
         itemlist.push({
             text,
-            url
+            url,
+            title
         });
         chrome.storage.sync.set({
                 raw: JSON.stringify(itemlist),
