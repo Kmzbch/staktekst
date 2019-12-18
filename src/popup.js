@@ -12,19 +12,46 @@ let itemList = [];
 
 const updateItemListDOM = (item, url = "", title = "") => {
   let omit = title;
-  if (omit.length > 50) {
-    omit = omit.substring(0, 50) + '...';
+  if (omit.length > 40) {
+    omit = omit.substring(0, 40) + '...';
   }
 
-  const html = `
-  <li>
-  ${item}
-  <div class="spacer">
-  <div class="cardBottom">
-  <a class="source" href="${url}" target="_blank">${omit}</a>
-  </div>
-  </li>
-  `;
+
+  let html;
+  if (url === "") {
+    html = `
+    <li class="note">
+    ${item}
+    <i class="material-icons deleteItem">delete</i>
+    <div class="spacer">
+    <div class="cardBottom">
+    <span class="source">note</span>
+    </div>
+    </li>
+    `;
+
+  } else {
+    html = `
+    <li>
+    ${item}
+    <i class="material-icons deleteItem">delete</i>
+    <div class="spacer">
+    <div class="cardBottom">
+    <a class="source" href="${url}" target="_blank">${omit}</a>
+    </div>
+    </li>
+    `;
+
+  }
+  // const html = `
+  // <li>
+  // ${item}
+  // <div class="spacer">
+  // <div class="cardBottom">
+  // <a class="source" href="${url}" target="_blank">${omit}</a>
+  // </div>
+  // </li>
+  // `;
 
   itemListDOM.innerHTML += html;
 
@@ -46,6 +73,8 @@ const updateItemListDOM = (item, url = "", title = "") => {
     itemListDOM.appendChild(replacement);
     lastChild = replacement;
   }
+
+
 
   // let index = lastChild.innerHTML.search('</li>');
 
@@ -99,22 +128,8 @@ function updateStack(text, url = "", title = "") {
       } else {
         itemList = JSON.parse(raw);
         itemList.forEach(res => {
-          console.log(res.title);
           updateItemListDOM(res.text, res.url, res.title);
         });
-        //
-        // let boxes = document.querySelectorAll('li')
-        // console.log(boxes);
-        // for (let i = 0; i < boxes.length; i++) {
-        //   boxes[i].addEventListener("mouseover", () => {
-        //     boxes[i].querySelector('.innerCheckbox').style.display = "block";
-        //   });
-        //   boxes[i].addEventListener("mouseleave", () => {
-        //     boxes[i].querySelector('.innerCheckbox').style.display = "none";
-        //   })
-
-        // }
-
       }
     });
   });
@@ -177,16 +192,32 @@ searchbox.addEventListener('keydown', (e) => {
   }
 });
 
+// let timer = null;
+// window.addEventListener("scroll", () => {
+//   footer.style.display = "none";
+//   if (timer !== null) {
+//     clearTimeout(timer);
+//   }
+//   timer = setTimeout(function () {
+//     footer.style.display = "block";
+//   }, 300);
+// }, false)
+
+
 searchbox.addEventListener('input', (e) => {
   const term = searchbox.value.trim().toLowerCase();
 
+  filterItems(term);
+
   if (term === "") {
     searchCancelButton.style = "display: none !important;";
+    hitCounter.textContent = '';
+    footer.style.display = "block";
   } else {
     searchCancelButton.style = "display: block !important;";
+    footer.style.display = "none";
   }
 
-  filterItems(term);
 
 })
 
@@ -231,10 +262,11 @@ function escapeRegExp(string) {
 }
 
 const filterItems = (term) => {
+
+  // remove highlight
   // /\b(what you're).*?\b/ig
   Array.from(itemListDOM.children).forEach(item => {
     item.innerHTML = item.innerHTML.replace(/(<span class="highlight">|<\/span>)/g, '');
-    console.log(item.innerHTML);
   });
 
   let regexp = new RegExp('\\b(' + escapeRegExp(term) + ')(.*?)\\b', 'ig');
@@ -251,13 +283,16 @@ const filterItems = (term) => {
   //       item.innerHTML = item.innerHTML.replace(regexp, "<span class='highlight'>$1</span>$2");
   //     }
   //   });
+  let hitItemCount = 0;
   Array.from(itemListDOM.children)
     .filter((item) => item.textContent.match(regexp))
     .forEach((item) => {
+      hitItemCount++;
       item.classList.remove('filtered');
       if (term.length >= 1) {
-        let x = item.innerHTML.search(/<div class="spacer">/i);
-        console.log(item.innerHTML.substring(0, x));
+        // let x = item.innerHTML.search(/<div class="spacer">/i);
+        let x = item.innerHTML.search(/<i class="material-icons deleteItem">delete<\/i>/i);
+
         let y = item.innerHTML.substring(0, x);
         let z = item.innerHTML.substring(x, item.innerHTML.length)
         // item.innerHTML = item.innerHTML.replace(regexp, "<span class='highlight'>$1</span>$2");
@@ -265,9 +300,16 @@ const filterItems = (term) => {
 
       }
     });
+  console.log(hitItemCount + '/' + itemListDOM.children.length + 'found!');
+  if (hitItemCount === 0) {
+    hitCounter.textContent = 'No Results';
+  } else {
+    hitCounter.textContent = hitItemCount + ' of ' + itemListDOM.children.length;
+  }
 
 };
 
+const hitCounter = document.querySelector('.hitCount');
 
 
 const stackStorage = {

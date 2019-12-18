@@ -11,10 +11,11 @@
   <div id="container">
     <header class="sticky">
       <span class="material-icons search-overlay">search</span>
-      <input class="searchbox" type="search" placeholder="テキストを検索..." />
+      <input class="searchbox" type="search" spellcheck="false" placeholder="テキストを検索..." />
       <span class="material-icons searchCancelButton">cancel</span>
       <span class="sortOrderDescription">New</span>
       <i class="material-icons sortOrder">arrow_upward</i>
+      <span class="hitCount"></span>
     </header>
     <div id="main">
       <div id="addStackSpace">
@@ -29,6 +30,7 @@
     <footer>
       <div class="button-container">
         <button id="resetBtn" class="button">スタックを空にする</button>
+
       </div>
     </footer>
   </div>
