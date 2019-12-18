@@ -7,6 +7,9 @@ const footer = document.getElementsByTagName("footer")[0];
 const resetBtn = document.querySelector('#resetBtn');
 const itemListDOM = document.querySelector('.itemlist');
 const searchbox = document.querySelector('.searchbox');
+const searchCancelButton = document.querySelector('.searchCancelButton');
+const hitCounter = document.querySelector('.hitCount');
+const sortBy = document.querySelector('.sortBy');
 
 let itemList = [];
 
@@ -43,27 +46,9 @@ const updateItemListDOM = (item, url = "", title = "") => {
     `;
 
   }
-  // const html = `
-  // <li>
-  // ${item}
-  // <div class="spacer">
-  // <div class="cardBottom">
-  // <a class="source" href="${url}" target="_blank">${omit}</a>
-  // </div>
-  // </li>
-  // `;
-
   itemListDOM.innerHTML += html;
-
   // increase the hight to avoid overflow
   let lastChild = itemListDOM.lastElementChild;
-
-  // const template2 = `
-  // <div class="cardBottom">
-  // <input type="checkbox" class="innerCheckbox">
-  // <a class="source" href="${url}" target="_blank">${omit}</a>
-  // </div>
-  // `;
 
   while (isOverflown(lastChild)) {
     let replacement = document.createElement('li');
@@ -73,54 +58,12 @@ const updateItemListDOM = (item, url = "", title = "") => {
     itemListDOM.appendChild(replacement);
     lastChild = replacement;
   }
-
-
-
-  // let index = lastChild.innerHTML.search('</li>');
-
-
-  // lastChild.innerHTML = lastChild.innerHTML.slice(0, index) + template2 + lastChild.innerHTML.slice(index);
-
-  // if(isOverflown(lastChild) {
-
-  // }
-
-
-  // lastChild.addEventListener("mouseover", () => {
-  //   lastChild.querySelector('.innerCheckbox').style.display = "block";
-  // })
-  // lastChild.addEventListener("mouseleave", () => {
-  //   lastChild.querySelector('.innerCheckbox').style.display = "none";
-  // })
-
-  // aTag.setAttribute("class", "source");
-  // aTag.setAttribute("href", url);
-  // aTag.setAttribute("target", "_blank");
-  // aTag.innerText = title;
-  // itemListDOM.lastElementChild.appendChild(aTag);
-
 }
 
 
-const isOverflown = ({
-  clientWidth,
-  clientHeight,
-  scrollWidth,
-  scrollHeight
-}) => {
-  return scrollHeight > clientHeight || scrollWidth > clientWidth;
-}
 
-function updateStack(text, url = "", title = "") {
-  itemList.push({
-    text,
-    url,
-    title
-  });
-  stackStorage.set(JSON.stringify(itemList));
-};
-
-(function () {
+// initialization
+(() => {
   document.addEventListener('DOMContentLoaded', function restoreItemList() {
     stackStorage.get(raw => {
       if (typeof raw === "undefined") {
@@ -136,99 +79,63 @@ function updateStack(text, url = "", title = "") {
 })();
 
 
-const searchCancelButton = document.querySelector('.searchCancelButton');
-
-searchCancelButton.addEventListener("click", () => {
-  searchbox.value = "";
-  // fire event
-  let event = new Event('input');
-  searchbox.dispatchEvent(event);
-})
-
-// searchbox.addEventListener('input', () => {  
-//   const term = searchbox.value.trim().toLowerCase();
-
-//   if (term === "") {
-//     searchCancelButton.style = "display: none !important;";
-//   } else {
-//     searchCancelButton.style = "display: block !important;";
-//   }
-
-//   filterItems(term);
-// })
-
-let sortOrderDescription = document.querySelector('.sortOrderDescription');
-let arrowButton = document.querySelector('.sortOrder');
-arrowButton.addEventListener('click', (e) => {
-  if (arrowButton.textContent === "arrow_upward") {
-    arrowButton.textContent = "arrow_downward";
-    itemListDOM.style.flexDirection = "column";
-    sortOrderDescription.textContent = 'Old'
+// initialize events
+/* window */
+window.onscroll = () => {
+  // hide footer except on the top, on the bottom and on hover
+  if (window.pageYOffset == 0) {
+    footer.style.opacity = '1';
+  } else if ((document.body.offsetHeight + window.scrollY) >= document.body.scrollHeight) {
+    footer.style.opacity = '1';
   } else {
-    arrowButton.textContent = "arrow_upward";
-    itemListDOM.style.flexDirection = "column-reverse";
-    sortOrderDescription.textContent = 'New'
+    footer.style.opacity = '0';
   }
+}
 
-});
-
-searchbox.addEventListener('keydown', (e) => {
-  if (e.keyCode === 38) {
-    itemListDOM.style.flexDirection = "column-reverse";
-    // searchbox.setAttribute("placeholder", "作成日時が新しい順に表示");
-    // document.querySelector('.search-overlay').textContent = "arrow_drop_up";
-    document.querySelector('.sortOrder').textContent = "arrow_upward";
-    //down
-  } else if (e.keyCode === 40) {
-    itemListDOM.style.flexDirection = "column";
-    // searchbox.setAttribute("placeholder", "作成日時が古い順に表示");
-    // document.querySelector('.search-overlay').textContent = "arrow_drop_down";
-    document.querySelector('.sortOrder').textContent = "arrow_downward";
-
-  } else {
-    // document.querySelector('.search-overlay').textContent = "search";
-    // searchbox.setAttribute("placeholder", "テキストを検索...");
-
-  }
-});
-
-// let timer = null;
-// window.addEventListener("scroll", () => {
-//   footer.style.display = "none";
-//   if (timer !== null) {
-//     clearTimeout(timer);
-//   }
-//   timer = setTimeout(function () {
-//     footer.style.display = "block";
-//   }, 300);
-// }, false)
-
-
+/* search box*/
 searchbox.addEventListener('input', (e) => {
   const term = searchbox.value.trim().toLowerCase();
 
-  filterItems(term);
-
-  if (term === "") {
-    searchCancelButton.style = "display: none !important;";
-    hitCounter.textContent = '';
-    footer.style.display = "block";
+  if (term) {
+    searchCancelButton.style.display = 'block';
+    footer.style.display = 'none';
   } else {
-    searchCancelButton.style = "display: block !important;";
-    footer.style.display = "none";
+    searchCancelButton.style.display = 'none';
+    footer.style.display = 'block';
+    hitCounter.textContent = '';
   }
 
-
+  filterTextItems(term);
 })
 
 
-// initialize eventListeners
+
+/* search cancel button */
+searchCancelButton.addEventListener("click", () => {
+  searchbox.value = "";
+  searchbox.dispatchEvent(new Event('input'));
+})
+
+/* sort by */
+sortBy.addEventListener('click', () => {
+  if (sortBy.innerHTML.includes('New')) {
+    sortBy.innerHTML = `Old <i class="material-icons">arrow_downward</i>`;
+    itemListDOM.style.flexDirection = 'column';
+  } else {
+    sortBy.innerHTML = `New <i class="material-icons">arrow_upward</i>`;
+    itemListDOM.style.flexDirection = 'column-reverse';
+  }
+});
+
+/* textarea */
 textarea.addEventListener("keyup", (e) => {
   if (e.keyCode === 13) {
     const item = textarea.value.trim();
+
     updateStack(item);
     updateItemListDOM(item);
     textarea.value = "";
+
     return false;
   }
 });
@@ -237,6 +144,7 @@ textarea.addEventListener('focusout', (e) => {
   textarea.style.display = "none";
   addTextArea.style.display = "block";
 });
+
 addTextArea.addEventListener('click', () => {
   textarea.style.display = "flex";
   textarea.focus();
@@ -252,16 +160,35 @@ resetBtn.addEventListener('click', () => {
   itemList = [];
 });
 
-var reRegExp = /[\\^$.*+?()[\]{}|]/g,
-  reHasRegExp = new RegExp(reRegExp.source);
+/* utilities */
+const isOverflown = ({
+  clientWidth,
+  clientHeight,
+  scrollWidth,
+  scrollHeight
+}) => {
+  return scrollHeight > clientHeight || scrollWidth > clientWidth;
+}
 
 function escapeRegExp(string) {
+  const reRegExp = /[\\^$.*+?()[\]{}|]/g,
+    reHasRegExp = new RegExp(reRegExp.source);
+
   return (string && reHasRegExp.test(string)) ?
     string.replace(reRegExp, '\\$&') :
     string;
 }
 
-const filterItems = (term) => {
+function updateStack(text, url = "", title = "") {
+  itemList.push({
+    text,
+    url,
+    title
+  });
+  stackStorage.set(JSON.stringify(itemList));
+};
+
+const filterTextItems = (term) => {
 
   // remove highlight
   // /\b(what you're).*?\b/ig
@@ -274,15 +201,6 @@ const filterItems = (term) => {
     .filter((item) => !item.textContent.match(regexp))
     .forEach((item) => item.classList.add('filtered'));
 
-  // highlight
-  // Array.from(itemListDOM.children)
-  //   .filter((item) => item.textContent.match(regexp))
-  //   .forEach((item) => {
-  //     item.classList.remove('filtered');
-  //     if (term.length >= 1) {
-  //       item.innerHTML = item.innerHTML.replace(regexp, "<span class='highlight'>$1</span>$2");
-  //     }
-  //   });
   let hitItemCount = 0;
   Array.from(itemListDOM.children)
     .filter((item) => item.textContent.match(regexp))
@@ -308,9 +226,6 @@ const filterItems = (term) => {
   }
 
 };
-
-const hitCounter = document.querySelector('.hitCount');
-
 
 const stackStorage = {
   get: callback => {

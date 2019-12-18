@@ -58,14 +58,17 @@ body {
 }
 
 header {
+    width: 100%;
     height: 60px;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    background: rgba(0, 0, 0, 1);
-    /* background: steelblue; */
-
+    top: 0;
+    background: black;
 }
+
+.sticky {
+    position: fixed;
+    z-index: 1;
+}
+
 
 textarea:focus,
 input:focus {
@@ -92,7 +95,7 @@ input:focus {
 .searchCancelButton {
     position: absolute;
     top: 19px;
-    display: none !important;
+    display: none;
     color: rgba(255, 255, 255, 0.4);
     padding: 2px;
     left: 300px;
@@ -104,29 +107,18 @@ input:focus {
     -moz-user-select: none;
 }
 
-.sortOrder {
-    color: rgba(255, 255, 255, 0.4) !important;
+
+.sortBy {
     position: absolute;
+    display: inline-flex;
     top: 68px;
-    left: 410px;
-    /* top: 19px;
-    left: 400px; */
-    -moz-user-select: none;
-    user-select: none;
-}
-
-.sortOrderDescription {
-    color: rgba(255, 255, 255, 0.4) !important;
-    position: absolute;
-
-    top: 70px;
     left: 380px;
-    /* top: 21px;
-    left: 370px; */
+    color: rgba(255, 255, 255, 0.4) !important;
     -moz-user-select: none;
     user-select: none;
-
 }
+
+
 
 .headerCommand {
     color: rgba(255, 255, 255, 0.7) !important;
@@ -181,33 +173,26 @@ input:focus {
     background: rgba(255, 255, 255, 0.2);
 }
 
+
+footer:hover {
+    opacity: 1 !important;
+}
+
 footer {
+    opacity: 1;
     width: 100%;
-    /* background: rgba(0, 0, 0, 0.8); */
-    background: rgba(0, 0, 0, 0.6);
-
-    position: fixed;
-    /* margin-left: 12px; */
-    bottom: 0px;
     height: 50px;
-    /* text-align: left; */
+    position: fixed;
+    bottom: 0px;
     text-align: center;
-
+    transition: 0.1s;
+    background: rgba(0, 0, 0, 0.6);
 }
 
 #main {
     /* padding-bottom: 50px; */
     overflow: hidden;
 }
-
-.sticky {
-    display: block;
-
-    position: fixed;
-    top: 0;
-    width: 100%;
-}
-
 
 .filtered {
     display: none !important;
