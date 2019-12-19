@@ -2,20 +2,19 @@ import './popup.css';
 
 const header = document.getElementsByTagName("header")[0];
 const footer = document.getElementsByTagName("footer")[0];
-
 const searchbox = document.querySelector('.searchbox');
 const searchCancelBtn = document.querySelector('.search-cancel');
 const results = document.querySelector('.results');
 
 const sortBy = document.querySelector('.sortBy');
 
-
 const addStackSpace = document.querySelector("#addStackSpace");
 const addTextArea = document.querySelector("#addTextArea");
 const textarea = document.querySelector("#addStackText");
 
-const resetBtn = document.querySelector('#resetBtn');
 const itemListDOM = document.querySelector('.itemlist');
+
+const resetBtn = document.querySelector('#resetBtn');
 
 let itemList = [];
 
@@ -66,105 +65,110 @@ const updateItemListDOM = (item, url = "", title = "") => {
   }
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+  restoreItemList()
+  initilaizeControls();
+});
 
-
-// initialization
-(() => {
-  document.addEventListener('DOMContentLoaded', function restoreItemList() {
-    stackStorage.get(raw => {
-      if (typeof raw === "undefined") {
-        stackStorage.reset();
-      } else {
-        itemList = JSON.parse(raw);
-        itemList.forEach(res => {
-          updateItemListDOM(res.text, res.url, res.title);
-        });
-      }
-    });
+/* */
+function restoreItemList() {
+  stackStorage.get(raw => {
+    if (typeof raw === "undefined") {
+      stackStorage.reset();
+    } else {
+      itemList = JSON.parse(raw);
+      itemList.forEach(res => {
+        updateItemListDOM(res.text, res.url, res.title);
+      });
+    }
   });
-})();
-
+};
 
 /* initialize events */
-window.onscroll = () => {
-  // hide header and footer except on the top, bottom and on hover
-  if (window.pageYOffset == 0) {
-    header.style.opacity = '1';
-    footer.style.opacity = '1';
-  } else if ((document.body.offsetHeight + window.scrollY) >= document.body.scrollHeight) {
-    header.style.opacity = '1';
-    footer.style.opacity = '1';
-  } else {
-    header.style.opacity = '0';
-    footer.style.opacity = '0';
+function initilaizeControls() {
+  /* window */
+  window.onscroll = () => {
+    // hide header and footer except on the top, bottom and on hover
+    if (window.pageYOffset == 0) {
+      header.style.opacity = '1';
+      footer.style.opacity = '1';
+    } else if ((document.body.offsetHeight + window.scrollY) >= document.body.scrollHeight) {
+      header.style.opacity = '1';
+      footer.style.opacity = '1';
+    } else {
+      header.style.opacity = '0';
+      footer.style.opacity = '0';
+    }
   }
+
+  /* searchbox */
+  searchbox.addEventListener('input', (e) => {
+    const term = searchbox.value.trim().toLowerCase();
+
+    filterTextItems(term);
+
+    // change styles on search
+    if (term) {
+      searchCancelBtn.style = 'display: block !important';
+      footer.style.display = 'none';
+    } else {
+      searchCancelBtn.style = 'display: none !important';
+      footer.style.display = 'block';
+      results.textContent = '';
+    }
+  })
+
+  searchCancelBtn.addEventListener("click", () => {
+    searchbox.value = "";
+    searchbox.dispatchEvent(new Event('input'));
+  })
+
+  /* sort by */
+  sortBy.addEventListener('click', () => {
+    if (sortBy.innerHTML.includes('New')) {
+      sortBy.innerHTML = `Old <i class="material-icons">arrow_downward</i>`;
+      itemListDOM.style.flexDirection = 'column';
+    } else {
+      sortBy.innerHTML = `New <i class="material-icons">arrow_upward</i>`;
+      itemListDOM.style.flexDirection = 'column-reverse';
+    }
+  });
+
+  /* textarea */
+  textarea.addEventListener("keyup", (e) => {
+    if (e.keyCode === 13) {
+      const item = textarea.value.trim();
+
+      updateStack(item);
+      updateItemListDOM(item);
+      textarea.value = "";
+
+      return false;
+    }
+  });
+
+  textarea.addEventListener('focusout', (e) => {
+    textarea.style.display = "none";
+    addTextArea.style.display = "block";
+  });
+
+  addTextArea.addEventListener('click', () => {
+    textarea.style.display = "flex";
+    textarea.focus();
+    addTextArea.style.display = "none";
+  });
+
+  resetBtn.addEventListener('click', () => {
+    stackStorage.reset();
+    while (itemListDOM.firstChild) {
+      itemListDOM.removeChild(itemListDOM.firstChild);
+    }
+    textarea.value = "";
+    itemList = [];
+  });
+
 }
 
-/* searchbox */
-searchbox.addEventListener('input', (e) => {
-  const term = searchbox.value.trim().toLowerCase();
-
-  filterTextItems(term);
-
-  // change styles on search
-  if (term) {
-    searchCancelBtn.style = 'display: block !important';
-    footer.style.display = 'none';
-  } else {
-    searchCancelBtn.style = 'display: none !important';
-    footer.style.display = 'block';
-    results.textContent = '';
-  }
-})
-
-searchCancelBtn.addEventListener("click", () => {
-  searchbox.value = "";
-  searchbox.dispatchEvent(new Event('input'));
-})
-
-/* sort by */
-sortBy.addEventListener('click', () => {
-  if (sortBy.innerHTML.includes('New')) {
-    sortBy.innerHTML = `Old <i class="material-icons">arrow_downward</i>`;
-    itemListDOM.style.flexDirection = 'column';
-  } else {
-    sortBy.innerHTML = `New <i class="material-icons">arrow_upward</i>`;
-    itemListDOM.style.flexDirection = 'column-reverse';
-  }
-});
-
-/* textarea */
-textarea.addEventListener("keyup", (e) => {
-  if (e.keyCode === 13) {
-    const item = textarea.value.trim();
-
-    updateStack(item);
-    updateItemListDOM(item);
-    textarea.value = "";
-
-    return false;
-  }
-});
-
-textarea.addEventListener('focusout', (e) => {
-  textarea.style.display = "none";
-  addTextArea.style.display = "block";
-});
-
-addTextArea.addEventListener('click', () => {
-  textarea.style.display = "flex";
-  textarea.focus();
-  addTextArea.style.display = "none";
-});
-
-resetBtn.addEventListener('click', () => {
-  stackStorage.reset();
-  while (itemListDOM.firstChild) {
-    itemListDOM.removeChild(itemListDOM.firstChild);
-  }
-  textarea.value = "";
-  itemList = [];
-});
 
 /* utilities */
 const isOverflown = ({
