@@ -55,8 +55,8 @@ body {
 
 #container {
     position: relative;
-    top: 60px;
-    margin-bottom: 70px;
+    top: 40px;
+    margin-bottom: 15px;
 }
 
 header:hover {
@@ -66,10 +66,14 @@ header:hover {
 header {
     opacity: 1;
     width: 100%;
-    height: 60px;
+    height: 50px;
     top: 0;
     background: black;
     transition: 0.1s;
+}
+
+#main {
+    position: absolute;
 }
 
 footer:hover {
@@ -99,9 +103,9 @@ input:focus {
 .searchbox {
     position: absolute;
     width: 70%;
-    height: 30px;
-    padding: 10px 10px 10px 35px;
-    margin: 15px;
+    height: 28px;
+    padding: 10px 10px 10px 34px;
+    margin: 12px;
     border: none;
     border-radius: 30px;
     color: rgba(255, 255, 255, 0.6);
@@ -110,8 +114,8 @@ input:focus {
 
 .search-icon {
     position: absolute;
-    top: 19px;
-    left: 20px;
+    top: 15px;
+    left: 16px;
     padding: 2px;
     color: rgba(255, 255, 255, 0.5);
     font-size: 13pt !important;
@@ -122,77 +126,84 @@ input:focus {
 .search-cancel {
     display: none !important;
     position: absolute;
-    top: 19px;
-    left: 302px;
+    top: 14px;
+    left: 300px;
     padding: 2px;
     color: rgba(255, 255, 255, 0.4);
-    font-size: 13pt !important;
+    font-size: 14pt !important;
     -webkit-user-select: none;
     -moz-user-select: none;
 }
 
 .results {
-    font-size: 120%;
+    font-size: 125%;
     position: absolute;
     top: 19px;
-    right: 25px;
+    right: 20px;
     color: rgba(255, 255, 255, 0.6);
     -webkit-user-select: none;
     -moz-user-select: none;
 }
 
 /* */
-.sortBy {
-    position: absolute;
-    display: inline-flex;
-    top: 68px;
-    left: 380px;
-    color: rgba(255, 255, 255, 0.4) !important;
+.add:hover {
+    color: black;
+    opacity: 1;
+    transition: 0.2s;
+}
+
+.add {
+    opacity: 0.1;
+    /* color: rgba(0, 0, 0, 0.2); */
+    font-size: 16px;
+    cursor: pointer;
     -moz-user-select: none;
     user-select: none;
 }
 
-/* delete */
-.deleteItem {
-    color: rgba(0, 0, 0, 0);
-    position: absolute;
-    top: 30%;
-    right: 5px;
-}
-
-.deleteItem:hover {
-    color: teal !important;
-    position: absolute;
-    margin-top: auto;
-    margin-bottom: auto;
-
+/* sort-by styles*/
+.sort-by:hover {
+    color: rgba(255, 255, 255, 0.8);
     cursor: pointer;
-
-    right: 5px;
 }
 
-#addStackSpace {
+.sort-by {
+    position: absolute;
+    display: inline-flex;
+    float: right;
+    top: 14px;
+    right: 14px;
+    font-size: 120%;
+    color: rgba(255, 255, 255, 0.6);
+    -moz-user-select: none;
+    user-select: none;
+}
+
+.sort-by i {
+    margin-top: -1px;
+    font-size: 150% !important;
+}
+
+#add-sort {
     text-align: center;
-    display: block;
 }
 
-#addStackSpace:hover {
-    color: white !important;
-}
-
-#addStackText {
-    white-space: pre-wrap;
+.add-textitem {
+    display: none;
     width: 80%;
     height: 50px;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 3px;
-    display: none;
+    padding: 9px;
     margin-left: auto;
     margin-right: auto;
     margin-top: 10px;
     margin-bottom: 5px;
+    border-radius: 3px;
+    background: azure;
+    color: rgba(0, 0, 0, 0.7);
+    resize: none;
+    white-space: pre-wrap;
     font-family: inherit !important;
-    font-size: inherit !important;
+    font-size: 120% !important;
 }
 
 .source {
@@ -346,6 +357,27 @@ a:visited {
     color: rgba(138, 175, 189, 0.8);
     text-decoration: none;
 }
+
+
+/* delete */
+.deleteItem {
+    color: rgba(0, 0, 0, 0);
+    position: absolute;
+    top: 30%;
+    right: 5px;
+}
+
+.deleteItem:hover {
+    color: teal !important;
+    position: absolute;
+    margin-top: auto;
+    margin-bottom: auto;
+
+    cursor: pointer;
+
+    right: 5px;
+}
+
 
 /* additional fonts */
 @font-face {

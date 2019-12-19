@@ -6,14 +6,11 @@ const searchbox = document.querySelector('.searchbox');
 const searchCancelBtn = document.querySelector('.search-cancel');
 const results = document.querySelector('.results');
 
-const sortBy = document.querySelector('.sortBy');
-
-const addStackSpace = document.querySelector("#addStackSpace");
-const addTextArea = document.querySelector("#addTextArea");
-const textarea = document.querySelector("#addStackText");
+const addBtn = document.querySelector(".add");
+const sortBy = document.querySelector('.sort-by');
+const addTextItem = document.querySelector(".add-textitem");
 
 const itemListDOM = document.querySelector('.itemlist');
-
 const resetBtn = document.querySelector('#resetBtn');
 
 let itemList = [];
@@ -123,7 +120,35 @@ function initilaizeControls() {
     searchbox.dispatchEvent(new Event('input'));
   })
 
-  /* sort by */
+  /* add-sort container */
+  addBtn.addEventListener('click', () => {
+    addTextItem.style.display = 'flex';
+    addBtn.style.display = 'none';
+    sortBy.style.display = 'none';
+
+    addTextItem.focus();
+  });
+
+  addTextItem.addEventListener('focusout', (e) => {
+    addTextItem.style.display = 'none';
+
+    addBtn.style.display = 'block';
+    sortBy.style.display = 'inline-flex';
+  });
+
+  addTextItem.addEventListener("keyup", (e) => {
+    if (e.keyCode === 13) {
+      const item = addTextItem.value.trim();
+
+      updateStack(item);
+      updateItemListDOM(item);
+      addTextItem.value = "";
+
+      return false;
+    }
+  });
+
+
   sortBy.addEventListener('click', () => {
     if (sortBy.innerHTML.includes('New')) {
       sortBy.innerHTML = `Old <i class="material-icons">arrow_downward</i>`;
@@ -134,36 +159,13 @@ function initilaizeControls() {
     }
   });
 
-  /* textarea */
-  textarea.addEventListener("keyup", (e) => {
-    if (e.keyCode === 13) {
-      const item = textarea.value.trim();
-
-      updateStack(item);
-      updateItemListDOM(item);
-      textarea.value = "";
-
-      return false;
-    }
-  });
-
-  textarea.addEventListener('focusout', (e) => {
-    textarea.style.display = "none";
-    addTextArea.style.display = "block";
-  });
-
-  addTextArea.addEventListener('click', () => {
-    textarea.style.display = "flex";
-    textarea.focus();
-    addTextArea.style.display = "none";
-  });
 
   resetBtn.addEventListener('click', () => {
     stackStorage.reset();
     while (itemListDOM.firstChild) {
       itemListDOM.removeChild(itemListDOM.firstChild);
     }
-    textarea.value = "";
+    addTextItem.value = "";
     itemList = [];
   });
 
