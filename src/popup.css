@@ -39,7 +39,7 @@ html {
     overflow: hidden;
     box-sizing: border-box;
     /* font-size: 125%; */
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.3);
 }
 
 html::-webkit-scrollbar {
@@ -74,6 +74,8 @@ header {
 
 #main {
     position: absolute;
+    width: 100%;
+    margin-bottom: 70px;
 }
 
 footer:hover {
@@ -163,7 +165,7 @@ input:focus {
 
 /* sort-by styles*/
 .sort-by:hover {
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 1);
     cursor: pointer;
 }
 
@@ -197,7 +199,6 @@ input:focus {
     margin-right: auto;
     margin-top: 10px;
     margin-bottom: 5px;
-    border-radius: 3px;
     background: azure;
     color: rgba(0, 0, 0, 0.7);
     resize: none;
@@ -206,100 +207,51 @@ input:focus {
     font-size: 120% !important;
 }
 
-.source {
-    /* color: rgba(138, 175, 189, 0.8); */
-    margin-top: 10px;
-    font-size: 12px !important;
-    align-self: right;
-}
-
-
 ul {
     margin: 0;
     padding: 0;
 }
 
 ul li {
-    font-family: 'Arial';
-    line-height: 28px;
-
-
+    position: relative;
+    height: 40px;
+    margin: 15px;
     border: 1px solid gray;
     border-radius: 3px;
+    padding: 15px;
 
     overflow: auto;
-    font-size: 16px !important;
-
-    font-size: 4vw;
-
-    height: 40px;
-
-    /* cursor: pointer; */
-    position: relative;
-    margin: 15px;
     overflow-wrap: break-word;
-    list-style: none;
-
-    /* padding: 12px 8px 12px 40px; */
-    /* padding: 10px; */
-    padding: 15px;
-    /* background: rgba(255, 255, 255, 0.7); */
-    /* background: rgba(255, 255, 255, 0.8); */
     background: rgba(255, 255, 255, 1);
-
-    font-size: 18px;
-    /* transition: 0.2s; */
+    list-style: none;
+    line-height: 28px;
+    font-family: 'Arial';
+    font-size: 16px !important;
+    font-size: 4vw;
 }
-
-/* Set all odd list items to a different color (zebra-stripes) */
-/* ul li:nth-child(odd) {
-    background: #f9f9f9;
-} */
-
-/* ul .note:nth-child(odd) {
-    width: 78% !important;
-    margin-left: auto !important;
-    margin-right: 8% !important;
-    border-left: 3px solid teal;
-} */
 
 .note:hover {
     border-left: 6px solid goldenrod !important;
-
-    /* border-right: 1px solid gray !important; */
-    background-color: lemonchiffon !important;
-    /* margin-left: 8px !important; */
-    margin-left: 10px !important;
-
     border-right: 1px solid gray !important;
+    margin-left: 10px !important;
     margin-right: 15px;
-
+    background-color: lemonchiffon !important;
 }
 
-/* .note {
-    width: 85% !important;
-
-    margin-left: auto;
-    margin-right: auto !important;
-    text-align: center;
-} */
-
-ul li:last-child {
-    background: white;
+.source {
+    margin-top: 10px;
+    font-size: 12px !important;
+    align-self: right;
 }
 
-/* Darker background-color on hover */
 ul li:hover {
-    /* border-right: 10px solid khaki;
-    background-color: ivory !important; */
-
     background: azure !important;
     border-right: solid 8px teal;
-
     margin-right: 8px;
 }
 
-.itemlist {
+.textstack {
+
     display: flex;
     flex-direction: column-reverse;
 }
@@ -318,7 +270,6 @@ ul li:hover {
     transition: 0.1s;
 }
 
-
 .button {
     width: 75%;
     border: none;
@@ -336,8 +287,6 @@ ul li:hover {
     cursor: pointer;
     border-radius: 4px;
     /* transition: transform .2s ease; */
-
-
     outline: none;
 }
 
