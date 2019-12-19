@@ -46,7 +46,7 @@ function initializeEventListeners() {
   }
 
   /* searchbox */
-  searchbox.addEventListener('input', (e) => {
+  searchbox.addEventListener('input', () => {
     const term = searchbox.value.trim().toLowerCase();
     filterTextItems(term);
 
@@ -59,7 +59,17 @@ function initializeEventListeners() {
       footer.style.display = 'block';
       results.textContent = '';
     }
-  })
+  });
+
+  searchbox.addEventListener('keydown', (e) => {
+    if (e.keyCode === 38) {
+      // up
+      sortByOld(false);
+    } else if (e.keyCode === 40) {
+      // down
+      sortByOld(true);
+    }
+  });
 
   searchCancelBtn.addEventListener("click", () => {
     searchbox.value = "";
@@ -94,13 +104,7 @@ function initializeEventListeners() {
   });
 
   sortBy.addEventListener('click', () => {
-    if (sortBy.innerHTML.includes('New')) {
-      sortBy.innerHTML = 'Old <i class="material-icons">arrow_downward</i>';
-      textStackDOM.style.flexDirection = 'column';
-    } else {
-      sortBy.innerHTML = 'New <i class="material-icons">arrow_upward</i>';
-      textStackDOM.style.flexDirection = 'column-reverse';
-    }
+    sortByOld(sortBy.innerHTML.includes('New'));
   });
 
   resetBtn.addEventListener('click', () => {
@@ -111,8 +115,19 @@ function initializeEventListeners() {
     addTextItem.value = "";
     textStack = [];
   });
-
 }
+
+function sortByOld(byOld = false) {
+  if (byOld) {
+    sortBy.innerHTML = 'Old <i class="material-icons">arrow_downward</i>';
+    textStackDOM.style.flexDirection = 'column';
+  } else {
+    sortBy.innerHTML = 'New <i class="material-icons">arrow_upward</i>';
+    textStackDOM.style.flexDirection = 'column-reverse';
+  }
+}
+
+
 
 const updateTextStackDOM = (item, url = "", title = "") => {
   let abbreviation = title.length > 40 ? `${title.substring(0, 40)}...` : title;
@@ -122,7 +137,7 @@ const updateTextStackDOM = (item, url = "", title = "") => {
     html = `
     <li class="note">
     ${item}
-    <i class="material-icons deleteItem">delete</i>
+    <i class="material-icons deleteItem">check</i>
     <div class="spacer">
     <div class="cardBottom">
     <span class="source">note</span>
@@ -134,7 +149,7 @@ const updateTextStackDOM = (item, url = "", title = "") => {
     html = `
     <li>
     ${item}
-    <i class="material-icons deleteItem">delete</i>
+    <i class="material-icons deleteItem">check</i>
     <div class="spacer">
     <div class="cardBottom">
     <a class="source" href="${url}" target="_blank">${abbreviation}</a>
@@ -208,7 +223,7 @@ const filterTextItems = (term) => {
       item.classList.remove('filtered');
       // add highlight
       if (term.length >= 1) {
-        let remainingIndex = item.innerHTML.search(/<i class="material-icons deleteItem">delete<\/i>/i);
+        let remainingIndex = item.innerHTML.search(/<i class="material-icons deleteItem">check<\/i>/i);
         let targetText = item.innerHTML.substring(0, remainingIndex);
         let remaining = item.innerHTML.substring(remainingIndex, item.innerHTML.length)
         item.innerHTML = targetText.replace(termRegex, "<span class='highlight'>$1</span>$2") + remaining;

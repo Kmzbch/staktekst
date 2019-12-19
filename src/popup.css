@@ -215,7 +215,7 @@ ul {
 ul li {
     position: relative;
     height: 40px;
-    margin: 15px;
+    margin: 10px 15px 10px 15px;
     border: 1px solid gray;
     border-radius: 3px;
     padding: 15px;
@@ -312,20 +312,51 @@ a:visited {
 .deleteItem {
     color: rgba(0, 0, 0, 0);
     position: absolute;
-    top: 30%;
-    right: 5px;
+    top: 6px;
+    right: 6px;
+    font-size: 13px !important;
+    border: 1px dotted lightgray;
+
+    margin-left: 8px;
 }
 
 .deleteItem:hover {
-    color: teal !important;
-    position: absolute;
-    margin-top: auto;
-    margin-bottom: auto;
+    /* color: rgb(0, 128, 128) !important;
+     */
+    color: rgba(0, 128, 128, 0) !important;
+
+    margin-left: 8px;
+    padding: 0px;
 
     cursor: pointer;
-
-    right: 5px;
+    right: 6px;
+    background-color: rgba(0, 128, 128, 0.3);
+    border-radius: 10%;
+    ;
 }
+
+/* li:before,
+li:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-color: transparent;
+    border-style: solid;
+}
+
+li::before {
+    border-width: 0.7em;
+    border-right-color: #ccc;
+    border-top-color: #ccc;
+}
+
+li::after {
+    border-radius: 0.4em;
+    border-width: 0.7em;
+    border-right-color: burlywood;
+    border-top-color: burlywood;
+} */
 
 
 /* additional fonts */

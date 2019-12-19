@@ -4,7 +4,7 @@
     "scripts": ["background.js", "common_lib.js"]
   },
   "browser_action": {
-    "default_title": "A Jump to the Sky Turns to a Riderkick",
+    "default_title": "Staktekst",
     "default_popup": "popup.html"
   },
   "content_scripts": [{
