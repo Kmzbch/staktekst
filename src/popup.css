@@ -4,7 +4,7 @@
     z-index: 1;
 }
 
-.highlight {
+.highlighted {
     background-color: orange;
 }
 
@@ -17,28 +17,11 @@
 }
 
 
-.cardBottom {
-    position: absolute;
-    display: block;
-    margin-left: auto !important;
-    margin-right: 3 !important;
-    float: right !important;
-    /* text-align: right; */
-    bottom: 5px;
-    right: 7px;
-}
-
-.note .cardBottom {
-    color: rgba(0, 0, 0, 0.5);
-    right: auto;
-}
-
 /* popup.html */
 html {
     height: 700px;
     overflow: hidden;
     box-sizing: border-box;
-    /* font-size: 125%; */
     background: rgba(0, 0, 0, 0.3);
 }
 
@@ -156,7 +139,6 @@ input:focus {
 
 .add {
     opacity: 0.1;
-    /* color: rgba(0, 0, 0, 0.2); */
     font-size: 16px;
     cursor: pointer;
     -moz-user-select: none;
@@ -186,6 +168,7 @@ input:focus {
     font-size: 150% !important;
 }
 
+/* add container styles*/
 #add-sort {
     text-align: center;
 }
@@ -207,27 +190,33 @@ input:focus {
     font-size: 120% !important;
 }
 
-ul {
-    margin: 0;
+/* text stack styles */
+.textstack {
+    display: flex;
+    flex-direction: column-reverse;
     padding: 0;
+}
+
+ul li:hover {
+    background: azure !important;
+    border-right: solid 8px teal;
+    margin-right: 8px;
 }
 
 ul li {
     position: relative;
     height: 40px;
-    margin: 10px 15px 10px 15px;
+    padding: 15px;
     border: 1px solid gray;
     border-radius: 3px;
-    padding: 15px;
-
-    overflow: auto;
+    margin: 10px 15px 10px 15px;
+    overflow: hidden;
     overflow-wrap: break-word;
     background: rgba(255, 255, 255, 1);
     list-style: none;
     line-height: 28px;
     font-family: 'Arial';
     font-size: 16px !important;
-    font-size: 4vw;
 }
 
 .note:hover {
@@ -238,75 +227,36 @@ ul li {
     background-color: lemonchiffon !important;
 }
 
+.note .citation {
+    color: rgba(0, 0, 0, 0.5);
+    right: auto;
+}
+
+.citation {
+    position: absolute;
+    display: block;
+    bottom: 5px;
+    right: 7px;
+    margin-left: auto !important;
+    margin-right: 3 !important;
+    float: right !important;
+}
+
 .source {
     margin-top: 10px;
     font-size: 12px !important;
     align-self: right;
 }
 
-ul li:hover {
-    background: azure !important;
-    border-right: solid 8px teal;
-    margin-right: 8px;
-}
-
-.textstack {
-
-    display: flex;
-    flex-direction: column-reverse;
-}
-
-/* button styles*/
-.button-container {
-    margin: 10px;
-}
-
-.button:focus {
-    outline: none;
-}
-
-.button:hover {
-    transform: scale(1.05);
-    transition: 0.1s;
-}
-
-.button {
-    width: 75%;
-    border: none;
-    /* border: 1; */
-    display: inline-block;
-    padding: 5px 5px;
-    margin-right: 5px;
-    margin-left: 5px;
-
-    /* background-color: bisque; */
-    background-color: bisque;
-
-    color: rgba(0, 0, 0, 0.7);
-    font-size: 14px;
-    cursor: pointer;
-    border-radius: 4px;
-    /* transition: transform .2s ease; */
-    outline: none;
-}
-
 a:hover {
     color: rgb(32, 123, 156) !important;
     text-decoration: underline !important;
-
 }
 
-a:link {
-
+a {
     color: rgba(138, 175, 189, 0.8);
     text-decoration: none;
 }
-
-a:visited {
-    color: rgba(138, 175, 189, 0.8);
-    text-decoration: none;
-}
-
 
 /* delete */
 .deleteItem {
@@ -316,48 +266,53 @@ a:visited {
     right: 6px;
     font-size: 13px !important;
     border: 1px dotted lightgray;
-
+    -webkit-user-select: none;
+    -moz-user-select: none;
     margin-left: 8px;
+}
+
+ul li:hover .deleteItem {
+    right: 5px !important;
+}
+
+.deleted {
+    text-decoration: line-through !important;
+    opacity: 0.5;
 }
 
 .deleteItem:hover {
-    /* color: rgb(0, 128, 128) !important;
-     */
-    color: rgba(0, 128, 128, 0) !important;
-
-    margin-left: 8px;
+    color: rgba(255, 255, 255, 0.3) !important;
     padding: 0px;
+    margin-left: 8px;
 
     cursor: pointer;
-    right: 6px;
-    background-color: rgba(0, 128, 128, 0.3);
+    background-color: #3297FD;
     border-radius: 10%;
-    ;
 }
 
-/* li:before,
-li:after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    border-color: transparent;
-    border-style: solid;
+/* button styles*/
+.button:hover {
+    outline: none;
+    transform: scale(1.05);
+    transition: 0.1s;
 }
 
-li::before {
-    border-width: 0.7em;
-    border-right-color: #ccc;
-    border-top-color: #ccc;
+.button {
+    display: inline-block;
+    width: 75%;
+    padding: 5px 5px;
+    border: none;
+    border-radius: 4px;
+    /* border: 1; */
+    outline: none;
+    margin: 10px;
+    margin-right: 5px;
+    margin-left: 5px;
+    cursor: pointer;
+    background-color: bisque;
+    color: rgba(0, 0, 0, 0.7);
+    font-size: 14px;
 }
-
-li::after {
-    border-radius: 0.4em;
-    border-width: 0.7em;
-    border-right-color: burlywood;
-    border-top-color: burlywood;
-} */
-
 
 /* additional fonts */
 @font-face {
