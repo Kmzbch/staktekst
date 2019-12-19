@@ -1,12 +1,21 @@
+/* utilities */
+.sticky {
+    position: fixed;
+    z-index: 1;
+}
+
 .highlight {
     background-color: orange;
-    /* font-weight: bold;
-    color: red; */
 }
 
 .spacer {
     height: 6px;
 }
+
+.filtered {
+    display: none !important;
+}
+
 
 .cardBottom {
     position: absolute;
@@ -26,88 +35,111 @@
 
 /* popup.html */
 html {
-    font-size: 125%;
-    box-sizing: border-box;
-    overflow: hidden;
-
-    /* background: rgba(0, 0, 0, 0.8); */
-    background: rgba(0, 0, 0, 0.4);
     height: 700px;
-
+    overflow: hidden;
+    box-sizing: border-box;
+    /* font-size: 125%; */
+    background: rgba(0, 0, 0, 0.4);
 }
 
 html::-webkit-scrollbar {
     display: none;
 }
 
-/* body */
+/* container elements */
 body {
     width: 450px;
-    /* height: 530px; */
     height: 700px;
-
     margin: 0px;
 }
 
 #container {
-    height: auto;
-
     position: relative;
     top: 60px;
     margin-bottom: 70px;
 }
 
+header:hover {
+    opacity: 1 !important;
+}
+
 header {
+    opacity: 1;
     width: 100%;
     height: 60px;
     top: 0;
     background: black;
+    transition: 0.1s;
 }
 
-.sticky {
-    position: fixed;
-    z-index: 1;
+footer:hover {
+    opacity: 1 !important;
 }
 
+footer {
+    opacity: 1;
+    width: 100%;
+    height: 50px;
+    bottom: 0px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.6);
+    transition: 0.1s;
+}
 
+/* searchbox styles */
 textarea:focus,
 input:focus {
     outline: none;
 }
 
-
-
-
 .searchbox::-webkit-search-cancel-button {
     -webkit-appearance: none;
 }
 
-.search-overlay {
-    color: rgba(255, 255, 255, 0.5);
-    padding: 2px;
+.searchbox {
+    position: absolute;
+    width: 70%;
+    height: 30px;
+    padding: 10px 10px 10px 35px;
+    margin: 15px;
+    border: none;
+    border-radius: 30px;
+    color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.search-icon {
     position: absolute;
     top: 19px;
     left: 20px;
-    font-size: 120% !important;
-}
-
-
-.searchCancelButton {
-    position: absolute;
-    top: 19px;
-    display: none;
-    color: rgba(255, 255, 255, 0.4);
     padding: 2px;
-    left: 300px;
-    /* left: 280px; */
-    z-index: 1000000 !important;
-    font-size: 120% !important;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 13pt !important;
     -webkit-user-select: none;
-    /* Chrome all / Safari all */
     -moz-user-select: none;
 }
 
+.search-cancel {
+    display: none !important;
+    position: absolute;
+    top: 19px;
+    left: 302px;
+    padding: 2px;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 13pt !important;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
 
+.results {
+    font-size: 120%;
+    position: absolute;
+    top: 19px;
+    right: 25px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* */
 .sortBy {
     position: absolute;
     display: inline-flex;
@@ -118,31 +150,7 @@ input:focus {
     user-select: none;
 }
 
-
-
-.headerCommand {
-    color: rgba(255, 255, 255, 0.7) !important;
-    position: absolute;
-    top: 15px;
-    left: 335px;
-}
-
-.newText {
-    padding: 3px;
-    /* color: rgba(255, 255, 255, 0.7) !important;
-    position: absolute;
-    top: 17px;
-    left: 350px; */
-
-}
-
-.hitCount {
-    position: absolute;
-    color: rgba(255, 255, 255, 0.6);
-    top: 19px;
-    right: 25px;
-}
-
+/* delete */
 .deleteItem {
     color: rgba(0, 0, 0, 0);
     position: absolute;
@@ -159,43 +167,6 @@ input:focus {
     cursor: pointer;
 
     right: 5px;
-}
-
-.searchbox {
-    border-radius: 30px;
-    width: 70%;
-    /* width: 65%; */
-    height: 30px;
-    padding: 10px 10px 10px 35px;
-    margin: 15px;
-    color: rgba(255, 255, 255, 0.6);
-    border: none;
-    background: rgba(255, 255, 255, 0.2);
-}
-
-
-footer:hover {
-    opacity: 1 !important;
-}
-
-footer {
-    opacity: 1;
-    width: 100%;
-    height: 50px;
-    position: fixed;
-    bottom: 0px;
-    text-align: center;
-    transition: 0.1s;
-    background: rgba(0, 0, 0, 0.6);
-}
-
-#main {
-    /* padding-bottom: 50px; */
-    overflow: hidden;
-}
-
-.filtered {
-    display: none !important;
 }
 
 #addStackSpace {
@@ -374,16 +345,7 @@ a:visited {
     text-decoration: none;
 }
 
-/* .button-container::after {
-    content: "オプション";
-    text-decoration: underline;
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.8);
-    margin-left: 2px;
-} */
-
-
-/* font */
+/* additional fonts */
 @font-face {
     font-family: 'Material Icons';
     font-style: normal;

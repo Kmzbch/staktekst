@@ -1,15 +1,21 @@
 import './popup.css';
 
+const header = document.getElementsByTagName("header")[0];
+const footer = document.getElementsByTagName("footer")[0];
+
+const searchbox = document.querySelector('.searchbox');
+const searchCancelBtn = document.querySelector('.search-cancel');
+const results = document.querySelector('.results');
+
+const sortBy = document.querySelector('.sortBy');
+
+
 const addStackSpace = document.querySelector("#addStackSpace");
 const addTextArea = document.querySelector("#addTextArea");
 const textarea = document.querySelector("#addStackText");
-const footer = document.getElementsByTagName("footer")[0];
+
 const resetBtn = document.querySelector('#resetBtn');
 const itemListDOM = document.querySelector('.itemlist');
-const searchbox = document.querySelector('.searchbox');
-const searchCancelButton = document.querySelector('.searchCancelButton');
-const hitCounter = document.querySelector('.hitCount');
-const sortBy = document.querySelector('.sortBy');
 
 let itemList = [];
 
@@ -79,39 +85,39 @@ const updateItemListDOM = (item, url = "", title = "") => {
 })();
 
 
-// initialize events
-/* window */
+/* initialize events */
 window.onscroll = () => {
-  // hide footer except on the top, on the bottom and on hover
+  // hide header and footer except on the top, bottom and on hover
   if (window.pageYOffset == 0) {
+    header.style.opacity = '1';
     footer.style.opacity = '1';
   } else if ((document.body.offsetHeight + window.scrollY) >= document.body.scrollHeight) {
+    header.style.opacity = '1';
     footer.style.opacity = '1';
   } else {
+    header.style.opacity = '0';
     footer.style.opacity = '0';
   }
 }
 
-/* search box*/
+/* searchbox */
 searchbox.addEventListener('input', (e) => {
   const term = searchbox.value.trim().toLowerCase();
 
+  filterTextItems(term);
+
+  // change styles on search
   if (term) {
-    searchCancelButton.style.display = 'block';
+    searchCancelBtn.style = 'display: block !important';
     footer.style.display = 'none';
   } else {
-    searchCancelButton.style.display = 'none';
+    searchCancelBtn.style = 'display: none !important';
     footer.style.display = 'block';
-    hitCounter.textContent = '';
+    results.textContent = '';
   }
-
-  filterTextItems(term);
 })
 
-
-
-/* search cancel button */
-searchCancelButton.addEventListener("click", () => {
+searchCancelBtn.addEventListener("click", () => {
   searchbox.value = "";
   searchbox.dispatchEvent(new Event('input'));
 })
@@ -220,9 +226,9 @@ const filterTextItems = (term) => {
     });
   console.log(hitItemCount + '/' + itemListDOM.children.length + 'found!');
   if (hitItemCount === 0) {
-    hitCounter.textContent = 'No Results';
+    results.textContent = 'No Results';
   } else {
-    hitCounter.textContent = hitItemCount + ' of ' + itemListDOM.children.length;
+    results.textContent = hitItemCount + ' of ' + itemListDOM.children.length;
   }
 
 };
