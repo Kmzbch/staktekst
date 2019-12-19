@@ -244,8 +244,8 @@ ul li {
 
 .source {
     margin-top: 10px;
-    font-size: 12px !important;
     align-self: right;
+    font-size: 12px !important;
 }
 
 a:hover {

@@ -32,8 +32,7 @@ function restoreTextStack() {
 const updateTextStackDOM = (item, url = "", title = "") => {
   const MAX_LENGTH = 40;
   let abbreviation = title.length > MAX_LENGTH ? `${title.substring(0, MAX_LENGTH)}...` : title;
-
-  let html = `
+  let template = `
     <li>
     ${item}
     <i class="material-icons deleteItem">check</i>
@@ -44,7 +43,7 @@ const updateTextStackDOM = (item, url = "", title = "") => {
     </li>
     `;
 
-  textStackDOM.innerHTML += html;
+  textStackDOM.innerHTML += template;
 
   // increase the hight to avoid overflow
   let lastChild = textStackDOM.lastElementChild;
@@ -59,8 +58,11 @@ const updateTextStackDOM = (item, url = "", title = "") => {
   }
 
   // consider text item without url as a note
-  if (url === "") {
+  if (url) {
+    lastChild.querySelector('.citation').innerHTML = `<a class="source" href="${url}" target="_blank">${abbreviation}</a>`;
+  } else {
     lastChild.className += "note";
+    lastChild.querySelector('.citation').innerHTML = `<span class="source">note</span>`;
   }
 }
 
