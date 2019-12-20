@@ -62,7 +62,7 @@ const updateTextStackDOM = (item, url = "", title = "") => {
     lastChild.querySelector('.citation').innerHTML = `<a class="source" href="${url}" target="_blank">${abbreviation}</a>`;
   } else {
     lastChild.className += "note";
-    lastChild.querySelector('.citation').innerHTML = `<span class="source">note</span>`;
+    lastChild.querySelector('.citation').innerHTML = `<span class="source">#note</span>`;
   }
 }
 
@@ -140,7 +140,7 @@ function initializeEventListeners() {
   }
 
   /* searchbox */
-  searchbox.addEventListener('input', () => {
+  searchbox.addEventListener('input', (e) => {
     const term = searchbox.value.trim().toLowerCase();
     filterTextItems(term);
 
@@ -153,6 +153,7 @@ function initializeEventListeners() {
       footer.style.display = 'block';
       results.textContent = '';
     }
+
   });
 
   searchbox.addEventListener('keydown', (e) => {
@@ -179,10 +180,24 @@ function initializeEventListeners() {
     addTextItem.focus();
   });
 
-  addTextItem.addEventListener('focusout', () => {
+
+
+  // hide checkboxes while entering
+  addTextItem.addEventListener('focus', (e) => {
+    let checkboxes = document.querySelectorAll('.checkbox')
+    for (let i = 0; i < checkboxes.length; i++) {
+      checkboxes[i].classList.add('hide');
+    }
+  });
+
+  addTextItem.addEventListener('focusout', (e) => {
     addTextItem.style.display = 'none';
     addBtn.style.display = 'block';
     sortBy.style.display = 'inline-flex';
+    let x = document.querySelectorAll('.checkbox')
+    for (let i = 0; i < x.length; i++) {
+      x[i].classList.remove('hide');
+    }
   });
 
   addTextItem.addEventListener('keyup', (e) => {
@@ -191,7 +206,8 @@ function initializeEventListeners() {
       updateStack(item);
       updateTextStackDOM(item);
       addTextItem.value = '';
-
+      // hide checkbox
+      textStackDOM.lastElementChild.querySelector('.checkbox').classList.add('hide');
       return false;
     }
   });
@@ -214,7 +230,7 @@ function initializeEventListeners() {
         const index = lists.indexOf(e.target.parentElement);
         deleteItemFromStorage(index);
         e.target.parentElement.remove();
-      }, 1000);
+      }, 300);
     }
   });
 
@@ -278,23 +294,4 @@ function escapeRegExp(string) {
 document.addEventListener('DOMContentLoaded', () => {
   restoreTextStack()
   initializeEventListeners();
-  // setTimeout(() => {
-  //   let checkBoxes = document.querySelectorAll('.checkbox');
-  //   for (let i = 0; i < checkBoxes.length; i++) {
-  //     checkBoxes[i].addEventListener('click', () => {
-  //       checkBoxes[i].style = 'color: white !important';
-  //       // deleteBoxes[i].parentElement.style = ''
-  //       checkBoxes[i].parentElement.className += 'deleted';
-  //       // setTimeout(() => {
-  //       //   removeTextItem();
-  //       // }, 500);
-  //     })
-  //   }
-  // }, 30)
 });
-
-// function removeTextItem() {
-//   Array.from(textStackDOM.children)
-//   .filter(item => !item.textContent.includes('deleted'))
-//   .forEach(item => item.classList.add('filtered'));
-// }

@@ -197,6 +197,22 @@ input:focus {
     padding: 0;
 }
 
+/* ul li:last-child {
+    background: mistyrose !important;
+} */
+
+/* .newlyCreated {
+    background: lavenderblush !important;
+}
+
+.transition {
+    transition: 0.6s;
+} */
+
+.hide {
+    display: none !important;
+}
+
 ul li:hover {
     background: azure !important;
     border-right: solid 8px teal;
