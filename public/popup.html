@@ -12,10 +12,10 @@
     <header class="sticky">
       <div id="search">
         <i class="material-icons search-icon">search</i>
-        <input class="searchbox" type="search" spellcheck="false" placeholder="テキストを検索..." />
+        <input class="searchbox" type="search" autofocus="true" spellcheck="false" placeholder="テキストを検索..." />
         <span class="material-icons search-cancel">cancel</span>
       </div>
-      <span class="results"></span>
+      <div class="results"></div>
     </header>
     <div id="main">
       <div id="add-sort">
@@ -32,7 +32,14 @@
       </div>
     </footer>
   </div>
-
+  <!-- popup -->
+  <div class="popup" id="js-popup">
+    <div class="popup-inner">
+      <div class="close-btn" id="js-close-btn"><i class="fas fa-times"></i></div>
+      <a href="#"><img src="./img/popup.jpg" alt="ポップアップ画像"></a>
+    </div>
+    <div class="black-background" id="js-black-bg"></div>
+  </div>
   <script src="popup.js"></script>
 </body>
 

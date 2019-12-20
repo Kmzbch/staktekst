@@ -15,6 +15,25 @@ const resetBtn = document.querySelector('#resetBtn');
 
 let textStack = [];
 
+
+// function getFormattedDate() {
+//   let today = new Date();
+//   let dd = today.getDate();
+//   let mm = today.getMonth() + 1; //January is 0!
+
+//   var yyyy = today.getFullYear();
+//   if (dd < 10) {
+//     dd = '0' + dd;
+//   }
+//   if (mm < 10) {
+//     mm = '0' + mm;
+//   }
+//   let formatted = `${yyyy}/${mm}/${dd}`;
+//   return formatted;
+
+// }
+
+
 /* module-specific utilities */
 function restoreTextStack() {
   stackStorage.get(raw => {
@@ -22,6 +41,29 @@ function restoreTextStack() {
       stackStorage.reset();
     } else {
       textStack = JSON.parse(raw);
+
+      // /// date
+      // let dateItemCount =
+      //   Array.from(textStack)
+      //   .filter(item => !isNaN(Date.parse(item.url)))
+      //   .length;
+
+      // if (dateItemCount == 0) {
+      //   // textStack.unshift({
+      //   //   text: getFormatedDate(),
+      //   //   url: getFormatedDate(),
+      //   //   title: ""
+      //   // });
+      //   textStack.unshift({
+      //     text: "1985/10/06",
+      //     url: "1985/10/06",
+      //     title: ""
+      //   });
+
+      //   stackStorage.set(JSON.stringify(textStack));
+      // }
+
+
       textStack.forEach(res => {
         updateTextStackDOM(res.text, res.url, res.title);
       });
@@ -30,7 +72,14 @@ function restoreTextStack() {
 };
 
 const updateTextStackDOM = (item, url = "", title = "") => {
-  const MAX_LENGTH = 40;
+  let MAX_LENGTH;
+
+  if (containsJa(title)) {
+    MAX_LENGTH = 25;
+  } else {
+    MAX_LENGTH = 40;
+  }
+  // const MAX_LENGTH = 40;
   let abbreviation = title.length > MAX_LENGTH ? `${title.substring(0, MAX_LENGTH)}...` : title;
   let template = `
     <li>
@@ -56,6 +105,11 @@ const updateTextStackDOM = (item, url = "", title = "") => {
     textStackDOM.appendChild(replacement);
     lastChild = replacement;
   }
+
+  // //
+  // if (!isNaN(Date.parse(url))) {
+  //   lastChild.classList.add('date');
+  // }
 
   // consider text item without url as a note
   if (url) {
@@ -181,9 +235,25 @@ function initializeEventListeners() {
   });
 
 
+  textStackDOM.addEventListener('mouseover', () => {
+    addTextItem.style.display = 'none';
+    addBtn.style.display = 'inline';
+    sortBy.style.display = 'inline-flex';
+    let checkboxes = document.querySelectorAll('.checkbox')
+    for (let i = 0; i < checkboxes.length; i++) {
+      checkboxes[i].classList.remove('hide');
+    }
+  });
 
   // hide checkboxes while entering
   addTextItem.addEventListener('focus', (e) => {
+    if (!results.classList.contains('entering')) {
+      results.classList.add('entering');
+    }
+    let charCount = e.target.value.length;
+    let wordCount = charCount === 0 ? 0 : e.target.value.split(' ').length;
+    results.innerHTML = `${wordCount} words<span class="inlineblock">${charCount} chars</span>`;
+
     let checkboxes = document.querySelectorAll('.checkbox')
     for (let i = 0; i < checkboxes.length; i++) {
       checkboxes[i].classList.add('hide');
@@ -191,20 +261,43 @@ function initializeEventListeners() {
   });
 
   addTextItem.addEventListener('focusout', (e) => {
+    results.classList.remove('entering');
+    results.textContent = "";
     addTextItem.style.display = 'none';
     addBtn.style.display = 'block';
     sortBy.style.display = 'inline-flex';
-    let x = document.querySelectorAll('.checkbox')
-    for (let i = 0; i < x.length; i++) {
-      x[i].classList.remove('hide');
+    let checkboxes = document.querySelectorAll('.checkbox')
+    for (let i = 0; i < checkboxes.length; i++) {
+      checkboxes[i].classList.remove('hide');
     }
   });
 
+  addTextItem.addEventListener('input', (e) => {
+    if (!results.classList.contains('entering')) {
+      results.classList.add('entering');
+    }
+    let charCount = e.target.value.length;
+    let wordCount = charCount === 0 ? 0 : e.target.value.split(' ').length;
+    results.innerHTML = `${wordCount} words<span class="inlineblock">${charCount} chars</span>`;
+  })
+
   addTextItem.addEventListener('keyup', (e) => {
+
     if (e.keyCode === 13) {
       const item = addTextItem.value.trim();
       updateStack(item);
       updateTextStackDOM(item);
+
+      // //
+      // insertDate();
+      // //
+
+
+
+
+
+      results.classList.remove('entering');
+      results.textContent = "Item Added!";
       addTextItem.value = '';
       // hide checkbox
       textStackDOM.lastElementChild.querySelector('.checkbox').classList.add('hide');
@@ -217,24 +310,38 @@ function initializeEventListeners() {
     sortByOld(sortBy.innerHTML.includes('New'));
   });
 
+
+
   /* checkboxes for text stack */
   textStackDOM.addEventListener('click', e => {
     if (e.target.classList.contains('checkbox')) {
-      // remove action styles
-      e.target.style = 'color: white !important';
-      e.target.parentElement.style += 'color: black !important; text-decoration: line-through !important; opacity: 0.5;';
+      let parent = e.target.parentElement;
+      e.target.style = 'color: white !important;';
+
+      parent.style.color = 'black !important'
+      parent.style.opacity = '0.5';
+
+      parent.style.textDecoration = 'line-through';
+      results.textContent = "Item Deleted!";
 
       // remove
       setTimeout(() => {
         const lists = Array.from(textStackDOM.querySelectorAll("li"));
         const index = lists.indexOf(e.target.parentElement);
         deleteItemFromStorage(index);
-        e.target.parentElement.remove();
-      }, 300);
+        parent.remove();
+        // textStackDOM.removeChild(e.target.parentElement);
+        setTimeout(() => {
+          results.textContent = "";
+        }, 700);
+
+      }, 450);
     }
   });
 
   resetBtn.addEventListener('click', () => {
+
+    // popupImage();
     stackStorage.reset();
     while (textStackDOM.firstChild) {
       textStackDOM.removeChild(textStackDOM.firstChild);
@@ -267,9 +374,46 @@ const stackStorage = {
   }
 };
 
+// function insertDate() {
+//   /// check: chrome.storage.sync.get(['raw'], (res)=>{ console.log(JSON.parse(res.raw));})
+//   let dateItem = Array.from(textStack)
+//     .filter(item => !isNaN(Date.parse(item.url)))
+//     .slice(-1)[0];
+//   console.log(dateItem);
+
+//   if (typeof dateItem !== 'undefined') {
+//     let latestDate = new Date(dateItem.url);
+//     let today = new Date();
+//     console.log(latestDate);
+//     console.log(today);
+
+//     // if(!isNaN(dateItem)) {
+//     if (latestDate.getTime() < today.getTime() && latestDate.getDay() != today.getDay()) {
+//       // console.log("!!!!!!");
+
+//       let newDateItem = {
+//         text: getFormattedDate(),
+//         url: getFormattedDate(),
+//         title: ""
+//       };
+//       textStack.push({
+//         text: getFormattedDate(),
+//         url: getFormattedDate(),
+//         title: ""
+//       });
+//       updateTextStackDOM(newDateItem.text, newDateItem.url, newDateItem.title);
+
+
+//     }
+//     stackStorage.set(JSON.stringify(textStack));
+//   }
+// }
+
 /* utilities */
 function containsJa(str) {
-  return (str.match(/^[\u30a0-\u30ff\u3040-\u309f\u3005-\u3006\u30e0-\u9fcf]+$/)) ? true : false
+  //  return (str.match(/^[\u30a0-\u30ff\u3040-\u309f\u3005-\u3006\u30e0-\u9fcf]+$/)) ? true : false
+  return (str.match(/[\u30a0-\u30ff\u3040-\u309f\u3005-\u3006\u30e0-\u9fcf]+?/)) ? true : false
+
 }
 
 const isOverflown = ({
@@ -295,3 +439,25 @@ document.addEventListener('DOMContentLoaded', () => {
   restoreTextStack()
   initializeEventListeners();
 });
+
+function popupImage() {
+  var popup = document.getElementById('js-popup');
+  if (!popup) return;
+
+  var blackBg = document.getElementById('js-black-bg');
+
+  var blackBg = document.getElementById('js-black-bg');
+  var closeBtn = document.getElementById('js-close-btn');
+  var showBtn = document.getElementById('js-show-popup');
+
+  closePopUp(blackBg);
+  closePopUp(closeBtn);
+  closePopUp(showBtn);
+
+  function closePopUp(elem) {
+    if (!elem) return;
+    elem.addEventListener('click', function () {
+      popup.classList.toggle('is-show');
+    });
+  }
+}

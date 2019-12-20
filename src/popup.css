@@ -22,7 +22,11 @@ html {
     height: 700px;
     overflow: hidden;
     box-sizing: border-box;
+    /* background: rgba(0, 0, 0, 0.2); */
     background: rgba(0, 0, 0, 0.3);
+
+    /* background: rgba(0, 0, 0, 0.1); */
+
 }
 
 html::-webkit-scrollbar {
@@ -52,6 +56,8 @@ header {
     height: 50px;
     top: 0;
     background: black;
+    /* background: darkslategray; */
+
     transition: 0.1s;
 }
 
@@ -120,7 +126,21 @@ input:focus {
     -moz-user-select: none;
 }
 
+.entering {
+    top: 5px !important;
+    float: left;
+    /* width: 75px !important; */
+    /* display: inline-block !important; */
+}
+
+.inlineblock {
+    text-align: left;
+    display: block !important;
+}
+
 .results {
+    vertical-align: bottom;
+    text-align: right;
     font-size: 125%;
     position: absolute;
     top: 19px;
@@ -248,6 +268,29 @@ ul li {
     right: auto;
 }
 
+/* .note {
+    height: 5px !important;
+    background-color: gray !important;
+} */
+
+/* .date {
+    border-bottom: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    width: 60%;
+    margin: 10px auto !important;
+
+    padding: 0px !important;
+    height: 5px;
+    vertical-align: bottom;
+    line-height: 0;
+    background: rgba(0, 0, 0, 0.3) !important;
+    text-align: center;
+    color: rgba(0, 0, 0, 0);
+} */
+
+
 .citation {
     position: absolute;
     display: block;
@@ -262,6 +305,8 @@ ul li {
     margin-top: 10px;
     align-self: right;
     font-size: 12px !important;
+    -moz-user-select: none;
+    user-select: none;
 }
 
 a:hover {
@@ -276,11 +321,13 @@ a {
 
 /* delete */
 .checkbox {
+    display: block;
+
     color: rgba(0, 0, 0, 0);
     position: absolute;
     top: 6px;
     right: 6px;
-    font-size: 13px !important;
+    font-size: 16px !important;
     border: 1px dotted lightgray;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -305,17 +352,17 @@ ul li:hover .checkbox {
 /* button styles*/
 .button:hover {
     outline: none;
-    transform: scale(1.05);
+    /* transform: scale(1.05); */
     transition: 0.1s;
 }
 
 .button {
     display: inline-block;
     width: 75%;
-    padding: 5px 5px;
-    border: none;
+    /* border: none; */
+    padding-bottom: 5px;
     border-radius: 4px;
-    /* border: 1; */
+    border: 1;
     outline: none;
     margin: 10px;
     margin-right: 5px;
@@ -324,6 +371,8 @@ ul li:hover .checkbox {
     background-color: bisque;
     color: rgba(0, 0, 0, 0.7);
     font-size: 14px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
 }
 
 /* additional fonts */
@@ -348,4 +397,67 @@ ul li:hover .checkbox {
     direction: ltr;
     -webkit-font-feature-settings: 'liga';
     -webkit-font-smoothing: antialiased;
+}
+
+
+
+/* popup */
+.popup {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: .6s;
+}
+
+.popup.is-show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.popup-inner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 600px;
+    padding: 50px;
+    background-color: #fff;
+    z-index: 2;
+}
+
+.popup-inner img {
+    width: 100%;
+}
+
+.close-btn {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.close-btn i {
+    font-size: 20px;
+    color: #333;
+}
+
+.black-background {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, .8);
+    z-index: 1;
+    cursor: pointer;
 }
