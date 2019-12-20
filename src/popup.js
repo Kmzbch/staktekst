@@ -86,7 +86,15 @@ function updateStack(text, url = "", title = "") {
 };
 
 const filterTextItems = (term) => {
-  const termRegex = new RegExp(`\\b(${escapeRegExp(term)})(.*?)\\b`, 'ig');
+  let termRegex;
+
+  // serach by word in English
+  if (containsJa(term)) {
+    termRegex = new RegExp(`(${escapeRegExp(term)})(.*?)`, 'ig');
+  } else {
+    termRegex = new RegExp(`\\b(${escapeRegExp(term)})(.*?)\\b`, 'ig');
+  }
+
   let hitCount = 0;
 
   Array.from(textStackDOM.children).forEach(item => {
@@ -244,6 +252,10 @@ const stackStorage = {
 };
 
 /* utilities */
+function containsJa(str) {
+  return (str.match(/^[\u30a0-\u30ff\u3040-\u309f\u3005-\u3006\u30e0-\u9fcf]+$/)) ? true : false
+}
+
 const isOverflown = ({
   clientWidth,
   clientHeight,
