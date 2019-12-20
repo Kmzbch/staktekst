@@ -5,85 +5,35 @@ const footer = document.getElementsByTagName('footer')[0];
 const searchbox = document.querySelector('.searchbox');
 const searchCancelBtn = document.querySelector('.search-cancel');
 const results = document.querySelector('.results');
-
 const addBtn = document.querySelector('.add');
 const sortBy = document.querySelector('.sort-by');
 const addTextItem = document.querySelector('.add-textitem');
-
-const textStackDOM = document.querySelector('.textstack');
+const stackDOM = document.querySelector('.textstack');
 const resetBtn = document.querySelector('#resetBtn');
 
 let textStack = [];
 
-
-// function getFormattedDate() {
-//   let today = new Date();
-//   let dd = today.getDate();
-//   let mm = today.getMonth() + 1; //January is 0!
-
-//   var yyyy = today.getFullYear();
-//   if (dd < 10) {
-//     dd = '0' + dd;
-//   }
-//   if (mm < 10) {
-//     mm = '0' + mm;
-//   }
-//   let formatted = `${yyyy}/${mm}/${dd}`;
-//   return formatted;
-
-// }
-
-
 /* module-specific utilities */
-function restoreTextStack() {
+const restoreTextStack = () => {
   stackStorage.get(raw => {
     if (typeof raw === 'undefined') {
       stackStorage.reset();
     } else {
       textStack = JSON.parse(raw);
-
-      // /// date
-      // let dateItemCount =
-      //   Array.from(textStack)
-      //   .filter(item => !isNaN(Date.parse(item.url)))
-      //   .length;
-
-      // if (dateItemCount == 0) {
-      //   // textStack.unshift({
-      //   //   text: getFormatedDate(),
-      //   //   url: getFormatedDate(),
-      //   //   title: ""
-      //   // });
-      //   textStack.unshift({
-      //     text: "1985/10/06",
-      //     url: "1985/10/06",
-      //     title: ""
-      //   });
-
-      //   stackStorage.set(JSON.stringify(textStack));
-      // }
-
-
       textStack.forEach(res => {
-        updateTextStackDOM(res.text, res.url, res.title);
+        updateTextStackDOM(res.content, res.url, res.title);
       });
     }
   });
 };
 
-const updateTextStackDOM = (item, url = "", title = "") => {
-  let MAX_LENGTH;
+const updateTextStackDOM = (content, url = "", title = "") => {
+  const MAX_LENGTH = containJapanese(title) ? 25 : 40;
 
-  if (containsJa(title)) {
-    MAX_LENGTH = 25;
-  } else {
-    MAX_LENGTH = 40;
-  }
-  // const MAX_LENGTH = 40;
   let abbreviation = title.length > MAX_LENGTH ? `${title.substring(0, MAX_LENGTH)}...` : title;
   let template = `
     <li>
-    ${item}
+    ${content}
     <i class="material-icons checkbox">check</i>
     <div class="spacer">
     <div class="citation">
@@ -92,49 +42,45 @@ const updateTextStackDOM = (item, url = "", title = "") => {
     </li>
     `;
 
-  textStackDOM.innerHTML += template;
+  stackDOM.innerHTML += template;
 
   // increase the hight to avoid overflow
-  let lastChild = textStackDOM.lastElementChild;
+  let lastTextItem = stackDOM.lastElementChild;
 
-  while (isOverflown(lastChild)) {
+  while (isOverflown(lastTextItem)) {
     let replacement = document.createElement('li');
-    replacement.innerHTML = lastChild.innerHTML;
-    replacement.style.height = lastChild.offsetHeight + 10 + "px";
-    textStackDOM.removeChild(lastChild);
-    textStackDOM.appendChild(replacement);
-    lastChild = replacement;
+    replacement.innerHTML = lastTextItem.innerHTML;
+    replacement.style.height = lastTextItem.offsetHeight + 10 + "px";
+    stackDOM.removeChild(lastTextItem);
+    stackDOM.appendChild(replacement);
+    lastTextItem = replacement;
   }
-
-  // //
-  // if (!isNaN(Date.parse(url))) {
-  //   lastChild.classList.add('date');
-  // }
 
   // consider text item without url as a note
   if (url) {
-    lastChild.querySelector('.citation').innerHTML = `<a class="source" href="${url}" target="_blank">${abbreviation}</a>`;
+    lastTextItem.querySelector('.citation').innerHTML = `<a class="source" href="${url}" target="_blank">${abbreviation}</a>`;
   } else {
-    lastChild.className += "note";
-    lastChild.querySelector('.citation').innerHTML = `<span class="source">#note</span>`;
+    lastTextItem.className += "note";
+    lastTextItem.querySelector('.citation').innerHTML = `<span class="source">#note</span>`;
   }
 }
 
 function sortByOld(byOld = false) {
   if (byOld) {
     sortBy.innerHTML = 'Old <i class="material-icons">arrow_downward</i>';
-    textStackDOM.style.flexDirection = 'column';
+    stackDOM.style.flexDirection = 'column';
   } else {
     sortBy.innerHTML = 'New <i class="material-icons">arrow_upward</i>';
-    textStackDOM.style.flexDirection = 'column-reverse';
+    stackDOM.style.flexDirection = 'column-reverse';
   }
 }
 
-function updateStack(text, url = "", title = "") {
+function updateStack(content, url = "", title = "", date = formatCurrentDate()) {
   textStack.push({
-    text,
+    content: content,
     url,
-    title
+    title,
+    date
   });
   stackStorage.set(JSON.stringify(textStack));
 };
@@ -143,7 +89,7 @@ const filterTextItems = (term) => {
   let termRegex;
 
   // serach by word in English
-  if (containsJa(term)) {
+  if (containJapanese(term)) {
     termRegex = new RegExp(`(${escapeRegExp(term)})(.*?)`, 'ig');
   } else {
     termRegex = new RegExp(`\\b(${escapeRegExp(term)})(.*?)\\b`, 'ig');
@@ -151,17 +97,17 @@ const filterTextItems = (term) => {
 
   let hitCount = 0;
 
-  Array.from(textStackDOM.children).forEach(item => {
+  Array.from(stackDOM.children).forEach(item => {
     item.innerHTML = item.innerHTML.replace(/<span class="highlighted">(.*?)<\/span>/g, '$1');
   });
 
   // filter unmatched items
-  Array.from(textStackDOM.children)
+  Array.from(stackDOM.children)
     .filter(item => !item.textContent.match(termRegex))
     .forEach(item => item.classList.add('filtered'));
 
   // matched items
-  Array.from(textStackDOM.children)
+  Array.from(stackDOM.children)
     .filter(item => item.textContent.match(termRegex))
     .forEach(item => {
       item.classList.remove('filtered');
@@ -174,7 +120,7 @@ const filterTextItems = (term) => {
       }
       hitCount++;
     });
-  results.textContent = hitCount === 0 ? 'No Results' : `${hitCount} of ${textStackDOM.children.length}`;
+  results.textContent = hitCount === 0 ? 'No Results' : `${hitCount} of ${stackDOM.children.length}`;
 };
 
 /* initialize events */
@@ -235,7 +181,7 @@ function initializeEventListeners() {
   });
 
 
-  textStackDOM.addEventListener('mouseover', () => {
+  stackDOM.addEventListener('mouseover', () => {
     addTextItem.style.display = 'none';
     addBtn.style.display = 'inline';
     sortBy.style.display = 'inline-flex';
@@ -288,19 +234,13 @@ function initializeEventListeners() {
       updateStack(item);
       updateTextStackDOM(item);
 
-      // //
-      // insertDate();
-      // //
-
-
-
 
 
       results.classList.remove('entering');
       results.textContent = "Item Added!";
       addTextItem.value = '';
       // hide checkbox
-      textStackDOM.lastElementChild.querySelector('.checkbox').classList.add('hide');
+      stackDOM.lastElementChild.querySelector('.checkbox').classList.add('hide');
       return false;
     }
   });
@@ -313,7 +253,7 @@ function initializeEventListeners() {
 
 
   /* checkboxes for text stack */
-  textStackDOM.addEventListener('click', e => {
+  stackDOM.addEventListener('click', e => {
     if (e.target.classList.contains('checkbox')) {
       let parent = e.target.parentElement;
       e.target.style = 'color: white !important;';
@@ -326,7 +266,7 @@ function initializeEventListeners() {
 
       // remove
       setTimeout(() => {
-        const lists = Array.from(textStackDOM.querySelectorAll("li"));
+        const lists = Array.from(stackDOM.querySelectorAll("li"));
         const index = lists.indexOf(e.target.parentElement);
         deleteItemFromStorage(index);
         parent.remove();
@@ -343,8 +283,8 @@ function initializeEventListeners() {
 
     // popupImage();
     stackStorage.reset();
-    while (textStackDOM.firstChild) {
-      textStackDOM.removeChild(textStackDOM.firstChild);
+    while (stackDOM.firstChild) {
+      stackDOM.removeChild(stackDOM.firstChild);
     }
     addTextItem.value = '';
     textStack = [];
@@ -374,54 +314,33 @@ const stackStorage = {
   }
 };
 
-// function insertDate() {
-//   /// check: chrome.storage.sync.get(['raw'], (res)=>{ console.log(JSON.parse(res.raw));})
-//   let dateItem = Array.from(textStack)
-//     .filter(item => !isNaN(Date.parse(item.url)))
-//     .slice(-1)[0];
-//   console.log(dateItem);
-
-//   if (typeof dateItem !== 'undefined') {
-//     let latestDate = new Date(dateItem.url);
-//     let today = new Date();
-//     console.log(latestDate);
-//     console.log(today);
-
-//     // if(!isNaN(dateItem)) {
-//     if (latestDate.getTime() < today.getTime() && latestDate.getDay() != today.getDay()) {
-//       // console.log("!!!!!!");
-
-//       let newDateItem = {
-//         text: getFormattedDate(),
-//         url: getFormattedDate(),
-//         title: ""
-//       };
-//       textStack.push({
-//         text: getFormattedDate(),
-//         url: getFormattedDate(),
-//         title: ""
-//       });
-//       updateTextStackDOM(newDateItem.text, newDateItem.url, newDateItem.title);
-
-
-//     }
-//     stackStorage.set(JSON.stringify(textStack));
-//   }
-// }
-
 /* utilities */
-function containsJa(str) {
-  //  return (str.match(/^[\u30a0-\u30ff\u3040-\u309f\u3005-\u3006\u30e0-\u9fcf]+$/)) ? true : false
-  return (str.match(/[\u30a0-\u30ff\u3040-\u309f\u3005-\u3006\u30e0-\u9fcf]+?/)) ? true : false
+function formatCurrentDate() {
+  let current = new Date();
 
+  let yyyy = current.getFullYear();
+  let mm = current.getMonth();
+  let dd = current.getDay();
+  if (mm < 10) {
+    mm = '0' + mm;
+  }
+  if (dd < 10) {
+    dd = '0' + dd;
+  }
+
+  return `${yyyy}-${mm}-${dd}`;
 }
 
-const isOverflown = ({
+function containJapanese(str) {
+  return (str.match(/[\u30a0-\u30ff\u3040-\u309f\u3005-\u3006\u30e0-\u9fcf]+?/)) ? true : false
+}
+
+function isOverflown({
   clientWidth,
   clientHeight,
   scrollWidth,
   scrollHeight
-}) => {
+}) {
   return scrollHeight > clientHeight || scrollWidth > clientWidth;
 }
 
