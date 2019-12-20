@@ -35,7 +35,7 @@ const updateTextStackDOM = (item, url = "", title = "") => {
   let template = `
     <li>
     ${item}
-    <i class="material-icons deleteItem">check</i>
+    <i class="material-icons checkbox">check</i>
     <div class="spacer">
     <div class="citation">
     <a class="source" href="${url}" target="_blank">${abbreviation}</a>
@@ -105,7 +105,7 @@ const filterTextItems = (term) => {
       item.classList.remove('filtered');
       // add highlight
       if (term.length >= 1) {
-        let endIndex = item.innerHTML.search(/<i class="material-icons deleteItem">check<\/i>/i);
+        let endIndex = item.innerHTML.search(/<i class="material-icons checkbox">check<\/i>/i);
         let targetText = item.innerHTML.substring(0, endIndex);
         let rest = item.innerHTML.substring(endIndex, item.innerHTML.length)
         item.innerHTML = targetText.replace(termRegex, "<span class='highlighted'>$1</span>$2") + rest;
@@ -188,8 +188,26 @@ function initializeEventListeners() {
     }
   });
 
+  /* sort by */
   sortBy.addEventListener('click', () => {
     sortByOld(sortBy.innerHTML.includes('New'));
+  });
+
+  /* checkboxes for text stack */
+  textStackDOM.addEventListener('click', e => {
+    if (e.target.classList.contains('checkbox')) {
+      // remove action styles
+      e.target.style = 'color: white !important';
+      e.target.parentElement.style += 'color: black !important; text-decoration: line-through !important; opacity: 0.5;';
+
+      // remove
+      setTimeout(() => {
+        const lists = Array.from(textStackDOM.querySelectorAll("li"));
+        const index = lists.indexOf(e.target.parentElement);
+        deleteItemFromStorage(index);
+        e.target.parentElement.remove();
+      }, 1000);
+    }
   });
 
   resetBtn.addEventListener('click', () => {
@@ -200,6 +218,11 @@ function initializeEventListeners() {
     addTextItem.value = '';
     textStack = [];
   });
+}
+
+function deleteItemFromStorage(index) {
+  textStack.splice(index, 1);
+  stackStorage.set(JSON.stringify(textStack));
 }
 
 const stackStorage = {
@@ -243,26 +266,19 @@ function escapeRegExp(string) {
 document.addEventListener('DOMContentLoaded', () => {
   restoreTextStack()
   initializeEventListeners();
-
-
-  setTimeout(() => {
-    let deleteBoxes = document.querySelectorAll('.deleteItem');
-
-    console.log(deleteBoxes);
-    for (let i = 0; i < deleteBoxes.length; i++) {
-      deleteBoxes[i].addEventListener('click', () => {
-        deleteBoxes[i].style = 'color: white !important';
-        console.log(deleteBoxes[i]);
-        // deleteBoxes[i].parentElement.style = ''
-        deleteBoxes[i].parentElement.className += 'deleted';
-        // setTimeout(() => {
-        //   removeTextItem();
-        // }, 500);
-      })
-    }
-
-  }, 30)
-
+  // setTimeout(() => {
+  //   let checkBoxes = document.querySelectorAll('.checkbox');
+  //   for (let i = 0; i < checkBoxes.length; i++) {
+  //     checkBoxes[i].addEventListener('click', () => {
+  //       checkBoxes[i].style = 'color: white !important';
+  //       // deleteBoxes[i].parentElement.style = ''
+  //       checkBoxes[i].parentElement.className += 'deleted';
+  //       // setTimeout(() => {
+  //       //   removeTextItem();
+  //       // }, 500);
+  //     })
+  //   }
+  // }, 30)
 });
 
 // function removeTextItem() {

@@ -259,7 +259,7 @@ a {
 }
 
 /* delete */
-.deleteItem {
+.checkbox {
     color: rgba(0, 0, 0, 0);
     position: absolute;
     top: 6px;
@@ -271,16 +271,11 @@ a {
     margin-left: 8px;
 }
 
-ul li:hover .deleteItem {
+ul li:hover .checkbox {
     right: 5px !important;
 }
 
-.deleted {
-    text-decoration: line-through !important;
-    opacity: 0.5;
-}
-
-.deleteItem:hover {
+.checkbox:hover {
     color: rgba(255, 255, 255, 0.3) !important;
     padding: 0px;
     margin-left: 8px;
