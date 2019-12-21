@@ -212,12 +212,6 @@ input:focus {
     padding: 0;
 }
 
-ul li:hover {
-    background: azure !important;
-    border-right: solid 8px teal;
-    margin-right: 8px;
-}
-
 ul li {
     position: relative;
     height: 40px;
@@ -234,6 +228,28 @@ ul li {
     font-size: 16px !important;
 }
 
+/* clip styles */
+.clip:hover {
+    background: azure !important;
+    border-right: solid 8px teal;
+    margin-right: 8px;
+}
+
+.clip .footnote {
+    align-self: right;
+}
+
+.clip a:hover {
+    color: rgb(32, 123, 156) !important;
+    text-decoration: underline !important;
+}
+
+.clip a {
+    color: rgba(138, 175, 189, 0.8);
+    text-decoration: none;
+}
+
+/* note styles */
 .note:hover {
     border-left: 6px solid goldenrod !important;
     border-right: 1px solid gray !important;
@@ -258,20 +274,6 @@ ul li {
     font-size: 12px !important;
     -moz-user-select: none;
     user-select: none;
-}
-
-.source {
-    align-self: right;
-}
-
-a:hover {
-    color: rgb(32, 123, 156) !important;
-    text-decoration: underline !important;
-}
-
-a {
-    color: rgba(138, 175, 189, 0.8);
-    text-decoration: none;
 }
 
 /* remove */
