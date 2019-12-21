@@ -252,17 +252,16 @@ ul li {
     display: block;
     bottom: 5px;
     right: 7px;
+    margin-top: 10px;
     margin-left: auto !important;
     margin-right: 3 !important;
-    float: right !important;
-}
-
-.source {
-    margin-top: 10px;
-    align-self: right;
     font-size: 12px !important;
     -moz-user-select: none;
     user-select: none;
+}
+
+.source {
+    align-self: right;
 }
 
 a:hover {

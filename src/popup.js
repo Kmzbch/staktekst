@@ -49,7 +49,9 @@ function updateTextStackDOM(content, url = "", title = "") {
     lastTextItem.querySelector('.footnote').innerHTML = `<a class="source" href="${url}" target="_blank">${abbreviation}</a>`;
   } else {
     lastTextItem.className += "note";
-    lastTextItem.querySelector('.footnote').innerHTML = `<span class="source">#note</span>`;
+    // lastTextItem.querySelector('.footnote').innerHTML = `<span class="source">#note</span>`;
+    lastTextItem.querySelector('.footnote').innerHTML = `<span>#note</span>`;
+
   }
 }
 
