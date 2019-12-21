@@ -273,6 +273,18 @@ const initializeEventListeners = () => {
     }
   });
 
+  // to do: title form
+  // stackDOM.addEventListener('dblclick', e => {
+  //   if (e.target.classList.contains('clip')) {
+  //     let titleInput = document.createElement('input');
+  //     titleInput.setAttribute('type', 'text');
+  //     titleInput.setAttribute('class', 'title-input');
+  //     let temp = '<input type="text" class="title-input">';
+  //     e.target.insertAdjacentHTML('afterbegin', temp);
+  //     titleInput.focus();
+  //   }
+  // });
+
   resetBtn.addEventListener('click', () => {
     stackStorage.reset();
     while (stackDOM.firstChild) {

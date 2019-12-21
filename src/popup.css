@@ -249,6 +249,15 @@ ul li {
     text-decoration: none;
 }
 
+/* to do: title form */
+.title-input {
+    position: relative;
+    display: block;
+    top: 0px;
+    left: 0px;
+    width: 150px;
+}
+
 /* note styles */
 .note:hover {
     border-left: 6px solid goldenrod !important;
