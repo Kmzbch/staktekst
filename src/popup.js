@@ -17,7 +17,11 @@ const resetBtn = document.querySelector('.resetBtn');
 let stack = [];
 
 /* module-specific utilities */
-function updateTextStackDOM(content, url = "", title = "") {
+function updateStackDOM(content, footnote) {
+  const {
+    url,
+    title
+  } = footnote;
   const MAX_LENGTH = containsJapanese(title) ? 25 : 40;
   const abbreviation = title.length > MAX_LENGTH ? `${title.substring(0, MAX_LENGTH)}...` : title;
   const template = `
@@ -67,13 +71,16 @@ function switchSortOrder({
   }
 }
 
-function updateStack(content, url = "", title = "", date = formatDate()) {
+function addItemToStack(content) {
   stack.push({
     content: content,
-    url,
-    title,
-    date
+    date: formatDate(),
+    footnote: {
+      title: "",
+      url: ""
+    }
   });
+
   stackStorage.set(JSON.stringify(stack));
 };
 
@@ -119,7 +126,7 @@ const restoreTextStack = () => {
     } else {
       stack = JSON.parse(raw);
       stack.forEach(res => {
-        updateTextStackDOM(res.content, res.url, res.title);
+        updateStackDOM(res.content, res.footnote);
       });
     }
   });
@@ -213,9 +220,13 @@ const initializeEventListeners = () => {
   textarea.addEventListener('keyup', (e) => {
     if (e.keyCode === 13) {
       let text = textarea.value.trim();
+      let footnote = {
+        title: "",
+        url: ""
+      };
 
-      updateStack(text);
-      updateTextStackDOM(text);
+      addItemToStack(text);
+      updateStackDOM(text, footnote);
 
       headerBoard.classList.remove('entering');
       headerBoard.textContent = "Item Added!";

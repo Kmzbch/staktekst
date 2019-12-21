@@ -10,8 +10,6 @@ function copyTextWithTitleUrl(content, title, url) {
 }
 
 function formatDate(date = new Date()) {
-    // let current = new Date();
-
     let yyyy = date.getFullYear();
     let mm = date.getMonth() + 1;
     let dd = date.getDate();
@@ -26,26 +24,30 @@ function formatDate(date = new Date()) {
     return `${yyyy}-${mm}-${dd}`;
 }
 
-
-
 function pushText(content, url = "", title = "", date = formatDate()) {
     chrome.storage.sync.get(['raw'], result => {
-        let itemlist = [];
+        let stack = [];
         if (typeof result.raw !== "undefined") {
-            itemlist = JSON.parse(result.raw);
+            stack = JSON.parse(result.raw);
         }
-        itemlist.push({
+        // stack.push({
+        //     content: content,
+        //     url,
+        //     title,
+        //     date
+        // });
+        stack.push({
             content: content,
-            url,
-            title,
-            date
+            date,
+            footnote: {
+                title,
+                url
+            }
         });
+
         chrome.storage.sync.set({
-                raw: JSON.stringify(itemlist),
-            },
-            () => {
-                // console.log("Added: " + text + ' & ' + url);
-            });
+            raw: JSON.stringify(stack),
+        });
     });
 }
 
