@@ -5,16 +5,15 @@ const footer = document.getElementsByTagName('footer')[0];
 const searchbox = document.querySelector('.searchbox');
 const searchCancelBtn = document.querySelector('.search-cancel');
 const headerBoard = document.querySelector('.header-board');
-const addTextItemBtn = document.querySelector('.add');
+const textareaOpener = document.querySelector('.opener');
 const sortBy = document.querySelector('.sort-by');
 const textarea = document.querySelector('.add-textitem');
 const stackDOM = document.querySelector('.textstack');
-const resetBtn = document.querySelector('#resetBtn');
+const resetBtn = document.querySelector('.resetBtn');
 
 let stack = [];
 
 /* module-specific utilities */
-
 function updateTextStackDOM(content, url = "", title = "") {
   const MAX_LENGTH = containsJapanese(title) ? 25 : 40;
   const abbreviation = title.length > MAX_LENGTH ? `${title.substring(0, MAX_LENGTH)}...` : title;
@@ -172,8 +171,8 @@ const initializeEventListeners = () => {
   })
 
   /* add-sort container */
-  addTextItemBtn.addEventListener('click', () => {
-    addTextItemBtn.style.display = 'none';
+  textareaOpener.addEventListener('click', () => {
+    textareaOpener.style.display = 'none';
     sortBy.style.display = 'none';
     textarea.style.display = 'flex';
     textarea.focus();
@@ -201,7 +200,7 @@ const initializeEventListeners = () => {
       headerBoard.classList.remove('entering');
     }
     headerBoard.textContent = "";
-    addTextItemBtn.style.display = 'block';
+    textareaOpener.style.display = 'block';
     sortBy.style.display = 'inline-flex';
     textarea.style.display = 'none';
   });
@@ -231,7 +230,7 @@ const initializeEventListeners = () => {
   /* checkboxes for text stack */
   stackDOM.addEventListener('mouseover', () => {
     textarea.style.display = 'none';
-    addTextItemBtn.style.display = 'inline';
+    textareaOpener.style.display = 'inline';
     sortBy.style.display = 'inline-flex';
   });
 
