@@ -242,12 +242,12 @@ ul li {
     background-color: lemonchiffon !important;
 }
 
-.note .citation {
+.note .footnote {
     color: rgba(0, 0, 0, 0.5);
     right: auto;
 }
 
-.citation {
+.footnote {
     position: absolute;
     display: block;
     bottom: 5px;

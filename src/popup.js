@@ -1,7 +1,10 @@
 import './popup.css';
 
-const header = document.getElementsByTagName('header')[0];
-const footer = document.getElementsByTagName('footer')[0];
+// const header = document.getElementsByTagName('header')[0];
+// const footer = document.getElementsByTagName('footer')[0];
+const header = document.querySelector('header');
+const footer = document.querySelector('footer');
+
 const searchbox = document.querySelector('.searchbox');
 const searchCancelBtn = document.querySelector('.search-cancel');
 const headerBoard = document.querySelector('.header-board');
@@ -22,7 +25,7 @@ function updateTextStackDOM(content, url = "", title = "") {
     ${content}
     <i class="material-icons checkbox">check</i>
     <div class="spacer">
-    <div class="citation">
+    <div class="footnote">
     </div>
     </li>
     `;
@@ -43,10 +46,10 @@ function updateTextStackDOM(content, url = "", title = "") {
 
   // consider text item without url as a note
   if (url) {
-    lastTextItem.querySelector('.citation').innerHTML = `<a class="source" href="${url}" target="_blank">${abbreviation}</a>`;
+    lastTextItem.querySelector('.footnote').innerHTML = `<a class="source" href="${url}" target="_blank">${abbreviation}</a>`;
   } else {
     lastTextItem.className += "note";
-    lastTextItem.querySelector('.citation').innerHTML = `<span class="source">#note</span>`;
+    lastTextItem.querySelector('.footnote').innerHTML = `<span class="source">#note</span>`;
   }
 }
 
