@@ -82,9 +82,10 @@ function updateStackDOM(content, footnote) {
     lastTextItem.querySelector('.footnote').innerHTML = `<a href="${url}" target="_blank">${abbreviation}</a>`;
   } else {
     lastTextItem.className += "note";
-    // lastTextItem.querySelector('.footnote').innerHTML = `#note`;
-    lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#note</span`;
+    lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#note</span>`;
   }
+
+
 }
 
 function switchSortOrder({
@@ -235,12 +236,12 @@ const initializeEventListeners = () => {
     textareaOpener.dispatchEvent(new Event('click'));
   });
 
-  // textareaOpener.addEventListener('mouseover', () => {
-  //   textareaOpener.textContent = 'post_add';
-  // })
-  // textareaOpener.addEventListener('mouseout', () => {
-  //   textareaOpener.textContent = 'add';
-  // })
+  textareaOpener.addEventListener('mouseover', () => {
+    textareaOpener.textContent = 'post_add';
+  })
+  textareaOpener.addEventListener('mouseout', () => {
+    textareaOpener.textContent = 'add';
+  })
 
   textareaOpener.addEventListener('click', () => {
     topOpener.style.display = 'none';
