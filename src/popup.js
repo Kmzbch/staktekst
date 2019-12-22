@@ -1,10 +1,7 @@
 import './popup.css';
 
-// const header = document.getElementsByTagName('header')[0];
-// const footer = document.getElementsByTagName('footer')[0];
 const header = document.querySelector('header');
 const footer = document.querySelector('footer');
-
 const searchbox = document.querySelector('.searchbox');
 const searchCancelBtn = document.querySelector('.search-cancel');
 const headerBoard = document.querySelector('.header-board');
@@ -303,17 +300,17 @@ const removeItemFromStorage = (index) => {
 
 const stackStorage = {
   get: callback => {
-    chrome.storage.sync.get(['raw'], result => {
+    chrome.storage.local.get(['raw'], result => {
       callback(result.raw);
     });
   },
   set: (value) => {
-    chrome.storage.sync.set({
+    chrome.storage.local.set({
       raw: value,
     });
   },
   reset: () => {
-    chrome.storage.sync.set({
+    chrome.storage.local.set({
       raw: '[]'
     });
   }

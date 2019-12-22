@@ -38,6 +38,7 @@
     "storage",
     "activeTab",
     "tabs",
+    "unlimitedStorage",
     "contextMenus"
   ],
   "version": "0.1.0"

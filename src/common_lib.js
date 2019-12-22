@@ -25,7 +25,7 @@ function formatDate(date = new Date()) {
 }
 
 function pushText(content, url = "", title = "", date = formatDate()) {
-    chrome.storage.sync.get(['raw'], result => {
+    chrome.storage.local.get(['raw'], result => {
         let stack = [];
         if (typeof result.raw !== "undefined") {
             stack = JSON.parse(result.raw);
@@ -45,7 +45,7 @@ function pushText(content, url = "", title = "", date = formatDate()) {
             }
         });
 
-        chrome.storage.sync.set({
+        chrome.storage.local.set({
             raw: JSON.stringify(stack),
         });
     });
