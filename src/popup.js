@@ -283,6 +283,12 @@ const initializeEventListeners = () => {
   textarea.addEventListener('keyup', (e) => {
     if (e.keyCode === 13) {
       let text = textarea.value.trim();
+      if (text === '' || text === '\n') {
+        textarea.value = '';
+        textarea.dispatchEvent(new Event('focusout'));
+        return false;
+      }
+
       let footnote = {
         title: "",
         url: ""
@@ -294,7 +300,6 @@ const initializeEventListeners = () => {
       headerBoard.classList.remove('entering');
       headerBoard.textContent = "Item Added!";
       textarea.value = '';
-
       return false;
     }
 
