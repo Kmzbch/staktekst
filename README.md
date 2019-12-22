@@ -1,11 +1,11 @@
-# <img src="public/icons/icon_48.png" width="45" align="left"> My Oddcast
+# <img src="public/icons/icon_48.png" width="45" align="left"> Staktekst
 
 My Chrome Extension
 
 ## Features
 
-- Feature 1
-- Feature 2
+- popup window for web search
+- clip and add words/sentences/paragraphs to the To-do-list-like list
 
 ## Install
 
