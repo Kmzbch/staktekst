@@ -5,8 +5,20 @@ const footer = document.querySelector('footer');
 const searchbox = document.querySelector('.searchbox');
 const searchCancelBtn = document.querySelector('.search-cancel');
 const headerBoard = document.querySelector('.header-board');
-const textareaOpener = document.querySelector('.opener');
 const sortBy = document.querySelector('.sort-by');
+const textareaOpener = (
+  () => {
+    let elem = document.querySelector('.opener');
+    if (elem === null) {
+      elem = document.createElement('i');
+      elem.className = 'material-icons';
+      elem.classList.add('opener');
+      elem.textContent = 'post_add';
+    }
+    return elem;
+  }
+)();
+
 const textarea = document.querySelector('.add-textitem');
 const stackDOM = document.querySelector('.textstack');
 const resetBtn = document.querySelector('.resetBtn');
@@ -188,6 +200,7 @@ const initializeEventListeners = () => {
     textarea.focus();
   });
 
+
   /* textarea */
   textarea.addEventListener('focus', (e) => {
     if (!headerBoard.classList.contains('entering')) {
@@ -211,7 +224,8 @@ const initializeEventListeners = () => {
     }
     headerBoard.textContent = "";
     textareaOpener.style.display = 'block';
-    sortBy.style.display = 'inline-flex';
+
+    sortBy.style.display = 'inline-block';
     textarea.style.display = 'none';
   });
 
@@ -244,8 +258,7 @@ const initializeEventListeners = () => {
   /* checkboxes for text stack */
   stackDOM.addEventListener('mouseover', () => {
     textarea.style.display = 'none';
-    textareaOpener.style.display = 'inline';
-    sortBy.style.display = 'inline-flex';
+    sortBy.style.display = 'inline-block';
   });
 
   stackDOM.addEventListener('click', e => {

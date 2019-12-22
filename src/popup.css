@@ -100,7 +100,7 @@ input:focus {
 
 .searchbox {
     position: absolute;
-    width: 70%;
+    width: 65%;
     height: 28px;
     padding: 10px 10px 10px 34px;
     margin: 12px;
@@ -125,7 +125,7 @@ input:focus {
     display: none !important;
     position: absolute;
     top: 14px;
-    left: 300px;
+    left: 278px;
     padding: 2px;
     color: rgba(255, 255, 255, 0.4);
     font-size: 14pt !important;
@@ -146,14 +146,21 @@ input:focus {
 }
 
 /* */
+/* .opener */
+
 .opener:hover {
-    color: black;
+    color: white;
     opacity: 1;
     transition: 0.2s;
 }
 
 .opener {
-    opacity: 0.1;
+    color: white;
+    left: 315px;
+    top: 13px;
+    position: relative;
+    margin: auto;
+    opacity: 0.3;
     font-size: 16px;
     cursor: pointer;
     -moz-user-select: none;
@@ -162,30 +169,29 @@ input:focus {
 
 /* sort-by styles*/
 .sort-by:hover {
-    color: rgba(255, 255, 255, 1);
+    opacity: 1;
     cursor: pointer;
 }
 
 .sort-by {
-    position: absolute;
-    display: inline-flex;
+    display: inline-block;
     float: right;
-    top: 14px;
-    right: 14px;
-    font-size: 120%;
-    color: rgba(255, 255, 255, 0.6);
+    margin-right: 12px;
+    font-size: 130%;
+    color: white;
+    opacity: 0.6;
     -moz-user-select: none;
     user-select: none;
 }
 
 .sort-by i {
-    margin-top: -1px;
     font-size: 150% !important;
+    vertical-align: text-bottom;
 }
 
 /* add container styles*/
 #add-sort {
-    text-align: center;
+    display: inline;
 }
 
 .add-textitem {
@@ -210,6 +216,10 @@ input:focus {
     display: flex;
     flex-direction: column-reverse;
     padding: 0;
+}
+
+ul {
+    clear: right;
 }
 
 ul li {
