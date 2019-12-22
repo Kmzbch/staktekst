@@ -274,7 +274,8 @@ ul li {
 
 .footnote {
     position: absolute;
-    display: block;
+    /* display: block; */
+    display: inline;
     bottom: 5px;
     right: 7px;
     margin-top: 10px;
@@ -283,6 +284,10 @@ ul li {
     font-size: 12px !important;
     -moz-user-select: none;
     user-select: none;
+}
+
+.tag:hover {
+    font-weight: bold;
 }
 
 /* remove */

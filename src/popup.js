@@ -11,6 +11,7 @@ const textarea = document.querySelector('.add-textitem');
 const stackDOM = document.querySelector('.textstack');
 const resetBtn = document.querySelector('.resetBtn');
 
+
 let stack = [];
 
 /* module-specific utilities */
@@ -51,7 +52,8 @@ function updateStackDOM(content, footnote) {
     lastTextItem.querySelector('.footnote').innerHTML = `<a href="${url}" target="_blank">${abbreviation}</a>`;
   } else {
     lastTextItem.className += "note";
-    lastTextItem.querySelector('.footnote').innerHTML = `#note`;
+    // lastTextItem.querySelector('.footnote').innerHTML = `#note`;
+    lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#note</span`;
   }
 }
 
@@ -247,27 +249,36 @@ const initializeEventListeners = () => {
   });
 
   stackDOM.addEventListener('click', e => {
-    if (e.target.classList.contains('checkbox')) {
-      const parent = e.target.parentElement;
+    // tag filter
+    if (e.target.classList.contains('tag')) {
+      console.log(e.target.innerHTML);
+      searchbox.value = e.target.innerHTML.slice(1);
+      searchbox.dispatchEvent(new Event('input'));
+    } else {
 
-      // apply visual effects for removing text items
-      e.target.style = 'color: white !important;';
-      parent.style.color = 'black !important'
-      parent.style.opacity = '0.5';
-      parent.style.textDecoration = 'line-through';
-      headerBoard.textContent = "Item Removed!";
+      if (e.target.classList.contains('checkbox')) {
+        const parent = e.target.parentElement;
 
-      // remove
-      setTimeout(() => {
-        const lists = Array.from(stackDOM.querySelectorAll("li"));
-        let index = lists.indexOf(e.target.parentElement);
-        removeItemFromStorage(index);
-        parent.remove();
+        // apply visual effects for removing text items
+        e.target.style = 'color: white !important;';
+        parent.style.color = 'black !important'
+        parent.style.opacity = '0.5';
+        parent.style.textDecoration = 'line-through';
+        headerBoard.textContent = "Item Removed!";
+
+        // remove
         setTimeout(() => {
-          headerBoard.textContent = "";
-        }, 700);
-      }, 450);
+          const lists = Array.from(stackDOM.querySelectorAll("li"));
+          let index = lists.indexOf(e.target.parentElement);
+          removeItemFromStorage(index);
+          parent.remove();
+          setTimeout(() => {
+            headerBoard.textContent = "";
+          }, 700);
+        }, 450);
+      }
     }
+
   });
 
   // to do: title form
