@@ -6,18 +6,36 @@ const searchbox = document.querySelector('.searchbox');
 const searchCancelBtn = document.querySelector('.search-cancel');
 const headerBoard = document.querySelector('.header-board');
 const sortBy = document.querySelector('.sort-by');
-const textareaOpener = (
+const topSortBy = ((
   () => {
-    let elem = document.querySelector('.opener');
+    let elem = document.querySelector('.sort-by-top');
+    let arrowDirection = sortBy.innerHTML.includes('New') ? 'arrow_upward' : 'arrow_downward';
+    if (elem === null) {
+      elem = document.createElement('span');
+      elem.className = 'sort-by-top';
+
+      elem.innerHTML = `
+      <i class="material-icons sorticon">reorder</i>
+      <i class="material-icons sortarrow">${arrowDirection}</i>
+      `;
+    }
+    return elem;
+  }
+))();
+
+const topOpener = (
+  () => {
+    let elem = document.querySelector('.opener-top');
     if (elem === null) {
       elem = document.createElement('i');
       elem.className = 'material-icons';
-      elem.classList.add('opener');
+      elem.classList.add('opener-top');
       elem.textContent = 'post_add';
     }
     return elem;
   }
 )();
+const textareaOpener = document.querySelector('.opener');
 
 const textarea = document.querySelector('.add-textitem');
 const stackDOM = document.querySelector('.textstack');
@@ -75,9 +93,18 @@ function switchSortOrder({
   if (byNew) {
     sortBy.innerHTML = 'New <i class="material-icons">arrow_upward</i>';
     stackDOM.style.flexDirection = 'column-reverse';
+    topSortBy.innerHTML = `
+    <i class="material-icons sorticon">reorder</i>
+    <i class="material-icons sortarrow">arrow_upward</i>
+  `;
   } else {
     sortBy.innerHTML = 'Old <i class="material-icons">arrow_downward</i>';
     stackDOM.style.flexDirection = 'column';
+    topSortBy.innerHTML = `
+    <i class="material-icons sorticon">reorder</i>
+    <i class="material-icons sortarrow">arrow_downward</i>
+  `;
+
   }
 }
 
@@ -148,12 +175,23 @@ const initializeEventListeners = () => {
     if (window.pageYOffset == 0) {
       header.style.opacity = '1';
       footer.style.opacity = '1';
+      setTimeout(() => {
+        headerBoard.parentNode.removeChild(topOpener);
+        headerBoard.parentNode.removeChild(topSortBy);
+      }, 60);
     } else if (document.body.offsetHeight + window.scrollY >= document.body.scrollHeight) {
       header.style.opacity = '1';
       footer.style.opacity = '1';
+      headerBoard.parentNode.insertBefore(topOpener, headerBoard);
+      topOpener.parentNode.insertBefore(topSortBy, topOpener);
     } else {
       header.style.opacity = '0';
       footer.style.opacity = '0';
+      setTimeout(() => {
+        headerBoard.parentNode.insertBefore(topOpener, headerBoard);
+        topOpener.parentNode.insertBefore(topSortBy, topOpener);
+      }, 50);
+
     }
   }
 
@@ -193,7 +231,19 @@ const initializeEventListeners = () => {
   })
 
   /* add-sort container */
+  topOpener.addEventListener('click', () => {
+    textareaOpener.dispatchEvent(new Event('click'));
+  });
+
+  // textareaOpener.addEventListener('mouseover', () => {
+  //   textareaOpener.textContent = 'post_add';
+  // })
+  // textareaOpener.addEventListener('mouseout', () => {
+  //   textareaOpener.textContent = 'add';
+  // })
+
   textareaOpener.addEventListener('click', () => {
+    topOpener.style.display = 'none';
     textareaOpener.style.display = 'none';
     sortBy.style.display = 'none';
     textarea.style.display = 'flex';
@@ -223,8 +273,9 @@ const initializeEventListeners = () => {
       headerBoard.classList.remove('entering');
     }
     headerBoard.textContent = "";
-    textareaOpener.style.display = 'block';
+    topOpener.style.display = 'inline';
 
+    textareaOpener.style.display = 'block';
     sortBy.style.display = 'inline-block';
     textarea.style.display = 'none';
   });
@@ -246,6 +297,7 @@ const initializeEventListeners = () => {
 
       return false;
     }
+
   });
 
   /* sort by */
@@ -254,6 +306,13 @@ const initializeEventListeners = () => {
       byNew: !sortBy.innerHTML.includes('New')
     })
   });
+
+  topSortBy.addEventListener('click', () => {
+    switchSortOrder({
+      byNew: !sortBy.innerHTML.includes('New')
+    })
+  });
+
 
   /* checkboxes for text stack */
   stackDOM.addEventListener('mouseover', () => {

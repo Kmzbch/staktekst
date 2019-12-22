@@ -147,25 +147,72 @@ input:focus {
 
 /* */
 /* .opener */
-
-.opener:hover {
+.sort-by-top:hover {
     color: white;
     opacity: 1;
     transition: 0.2s;
 }
 
-.opener {
+.sort-by-top {
+    display: none;
+    /* display: none !important; */
+    color: white;
+    left: 340px;
+    top: 13px;
+    position: absolute;
+    margin: auto;
+    margin-left: 5px;
+    opacity: 0.3;
+    font-size: 14px;
+    cursor: pointer;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+.sort-by-top .sortarrow {
+    font-size: 98%;
+    margin-left: -8px;
+    /* text-shadow: -2px 2px 0 black, ; */
+}
+
+.opener-top:hover {
+    color: white;
+    opacity: 1;
+    transition: 0.2s;
+}
+
+.opener-top {
+    /* display: none !important; */
     color: white;
     left: 315px;
     top: 13px;
     position: relative;
     margin: auto;
     opacity: 0.3;
+    font-size: 14px;
+    cursor: pointer;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+.opener:hover {
+    color: black;
+    opacity: 0.6;
+    transition: 0.2s;
+}
+
+.opener {
+    color: black;
+    left: 48%;
+    position: absolute;
+    margin: auto;
+    opacity: 0.2;
     font-size: 16px;
     cursor: pointer;
     -moz-user-select: none;
     user-select: none;
 }
+
 
 /* sort-by styles*/
 .sort-by:hover {
@@ -174,6 +221,7 @@ input:focus {
 }
 
 .sort-by {
+    padding: 5px;
     display: inline-block;
     float: right;
     margin-right: 12px;
