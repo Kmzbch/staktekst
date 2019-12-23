@@ -67,15 +67,6 @@ function updateStackDOM(content, footnote) {
   // increase the hight to avoid overflow
   let lastTextItem = stackDOM.lastElementChild;
 
-  while (isOverflown(lastTextItem)) {
-    let replacement = document.createElement('li');
-    replacement.innerHTML = lastTextItem.innerHTML;
-    replacement.style.height = lastTextItem.offsetHeight + 10 + "px";
-    stackDOM.removeChild(lastTextItem);
-    stackDOM.appendChild(replacement);
-    lastTextItem = replacement;
-  }
-
   // consider text item without url as a note
   if (url) {
     lastTextItem.className += "clip";
@@ -445,15 +436,6 @@ function formatDate(date = new Date()) {
 }
 
 // DOM operation
-function isOverflown({
-  clientWidth,
-  clientHeight,
-  scrollWidth,
-  scrollHeight
-}) {
-  return scrollHeight > clientHeight || scrollWidth > clientWidth;
-}
-
 function removeHighlight(html) {
   return html.replace(/<span class="highlighted">(.*?)<\/span>/g, '$1');
 }
