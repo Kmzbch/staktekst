@@ -29,15 +29,14 @@
 }
 
 /* popup.html */
-html {
-    height: 700px;
-    overflow: hidden;
-    box-sizing: border-box;
-    background: rgba(0, 0, 0, 0.3);
-}
-
 html::-webkit-scrollbar {
     display: none;
+}
+
+html {
+    height: 700px;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.3);
 }
 
 /* container elements */
@@ -47,30 +46,25 @@ body {
     margin: 0px;
 }
 
-#container {
-    position: relative;
-    top: 40px;
-    margin-bottom: 15px;
-}
-
 header:hover {
     opacity: 1 !important;
 }
 
 header {
+    /* .sticky */
     opacity: 1;
-    width: 100%;
+    width: 450px;
     height: 50px;
     top: 0;
     background: black;
-    /* background: darkslategray; */
-
     transition: 0.1s;
 }
 
-#main {
-    position: absolute;
-    width: 100%;
+#container {
+    /* just under the header */
+    position: relative;
+    width: 450px;
+    top: 55px;
     margin-bottom: 70px;
 }
 
@@ -80,7 +74,7 @@ footer:hover {
 
 footer {
     opacity: 1;
-    width: 100%;
+    width: 450px;
     height: 50px;
     bottom: 0px;
     text-align: center;
@@ -100,10 +94,10 @@ input:focus {
 
 .searchbox {
     position: absolute;
-    width: 65%;
+    width: 293px;
     height: 28px;
-    padding: 10px 10px 10px 34px;
-    margin: 12px;
+    padding: 10px 28px 10px 34px;
+    margin: 12px 12px;
     border: none;
     border-radius: 30px;
     color: rgba(255, 255, 255, 0.6);
@@ -134,18 +128,15 @@ input:focus {
 }
 
 .header-board {
-    vertical-align: bottom;
-    text-align: right;
-    font-size: 125%;
     position: absolute;
     top: 19px;
     right: 20px;
+    font-size: 125%;
     color: rgba(255, 255, 255, 0.6);
     -webkit-user-select: none;
     -moz-user-select: none;
 }
 
-/* */
 /* .opener */
 .sort-by-top:hover {
     color: white;
@@ -172,7 +163,6 @@ input:focus {
 .sort-by-top .sortarrow {
     font-size: 98%;
     margin-left: -8px;
-    /* text-shadow: -2px 2px 0 black, ; */
 }
 
 .opener-top:hover {
@@ -182,7 +172,6 @@ input:focus {
 }
 
 .opener-top {
-    /* display: none !important; */
     color: white;
     left: 315px;
     top: 13px;
@@ -212,7 +201,6 @@ input:focus {
     -moz-user-select: none;
     user-select: none;
 }
-
 
 /* sort-by styles*/
 .sort-by:hover {
@@ -244,7 +232,8 @@ input:focus {
 
 .add-textitem {
     display: none;
-    width: 80%;
+    /* width: 80%; */
+    width: 375px;
     height: 50px;
     padding: 9px;
     margin-left: auto;
@@ -332,7 +321,6 @@ ul li {
 
 .footnote {
     position: absolute;
-    /* display: block; */
     display: inline;
     bottom: 5px;
     right: 7px;
@@ -370,24 +358,14 @@ ul li:hover .checkbox {
     color: rgba(255, 255, 255, 0.3) !important;
     padding: 0px;
     margin-left: 8px;
-
     cursor: pointer;
     background-color: #3297FD;
-
     border-radius: 10%;
 }
 
 /* button styles*/
-.resetBtn:hover {
-    outline: none;
-    /* transform: scale(1.05); */
-    transition: 0.1s;
-}
-
 .resetBtn {
-    display: inline-block;
-    width: 75%;
-    /* border: none; */
+    width: 350px;
     padding-bottom: 5px;
     border-radius: 4px;
     border: 1;

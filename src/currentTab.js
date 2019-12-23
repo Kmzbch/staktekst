@@ -3,6 +3,7 @@ import CommandPreset from './CommandPreset.js';
 
 /* communicate with background.js */
 function getMessage(request, sender, sendResponse) {
+    console.log('!!!!');
     sendResponse({
         selection: document.getSelection().toString()
     });

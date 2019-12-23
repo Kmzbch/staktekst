@@ -75,7 +75,7 @@ function executeCommand(command, words) {
   });
 }
 
-createContextMenus();
+// createContextMenus();
 
 chrome.runtime.onMessage.addListener(getMessage);
 chrome.contextMenus.onClicked.addListener(sendMessage);
