@@ -1,4 +1,10 @@
 import './popup.css';
+import {
+  escapeRegExp,
+  extractTextInfo,
+  containsJapanese,
+  formatDate
+} from './common_lib.js';
 
 const header = document.querySelector('header');
 const footer = document.querySelector('footer');
@@ -6,8 +12,6 @@ const searchbox = document.querySelector('.searchbox');
 const searchCancelBtn = document.querySelector('.search-cancel');
 const headerBoard = document.querySelector('.header-board');
 const sortBy = document.querySelector('.sort-by');
-
-
 const topOpener = (
   () => {
     let elem = document.querySelector('.opener-top');
@@ -21,16 +25,14 @@ const topOpener = (
   }
 )();
 const textareaOpener = document.querySelector('.opener');
-
 const textarea = document.querySelector('.add-textitem');
 const stackDOM = document.querySelector('.textstack');
 const resetBtn = document.querySelector('.resetBtn');
 
-
 let stack = [];
 
 /* module-specific utilities */
-function updateStackDOM(content, footnote) {
+const renderStackDOM = (content, footnote) => {
   const {
     url,
     title
@@ -60,13 +62,11 @@ function updateStackDOM(content, footnote) {
     lastTextItem.className += "note";
     lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#note</span>`;
   }
-
-
 }
 
-function switchSortOrder({
+const switchSortOrder = ({
   byNew = true
-}) {
+}) => {
   if (byNew) {
     sortBy.innerHTML = 'New <i class="material-icons">arrow_upward</i>';
     stackDOM.style.flexDirection = 'column-reverse';
@@ -77,7 +77,7 @@ function switchSortOrder({
   }
 }
 
-function addItemToStack(content) {
+const addItemToStack = (content) => {
   stack.push({
     content: content,
     date: formatDate(),
@@ -90,7 +90,7 @@ function addItemToStack(content) {
   stackStorage.set(JSON.stringify(stack));
 };
 
-function filterTextItems(term) {
+const filterTextItems = (term) => {
   let termRegex;
   let hits = 0;
 
@@ -125,14 +125,14 @@ function filterTextItems(term) {
 };
 
 /* initializer */
-const restoreTextStack = () => {
+const renderTextStack = () => {
   stackStorage.get(raw => {
     if (typeof raw === 'undefined') {
       stackStorage.reset();
     } else {
       stack = JSON.parse(raw);
       stack.forEach(res => {
-        updateStackDOM(res.content, res.footnote);
+        renderStackDOM(res.content, res.footnote);
       });
     }
   });
@@ -204,6 +204,7 @@ const initializeEventListeners = () => {
   textareaOpener.addEventListener('mouseover', () => {
     textareaOpener.textContent = 'post_add';
   })
+
   textareaOpener.addEventListener('mouseout', () => {
     textareaOpener.textContent = 'add';
   })
@@ -215,7 +216,6 @@ const initializeEventListeners = () => {
     textarea.style.display = 'flex';
     textarea.focus();
   });
-
 
   /* textarea */
   textarea.addEventListener('focus', (e) => {
@@ -261,7 +261,7 @@ const initializeEventListeners = () => {
       };
 
       addItemToStack(text);
-      updateStackDOM(text, footnote);
+      renderStackDOM(text, footnote);
 
       headerBoard.classList.remove('entering');
       headerBoard.textContent = "Item Added!";
@@ -277,7 +277,6 @@ const initializeEventListeners = () => {
       byNew: !sortBy.innerHTML.includes('New')
     })
   });
-
 
   /* checkboxes for text stack */
   stackDOM.addEventListener('mouseover', () => {
@@ -364,55 +363,16 @@ const stackStorage = {
   }
 };
 
-/* utilities */
-// text processiong
-function escapeRegExp(string) {
-  const reRegExp = /[\\^$.*+?()[\]{}|]/g,
-    reHasRegExp = new RegExp(reRegExp.source);
-
-  return (string && reHasRegExp.test(string)) ?
-    string.replace(reRegExp, '\\$&') :
-    string;
-}
-
-function extractTextInfo(text) {
-  let charCount = text.length;
-  let wordCount = charCount === 0 ? 0 : text.split(' ').length;
-  return {
-    charCount: charCount,
-    wordCount: wordCount
-  };
-}
-
-function containsJapanese(string) {
-  return string.match(/[\u30a0-\u30ff\u3040-\u309f\u3005-\u3006\u30e0-\u9fcf]+?/) ? true : false
-}
-
-function formatDate(date = new Date()) {
-  let yyyy = date.getFullYear();
-  let mm = date.getMonth() + 1;
-  let dd = date.getDate();
-
-  if (mm < 10) {
-    mm = '0' + mm;
-  }
-  if (dd < 10) {
-    dd = '0' + dd;
-  }
-
-  return `${yyyy}-${mm}-${dd}`;
-}
-
 // DOM operation
-function removeHighlight(html) {
+const removeHighlight = (html) => {
   return html.replace(/<span class="highlighted">(.*?)<\/span>/g, '$1');
 }
 
-function addHighlight(html, regex) {
+const addHighlight = (html, regex) => {
   return html.replace(regex, "<span class='highlighted'>$1</span>$2");
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  restoreTextStack()
+  renderTextStack()
   initializeEventListeners();
 });
