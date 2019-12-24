@@ -73,7 +73,6 @@ const switchSortOrder = ({
   } else {
     sortBy.innerHTML = 'Old <i class="material-icons">arrow_downward</i>';
     stackDOM.style.flexDirection = 'column';
-
   }
 }
 
@@ -86,7 +85,6 @@ const addItemToStack = (content) => {
       url: ""
     }
   });
-
   stackStorage.set(JSON.stringify(stack));
 };
 
@@ -120,7 +118,6 @@ const filterTextItems = (term) => {
         item.innerHTML = addHighlight(textContent, termRegex) + cutoff;
       }
     });
-
   headerBoard.textContent = hits === 0 ? 'No Results' : `${hits} of ${stackDOM.children.length}`;
 };
 
@@ -157,7 +154,6 @@ const initializeEventListeners = () => {
       setTimeout(() => {
         headerBoard.parentNode.insertBefore(topOpener, headerBoard);
       }, 50);
-
     }
   }
 
@@ -165,7 +161,6 @@ const initializeEventListeners = () => {
   searchbox.addEventListener('input', (e) => {
     const term = searchbox.value.trim().toLowerCase();
     filterTextItems(term);
-
     // change styles on search
     if (term) {
       searchCancelBtn.style = 'display: block !important';
@@ -177,22 +172,8 @@ const initializeEventListeners = () => {
     }
   });
 
-  searchbox.addEventListener('keydown', (e) => {
-    if (e.keyCode === 38) {
-      // up
-      switchSortOrder({
-        byNew: true
-      });
-    } else if (e.keyCode === 40) {
-      // down
-      switchSortOrder({
-        byNew: false
-      });
-    }
-  });
-
   searchCancelBtn.addEventListener('click', () => {
-    searchbox.value = "";
+    searchbox.value = '';
     searchbox.dispatchEvent(new Event('input'));
   })
 

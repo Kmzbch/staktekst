@@ -19,8 +19,6 @@
 .entering {
     top: 5px !important;
     float: left;
-    /* width: 75px !important; */
-    /* display: inline-block !important; */
 }
 
 .inlineblock {
