@@ -35,6 +35,28 @@ const resetBtn = document.querySelector('.resetBtn');
 let stack = [];
 let dateStack = [];
 
+
+function switchStyles() {
+  console.log('!!!');
+  const defaultStyles = document.querySelector('#style_default');
+  const listviewStyles = document.querySelector('#style_listview');
+
+  if (defaultStyles.disabled) {
+    defaultStyles.disabled = false;
+    listviewStyles.disabled = true;
+  } else {
+    defaultStyles.disabled = true;
+    listviewStyles.disabled = false;
+  }
+}
+const viewSwitcher = document.querySelector('.switchview');
+
+viewSwitcher.addEventListener('click', () => {
+  switchStyles();
+});
+
+
+
 /* module-specific utilities */
 const renderStackDOM = (content, footnote, date = formatDate()) => {
   const {
