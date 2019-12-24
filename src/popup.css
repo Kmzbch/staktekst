@@ -210,18 +210,16 @@ input:focus {
     font-size: 120% !important;
 }
 
-/* text stack styles */
+/* test */
 .textstack {
+    clear: right;
     display: flex;
     flex-direction: column-reverse;
     padding: 0;
 }
 
-ul {
-    clear: right;
-}
 
-ul li {
+.stackwrapper {
     position: relative;
     display: inline;
     padding: 15px;
@@ -234,6 +232,13 @@ ul li {
     line-height: 28px;
     font-family: 'Arial';
     font-size: 16px !important;
+}
+
+.date {
+    color: rgba(0, 0, 0, 0.5);
+    text-align: center;
+    font-size: 16px;
+    margin: 5px;
 }
 
 /* clip styles */
@@ -256,7 +261,7 @@ ul li {
 /* to do: title form */
 /* .title-input {
     position: relative;
-    display: block;
+    display: none;
     top: 0px;
     left: 0px;
     width: 150px;
@@ -293,7 +298,7 @@ ul li {
 }
 
 /* remove */
-ul li:hover .checkbox {
+.textstack .stackwrapper:hover .checkbox {
     right: 5px !important;
 }
 

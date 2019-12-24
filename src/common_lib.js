@@ -47,7 +47,7 @@ function formatDate(date = new Date()) {
 }
 
 
-function pushText(content, url = "", title = "", date = formatDate()) {
+function pushText(content, url = "", pageTitle = "", noteTitle = "", date = formatDate()) {
     chrome.storage.local.get(['raw'], result => {
         let stack = [];
         if (typeof result.raw !== "undefined") {
@@ -59,14 +59,24 @@ function pushText(content, url = "", title = "", date = formatDate()) {
         //     title,
         //     date
         // });
+        // stack.push({
+        //     content: content,
+        //     date,
+        //     footnote: {
+        //         title,
+        //         url
+        //     }
+        // });
         stack.push({
             content: content,
             date,
+            noteTitle,
             footnote: {
-                title,
+                pageTitle,
                 url
             }
         });
+
 
         chrome.storage.local.set({
             raw: JSON.stringify(stack),

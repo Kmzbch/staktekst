@@ -27,41 +27,69 @@ const topOpener = (
 const textareaOpener = document.querySelector('.opener');
 const textarea = document.querySelector('.add-textitem');
 const stackDOM = document.querySelector('.textstack');
+
 const resetBtn = document.querySelector('.resetBtn');
 
 let stack = [];
+let dateStack = [];
 
 /* module-specific utilities */
-const renderStackDOM = (content, footnote) => {
+const renderStackDOM = (content, footnote, date = formatDate()) => {
   const {
-    url,
-    title
+    pageTitle: pageTitle,
+    url
   } = footnote;
-  const MAX_LENGTH = containsJapanese(title) ? 25 : 40;
-  const abbreviation = title.length > MAX_LENGTH ? `${title.substring(0, MAX_LENGTH)}...` : title;
+  const MAX_LENGTH = containsJapanese(pageTitle) ? 25 : 40;
+  const abbreviation = pageTitle.length > MAX_LENGTH ? `${pageTitle.substring(0, MAX_LENGTH)}...` : pageTitle;
+
+  // const template = `
+  //   <div class="stackwrapper">
+  //     <input type="text" class="title-input">
+  //     ${content}
+  //     <i class="material-icons checkbox">check</i>
+  //     <div class="spacer"></div>
+  //     <div class="footnote"></div>
+  //   </div>
+  //   `;
   const template = `
-    <li>
-    ${content}
-    <i class="material-icons checkbox">check</i>
-    <div class="spacer">
-    <div class="footnote">
+    <div class="stackwrapper">
+      ${content}
+      <i class="material-icons checkbox">check</i>
+      <div class="spacer"></div>
+      <div class="footnote"></div>
     </div>
-    </li>
     `;
 
   stackDOM.innerHTML += template;
+
+
 
   // increase the hight to avoid overflow
   let lastTextItem = stackDOM.lastElementChild;
 
   // consider text item without url as a note
   if (url) {
-    lastTextItem.className += "clip";
+    lastTextItem.classList.add("clip");
     lastTextItem.querySelector('.footnote').innerHTML = `<a href="${url}" target="_blank">${abbreviation}</a>`;
   } else {
-    lastTextItem.className += "note";
+    lastTextItem.classList.add("note");
     lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#note</span>`;
   }
+
+  let dateDiv = document.createElement('div');
+  dateDiv.className = 'date';
+  dateDiv.textContent = date;
+
+  if (dateStack.length == 0) {
+    stackDOM.insertBefore(dateDiv, lastTextItem);
+    dateStack.push(date);
+  } else {
+    if (dateStack[dateStack.length - 1] !== date) {
+      stackDOM.insertBefore(dateDiv, lastTextItem);
+      dateStack.push(date);
+    }
+  }
+
 }
 
 const switchSortOrder = ({
@@ -76,12 +104,29 @@ const switchSortOrder = ({
   }
 }
 
+// const updateItem = (title, content) => {
+//   let pos = stack.map((e) = e.content).indexOf(content);
+//   console.log(title);
+//   console.log(pos);
+//   // stack.push({
+//   //   content: content,
+//   //   date: formatDate(),
+//   //   noteTitle: "",
+//   //   footnote: {
+//   //     pageTitle: "",
+//   //     url: ""
+//   //   }
+//   // });
+//   // stackStorage.set(JSON.stringify(stack));
+// };
+
 const addItemToStack = (content) => {
   stack.push({
     content: content,
     date: formatDate(),
+    noteTitle: "",
     footnote: {
-      title: "",
+      pageTitle: "",
       url: ""
     }
   });
@@ -129,7 +174,7 @@ const renderTextStack = () => {
     } else {
       stack = JSON.parse(raw);
       stack.forEach(res => {
-        renderStackDOM(res.content, res.footnote);
+        renderStackDOM(res.content, res.footnote, res.date);
       });
     }
   });
@@ -237,7 +282,7 @@ const initializeEventListeners = () => {
       }
 
       let footnote = {
-        title: "",
+        pageTitle: "",
         url: ""
       };
 
@@ -285,7 +330,7 @@ const initializeEventListeners = () => {
 
         // remove
         setTimeout(() => {
-          const lists = Array.from(stackDOM.querySelectorAll("li"));
+          const lists = Array.from(stackDOM.querySelectorAll('stackwrapper'));
           let index = lists.indexOf(e.target.parentElement);
           removeItemFromStorage(index);
           parent.remove();
@@ -300,15 +345,33 @@ const initializeEventListeners = () => {
 
   // to do: title form
   // stackDOM.addEventListener('dblclick', e => {
-  //   if (e.target.classList.contains('clip')) {
-  //     let titleInput = document.createElement('input');
-  //     titleInput.setAttribute('type', 'text');
-  //     titleInput.setAttribute('class', 'title-input');
-  //     let temp = '<input type="text" class="title-input">';
-  //     e.target.insertAdjacentHTML('afterbegin', temp);
-  //     titleInput.focus();
-  //   }
+  //   let titleInput = e.target.querySelector('.title-input');
+  //   console.log(titleInput);
+  //   titleInput.style.display = "block";
+  //   titleInput.focus();
+  //   titleInput.addEventListener('keyup', (e) => {
+  //     if (e.keyCode === 13) {
+  //       let title = e.target.value.trim();
+  //       let content = e.target.parentElement.textContent;
+  //       console.log(content);
+  //       // let footnote = {
+  //       //   pageTitle: "",
+  //       //   url: ""
+  //       // };
+  //       // updateItem(title, content);
+  //       // // renderStackDOM(text, footnote);
+
+  //       // headerBoard.classList.remove('entering');
+  //       // headerBoard.textContent = "Item Updated!";
+  //       // console.log(title);
+  //       return false;
+  //     }
+
+
+
+  //   });
   // });
+
 
   resetBtn.addEventListener('click', () => {
     stackStorage.reset();
