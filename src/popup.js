@@ -1,4 +1,6 @@
 import './popup.css';
+// import './popup_listview.css';
+
 import {
   escapeRegExp,
   extractTextInfo,
@@ -410,6 +412,8 @@ const addHighlight = (html, regex) => {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // document.getElementById('style_default').disabled = true;
+  // document.getElementById('style_listview').disabled = false;
   renderTextStack()
   initializeEventListeners();
 });
@@ -419,6 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // bubble stay in the page
 import './font-awesome.min.css';
 import CommandPreset from './CommandPreset.js';
+
 const bubbleDOM = createBubbleDOM();
 
 document.body.appendChild(bubbleDOM);
@@ -453,9 +458,15 @@ function sendCommandMessage(command) {
 
   //
   let textitem = window.getSelection().getRangeAt(0).commonAncestorContainer.parentElement;
-  let aTag = textitem.querySelector('a');
-  let url = aTag.href;
-  let title = textitem.querySelector('input').value || null;
+  let aTag, url, title;
+  if (textitem.classList.contains('clip')) {
+    aTag = textitem.querySelector('a');
+    url = aTag.href;
+    title = textitem.querySelector('input').value || null;
+  } else {
+    url = "";
+    title = "";
+  }
 
   if (command === "extendedcopy") {
     copyTextWithTitleUrl(document.getSelection().toString(), title, url);
