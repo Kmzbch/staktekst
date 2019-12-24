@@ -243,9 +243,9 @@ input:focus {
     position: relative;
     display: inline;
     /* height: 25px; */
-    margin: 0px 15px;
+    margin: 0px 20px;
     padding: 0px 15px;
-
+    color: rgba(0, 0, 0, 0.8);
 
     /* overflow: hidden; */
     border-bottom: 1px solid rgba(0, 0, 0, 0.2);
@@ -255,7 +255,7 @@ input:focus {
     list-style: none;
     line-height: 28px;
     font-family: 'Arial';
-    font-size: 14px !important;
+    font-size: 15px !important;
 }
 
 .date {
@@ -285,15 +285,21 @@ input:focus {
     text-decoration: none;
 }
 
+/* .clip:hover {
+    overflow: none;
+    white-space: nowrap;
+    text-overflow: none;
+} */
+
 .clip {
-    /* display: block;
-    height: 30px;
+    /* display: block; */
+    display: none;
+    height: 40px;
     overflow: hidden;
     white-space: nowrap;
-    text-overflow: ellipsis; */
-
-    display: none;
+    text-overflow: ellipsis;
 }
+
 
 /* to do: title form */
 /* .title-input {
@@ -312,7 +318,7 @@ input:focus {
     margin-right: 15px;
     background-color: lemonchiffon !important; */
     font-weight: bolder;
-    text-decoration: underline;
+    /* text-decoration: underline; */
 }
 
 .note .footnote {
@@ -350,6 +356,7 @@ input:focus {
     cursor: pointer;
     background-color: #3297FD;
 }
+
 
 .checkbox {
     color: rgba(0, 0, 0, 0);

@@ -37,16 +37,19 @@ let dateStack = [];
 
 
 function switchStyles() {
-  console.log('!!!');
   const defaultStyles = document.querySelector('#style_default');
   const listviewStyles = document.querySelector('#style_listview');
 
   if (defaultStyles.disabled) {
     defaultStyles.disabled = false;
     listviewStyles.disabled = true;
+    // searchCancelBtn.dispatchEvent(new Event('click'));
   } else {
+    // searchbox.value = '#note';
+    // searchbox.dispatchEvent(new Event('input'));
     defaultStyles.disabled = true;
     listviewStyles.disabled = false;
+
   }
 }
 const viewSwitcher = document.querySelector('.switchview');

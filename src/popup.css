@@ -154,6 +154,23 @@ input:focus {
     font-size: 14px;
 }
 
+.switchview:hover {
+    transition: 0.2s;
+    cursor: pointer;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+.switchview {
+    position: absolute;
+    color: white;
+    z-index: 1;
+    left: 350px;
+    top: 13px;
+    margin: auto;
+    font-size: 14px;
+}
+
 .opener:hover {
     opacity: 0.6;
     transition: 0.2s;
