@@ -6,22 +6,7 @@ const searchbox = document.querySelector('.searchbox');
 const searchCancelBtn = document.querySelector('.search-cancel');
 const headerBoard = document.querySelector('.header-board');
 const sortBy = document.querySelector('.sort-by');
-const topSortBy = ((
-  () => {
-    let elem = document.querySelector('.sort-by-top');
-    let arrowDirection = sortBy.innerHTML.includes('New') ? 'arrow_upward' : 'arrow_downward';
-    if (elem === null) {
-      elem = document.createElement('span');
-      elem.className = 'sort-by-top';
 
-      elem.innerHTML = `
-      <i class="material-icons sorticon">reorder</i>
-      <i class="material-icons sortarrow">${arrowDirection}</i>
-      `;
-    }
-    return elem;
-  }
-))();
 
 const topOpener = (
   () => {
@@ -85,17 +70,9 @@ function switchSortOrder({
   if (byNew) {
     sortBy.innerHTML = 'New <i class="material-icons">arrow_upward</i>';
     stackDOM.style.flexDirection = 'column-reverse';
-    topSortBy.innerHTML = `
-    <i class="material-icons sorticon">reorder</i>
-    <i class="material-icons sortarrow">arrow_upward</i>
-  `;
   } else {
     sortBy.innerHTML = 'Old <i class="material-icons">arrow_downward</i>';
     stackDOM.style.flexDirection = 'column';
-    topSortBy.innerHTML = `
-    <i class="material-icons sorticon">reorder</i>
-    <i class="material-icons sortarrow">arrow_downward</i>
-  `;
 
   }
 }
@@ -169,19 +146,16 @@ const initializeEventListeners = () => {
       footer.style.opacity = '1';
       setTimeout(() => {
         headerBoard.parentNode.removeChild(topOpener);
-        headerBoard.parentNode.removeChild(topSortBy);
       }, 60);
     } else if (document.body.offsetHeight + window.scrollY >= document.body.scrollHeight) {
       header.style.opacity = '1';
       footer.style.opacity = '1';
       headerBoard.parentNode.insertBefore(topOpener, headerBoard);
-      topOpener.parentNode.insertBefore(topSortBy, topOpener);
     } else {
       header.style.opacity = '0';
       footer.style.opacity = '0';
       setTimeout(() => {
         headerBoard.parentNode.insertBefore(topOpener, headerBoard);
-        topOpener.parentNode.insertBefore(topSortBy, topOpener);
       }, 50);
 
     }
@@ -299,12 +273,6 @@ const initializeEventListeners = () => {
 
   /* sort by */
   sortBy.addEventListener('click', () => {
-    switchSortOrder({
-      byNew: !sortBy.innerHTML.includes('New')
-    })
-  });
-
-  topSortBy.addEventListener('click', () => {
     switchSortOrder({
       byNew: !sortBy.innerHTML.includes('New')
     })

@@ -9,7 +9,7 @@
 }
 
 .spacer {
-    height: 20px;
+    height: 16px;
 }
 
 .filtered {
@@ -139,38 +139,35 @@ input:focus {
 
 /* .opener */
 .opener-top:hover {
-    color: white;
     opacity: 1;
     transition: 0.2s;
-}
-
-.opener-top {
-    color: white;
-    left: 315px;
-    top: 13px;
-    position: relative;
-    margin: auto;
-    opacity: 0.3;
-    font-size: 14px;
     cursor: pointer;
     -moz-user-select: none;
     user-select: none;
 }
 
+.opener-top {
+    position: absolute;
+    color: white;
+    left: 315px;
+    top: 13px;
+    margin: auto;
+    opacity: 0.3;
+    font-size: 14px;
+}
+
 .opener:hover {
-    color: black;
     opacity: 0.6;
     transition: 0.2s;
+    cursor: pointer;
 }
 
 .opener {
-    color: black;
-    left: 48%;
     position: absolute;
+    left: 215px;
     margin: auto;
     opacity: 0.2;
     font-size: 16px;
-    cursor: pointer;
     -moz-user-select: none;
     user-select: none;
 }
@@ -183,7 +180,6 @@ input:focus {
 
 .sort-by {
     padding: 5px;
-    display: inline-block;
     float: right;
     margin-right: 12px;
     font-size: 130%;
@@ -199,13 +195,8 @@ input:focus {
 }
 
 /* add container styles*/
-#add-sort {
-    display: inline;
-}
-
 .add-textitem {
     display: none;
-    /* width: 80%; */
     width: 375px;
     height: 50px;
     padding: 9px;
@@ -239,9 +230,8 @@ ul li {
     border: 1px solid gray;
     border-radius: 3px;
     margin: 10px 15px 10px 15px;
-    overflow: hidden;
     overflow-wrap: break-word;
-    background: rgba(255, 255, 255, 1);
+    background: white;
     list-style: none;
     line-height: 28px;
     font-family: 'Arial';
@@ -255,10 +245,6 @@ ul li {
     margin-right: 8px;
 }
 
-.clip .footnote {
-    align-self: right;
-}
-
 .clip a:hover {
     color: rgb(32, 123, 156) !important;
     text-decoration: underline !important;
@@ -270,13 +256,13 @@ ul li {
 }
 
 /* to do: title form */
-.title-input {
+/* .title-input {
     position: relative;
     display: block;
     top: 0px;
     left: 0px;
     width: 150px;
-}
+} */
 
 /* note styles */
 .note:hover {
@@ -294,8 +280,6 @@ ul li {
 
 .footnote {
     position: absolute;
-    /* display: inline; */
-    display: block;
     bottom: 5px;
     right: 7px;
     margin-top: 10px;
