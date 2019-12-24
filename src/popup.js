@@ -51,14 +51,7 @@ const renderStackDOM = (content, footnote, date = formatDate()) => {
   //     <div class="footnote"></div>
   //   </div>
   //   `;
-  const template = `
-    <div class="stackwrapper">
-      ${content}
-      <i class="material-icons checkbox">check</i>
-      <div class="spacer"></div>
-      <div class="footnote"></div>
-    </div>
-    `;
+  const template = `<div class="stackwrapper">${content}<i class="material-icons checkbox">check</i><div class="spacer"></div><div class="footnote"></div></div>`;
 
   stackDOM.innerHTML += template;
 
@@ -70,7 +63,7 @@ const renderStackDOM = (content, footnote, date = formatDate()) => {
   // consider text item without url as a note
   if (url) {
     lastTextItem.classList.add("clip");
-    lastTextItem.querySelector('.footnote').innerHTML = `<a href="${url}" target="_blank">${abbreviation}</a>`;
+    lastTextItem.querySelector('.footnote').innerHTML = `<a href="${url}" target="_blank">${abbreviation}</a><input type="hidden" value=${pageTitle}>`;
   } else {
     lastTextItem.classList.add("note");
     lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#note</span>`;
@@ -330,7 +323,7 @@ const initializeEventListeners = () => {
 
         // remove
         setTimeout(() => {
-          const lists = Array.from(stackDOM.querySelectorAll('stackwrapper'));
+          const lists = Array.from(stackDOM.querySelectorAll('.stackwrapper'));
           let index = lists.indexOf(e.target.parentElement);
           removeItemFromStorage(index);
           parent.remove();
@@ -420,3 +413,116 @@ document.addEventListener('DOMContentLoaded', () => {
   renderTextStack()
   initializeEventListeners();
 });
+
+
+/** Bubble */
+// bubble stay in the page
+import './font-awesome.min.css';
+import CommandPreset from './CommandPreset.js';
+const bubbleDOM = createBubbleDOM();
+
+document.body.appendChild(bubbleDOM);
+// chrome.runtime.onMessage.addListener(getMessage);
+document.addEventListener("mouseup", renderBubble);
+
+// function getMessage(request, sender, sendResponse) {
+//   console.log('!!!!');
+//   sendResponse({
+//       selection: document.getSelection().toString()
+//   });
+// }
+function renderBubble() {
+  setTimeout(() => {
+    let selection = document.getSelection();
+
+    if (selection.toString() === "") {
+      bubbleDOM.style.display = "none";
+    } else {
+      bubbleDOM.style.display = "flex";
+
+      let boundingCR = selection.getRangeAt(0).getBoundingClientRect();
+      bubbleDOM.style.top = (boundingCR.top - 80) + window.scrollY + 'px';
+      bubbleDOM.style.left = Math.floor((boundingCR.left + boundingCR.right) / 2) - 50 + window.scrollX + 'px';
+    }
+  }, 30)
+}
+
+function sendCommandMessage(command) {
+  console.log(command);
+  console.log(document.getSelection().toString());
+
+  //
+  let textitem = window.getSelection().getRangeAt(0).commonAncestorContainer.parentElement;
+  let aTag = textitem.querySelector('a');
+  let url = aTag.href;
+  let title = textitem.querySelector('input').value || null;
+
+  if (command === "extendedcopy") {
+    copyTextWithTitleUrl(document.getSelection().toString(), title, url);
+  } else if (command === 'pushtext') {
+    addItemToStack(document.getSelection().toString());
+    renderTextStack();
+    // pushText(words, url, title);
+  } else {
+    chrome.runtime.sendMessage({
+      command: command,
+      selection: document.getSelection().toString()
+    });
+  }
+}
+
+function copyTextWithTitleUrl(content, title, url) {
+  // use hidden DOM to copy text
+  let copyFrom = document.createElement("textarea");
+  copyFrom.textContent = content + "\n\n" + title + "\n" + url;
+  document.body.appendChild(copyFrom);
+  copyFrom.select();
+  document.execCommand('copy');
+  copyFrom.blur();
+  document.body.removeChild(copyFrom);
+}
+
+
+/* DOM creation and manipulation */
+function createIconDOM({
+  className,
+  title,
+  innerText = "",
+  command
+}) {
+  let iconDOM = document.createElement("i");
+  iconDOM.setAttribute("class", className);
+  iconDOM.setAttribute("title", title);
+  iconDOM.innerText = innerText;
+
+  iconDOM.addEventListener("mousedown", () => {
+    sendCommandMessage(command)
+  });
+
+
+  return iconDOM;
+}
+
+function createBubbleDOM() {
+
+  let bubbleDOM = document.createElement("div");
+  bubbleDOM.setAttribute("id", "bubble");
+
+  let leftContainer = document.createElement("div");
+  leftContainer.setAttribute("id", "leftContainer");
+
+  let rightContainer = document.createElement("div");
+  rightContainer.setAttribute("id", "rightContainer");
+
+  CommandPreset.SEARCH_ENGINE_ICONS.forEach(icon => {
+    leftContainer.appendChild(createIconDOM(icon));
+  });
+  CommandPreset.SYSTEM_COMMAND_ICONS.forEach(icon => {
+    rightContainer.appendChild(createIconDOM(icon));
+  });
+
+  bubbleDOM.appendChild(leftContainer);
+  bubbleDOM.appendChild(rightContainer);
+
+  return bubbleDOM;
+}
