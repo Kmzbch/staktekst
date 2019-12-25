@@ -6,6 +6,8 @@ import {
 
 let words = null;
 
+let isDev = true;
+
 /* communicate with other scripts */
 function getMessage(request, sender, sendResponse) {
   if (request.selection) {
@@ -60,17 +62,46 @@ function executeCommand(command, words) {
       let item = CommandPreset.PRESET_CONTEXT_MENUS.find(item => item.id === command);
       let replacedUrl = item.url.replace('%s', words);
       replacedUrl = replacedUrl.replace('%u', tabs[0].url);
-      if (item.hasOwnProperty('option')) {
-        item.option({
-          text: words,
-          url: replacedUrl,
-          tab: tabs[0]
-        });
+
+      if (isDev) {
+        if (item.hasOwnProperty('option')) {
+          item.option({
+            text: words,
+            url: replacedUrl,
+            tab: tabs[0]
+          });
+        } else {
+          // normal
+          // chrome.tabs.create({
+          //   url: replacedUrl
+          // });
+
+          // panel
+          chrome.windows.create({
+            url: replacedUrl,
+            type: "panel",
+            width: 600,
+            height: 700
+          });
+        }
       } else {
-        chrome.tabs.create({
-          url: replacedUrl
+
+        chrome.windows.create({
+          url: replacedUrl,
+          type: "popup",
+          width: 480,
+          height: 700,
+          left: (825 - 450),
+          focused: true,
+        }, res => {
+          console.log(res);
         });
+
+
+
+
       }
+
     }
   });
 }

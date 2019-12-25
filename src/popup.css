@@ -1,7 +1,7 @@
 /* utilities */
 .sticky {
     position: fixed;
-    z-index: 1;
+    z-index: 999999;
 }
 
 .highlighted {
@@ -35,6 +35,14 @@ html {
     height: 700px;
     box-sizing: border-box;
     background: rgba(0, 0, 0, 0.3);
+}
+
+#hiddenIframe {
+    position: absolute;
+    top: 0px;
+    left: 450px;
+    width: 600px;
+    height: 100%;
 }
 
 /* container elements */
@@ -164,7 +172,7 @@ input:focus {
 .switchview {
     position: absolute;
     color: white;
-    z-index: 1;
+    /* z-index: 1; */
     left: 350px;
     top: 13px;
     margin: auto;
@@ -252,10 +260,10 @@ input:focus {
 }
 
 .date {
-    color: rgba(0, 0, 0, 0.5);
+    color: rgba(0, 0, 0, 0.7);
     text-align: center;
     font-size: 16px;
-    margin: 5px;
+    margin: 8px;
 }
 
 /* clip styles */
@@ -499,7 +507,7 @@ input:focus {
 
     top: 0px;
     left: 0px;
-    z-index: 1 !important;
+    z-index: 999999 !important;
 
     padding: 0px 0px !important;
 

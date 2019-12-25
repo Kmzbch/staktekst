@@ -36,6 +36,19 @@ let stack = [];
 let dateStack = [];
 
 
+
+// document.addEventListener('DOMContentLoaded', function () {
+//   if (window.outerWidth > 465) {
+//     console.log(document.URL);
+//     let elem = document.createElement('div');
+//     elem.id = 'hiddenContainer';
+//     elem.innerHTML = '<iframe id="hiddenIframe" src="https://www.vocabulary.com/dictionary/identity"></iframe>';
+//     document.body.append(elem);
+
+//   }
+// })
+
+
 function switchStyles() {
   const defaultStyles = document.querySelector('#style_default');
   const listviewStyles = document.querySelector('#style_listview');
@@ -452,6 +465,7 @@ import CommandPreset from './CommandPreset.js';
 const bubbleDOM = createBubbleDOM();
 
 document.body.appendChild(bubbleDOM);
+
 // chrome.runtime.onMessage.addListener(getMessage);
 document.addEventListener("mouseup", renderBubble);
 
@@ -493,17 +507,28 @@ function sendCommandMessage(command) {
     title = "";
   }
 
+  let words = document.getSelection().toString();
+  console.log(words);
+  words = words.replace(/check\s$/, "");
+  console.log(words);
   if (command === "extendedcopy") {
-    copyTextWithTitleUrl(document.getSelection().toString(), title, url);
+    copyTextWithTitleUrl(words, title, url);
   } else if (command === 'pushtext') {
-    addItemToStack(document.getSelection().toString());
+    addItemToStack(words);
     renderTextStack();
     // pushText(words, url, title);
   } else {
     chrome.runtime.sendMessage({
       command: command,
-      selection: document.getSelection().toString()
+      selection: words
     });
+
+    // let item = CommandPreset.PRESET_CONTEXT_MENUS.find(item => item.id === command);
+    // let replacedUrl = item.url.replace('%s', words);
+
+    // document.querySelector('#hiddenIframe').src = replacedUrl;
+
+
   }
 }
 
