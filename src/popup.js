@@ -35,6 +35,53 @@ const viewSwitcher = document.querySelector('.switchview');
 let stack = [];
 let dateStack = [];
 
+/* switcher */
+const switchViewStyles = () => {
+  const defaultStyles = document.querySelector('#style_default');
+  const listviewStyles = document.querySelector('#style_listview');
+
+  if (defaultStyles.disabled) {
+    defaultStyles.disabled = false;
+    listviewStyles.disabled = true;
+  } else {
+    defaultStyles.disabled = true;
+    listviewStyles.disabled = false;
+  }
+}
+
+const switchSortOrder = () => {
+  let byNew = !sortBy.innerHTML.includes('New');
+  if (byNew) {
+    sortBy.innerHTML = 'New <i class="material-icons">arrow_upward</i>';
+    stackDOM.style.flexDirection = 'column-reverse';
+  } else {
+    sortBy.innerHTML = 'Old <i class="material-icons">arrow_downward</i>';
+    stackDOM.style.flexDirection = 'column';
+  }
+}
+
+const switchStickyVisibility = () => {
+  // show header and footer when scroll to the top/bottom
+  if (window.pageYOffset == 0) {
+    header.style.opacity = '1';
+    footer.style.opacity = '1';
+    setTimeout(() => {
+      headerBoard.parentNode.removeChild(topOpener);
+    }, 60);
+  } else if (document.body.offsetHeight + window.scrollY >= document.body.scrollHeight) {
+    header.style.opacity = '1';
+    footer.style.opacity = '1';
+    headerBoard.parentNode.insertBefore(topOpener, headerBoard);
+  } else {
+    header.style.opacity = '0';
+    footer.style.opacity = '0';
+    setTimeout(() => {
+      headerBoard.parentNode.insertBefore(topOpener, headerBoard);
+    }, 50);
+  }
+}
+
+/* stack operation*/
 const renderStackDOM = (content, footnote, date = formatDate()) => {
   const {
     pageTitle: pageTitle,
@@ -45,10 +92,9 @@ const renderStackDOM = (content, footnote, date = formatDate()) => {
 
   stackDOM.innerHTML += template;
 
-  // increase the hight to avoid overflow
+  // consider text item without url as a note
   let lastTextItem = stackDOM.lastElementChild;
 
-  // consider text item without url as a note
   if (url) {
     lastTextItem.classList.add("clip");
     lastTextItem.querySelector('.footnote').innerHTML = `<a href="${url}" target="_blank">${pageTitle}</a>`;
@@ -71,32 +117,6 @@ const renderStackDOM = (content, footnote, date = formatDate()) => {
     }
   }
 
-}
-
-// switch between default textview and listview
-const switchStyles = () => {
-  const defaultStyles = document.querySelector('#style_default');
-  const listviewStyles = document.querySelector('#style_listview');
-
-  if (defaultStyles.disabled) {
-    defaultStyles.disabled = false;
-    listviewStyles.disabled = true;
-  } else {
-    defaultStyles.disabled = true;
-    listviewStyles.disabled = false;
-  }
-}
-
-const switchSortOrder = ({
-  byNew = true
-}) => {
-  if (byNew) {
-    sortBy.innerHTML = 'New <i class="material-icons">arrow_upward</i>';
-    stackDOM.style.flexDirection = 'column-reverse';
-  } else {
-    sortBy.innerHTML = 'Old <i class="material-icons">arrow_downward</i>';
-    stackDOM.style.flexDirection = 'column';
-  }
 }
 
 const addItemToStack = (content) => {
@@ -159,27 +179,9 @@ const renderTextStack = () => {
   });
 };
 
+
 const initializeEventListeners = () => {
-  window.onscroll = () => {
-    // show header and footer when scroll to the top/bottom
-    if (window.pageYOffset == 0) {
-      header.style.opacity = '1';
-      footer.style.opacity = '1';
-      setTimeout(() => {
-        headerBoard.parentNode.removeChild(topOpener);
-      }, 60);
-    } else if (document.body.offsetHeight + window.scrollY >= document.body.scrollHeight) {
-      header.style.opacity = '1';
-      footer.style.opacity = '1';
-      headerBoard.parentNode.insertBefore(topOpener, headerBoard);
-    } else {
-      header.style.opacity = '0';
-      footer.style.opacity = '0';
-      setTimeout(() => {
-        headerBoard.parentNode.insertBefore(topOpener, headerBoard);
-      }, 50);
-    }
-  }
+  window.onscroll = switchStickyVisibility;
 
   /* searchbox */
   searchbox.addEventListener('input', (e) => {
@@ -276,12 +278,7 @@ const initializeEventListeners = () => {
 
   });
 
-  /* sort by */
-  sortBy.addEventListener('click', () => {
-    switchSortOrder({
-      byNew: !sortBy.innerHTML.includes('New')
-    })
-  });
+  sortBy.addEventListener('click', switchSortOrder);
 
   /* checkboxes for text stack */
   stackDOM.addEventListener('mouseover', () => {
@@ -321,9 +318,7 @@ const initializeEventListeners = () => {
 
   });
 
-  viewSwitcher.addEventListener('click', () => {
-    switchStyles();
-  });
+  viewSwitcher.addEventListener('click', switchViewStyles);
 
   resetBtn.addEventListener('click', () => {
     stackStorage.reset();
