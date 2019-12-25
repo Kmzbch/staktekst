@@ -9,11 +9,11 @@ const PATHS = require('./paths');
 const config = merge(common, {
   entry: {
     popup: PATHS.src + '/popup.js',
-    contentScript: PATHS.src + '/contentScript.js',
     background: PATHS.src + '/background.js',
     currentTab: PATHS.src + "/currentTab.js",
-    miraiScript: PATHS.src + "/miraiScript.js",
-    commandPreset: PATHS.src + "/CommandPreset.js",
+    miraiTranslateScript: PATHS.src + "/miraiTranslateScript.js",
+    oddcastScript: PATHS.src + '/oddcastScript.js',
+    iconPreset: PATHS.src + "/IconPreset.js",
     common_lib: PATHS.src + "/common_lib.js"
   },
 });

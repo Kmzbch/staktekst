@@ -1,7 +1,7 @@
 function copyTextWithTitleUrl(content, title, url) {
     // use hidden DOM to copy text
-    let copyFrom = document.createElement("textarea");
-    copyFrom.textContent = content + "\n\n" + title + "\n" + url;
+    let copyFrom = document.createElement('textarea');
+    copyFrom.textContent = content + '\n\n' + title + '\n' + url;
     document.body.appendChild(copyFrom);
     copyFrom.select();
     document.execCommand('copy');
@@ -18,9 +18,9 @@ function escapeRegExp(string) {
         string;
 }
 
-function extractTextInfo(text) {
-    let charCount = text.length;
-    let wordCount = charCount === 0 ? 0 : text.split(' ').length;
+function extractTextInfo(string) {
+    let charCount = string.length;
+    let wordCount = charCount === 0 ? 0 : string.split(' ').length;
     return {
         charCount: charCount,
         wordCount: wordCount
@@ -46,41 +46,41 @@ function formatDate(date = new Date()) {
     return `${yyyy}-${mm}-${dd}`;
 }
 
-
-function pushText(content, url = "", pageTitle = "", noteTitle = "", date = formatDate()) {
-    chrome.storage.local.get(['raw'], result => {
-        let stack = [];
-        if (typeof result.raw !== "undefined") {
-            stack = JSON.parse(result.raw);
+function pushText(content, pageTitle = '', url = '') {
+    const stackStorage = {
+        get: callback => {
+            chrome.storage.local.get(['raw'], result => {
+                callback(result.raw);
+            });
+        },
+        set: (value) => {
+            chrome.storage.local.set({
+                raw: value,
+            });
+        },
+        reset: () => {
+            chrome.storage.local.set({
+                raw: '[]'
+            });
         }
-        // stack.push({
-        //     content: content,
-        //     url,
-        //     title,
-        //     date
-        // });
-        // stack.push({
-        //     content: content,
-        //     date,
-        //     footnote: {
-        //         title,
-        //         url
-        //     }
-        // });
-        stack.push({
-            content: content,
-            date,
-            noteTitle,
-            footnote: {
-                pageTitle,
-                url
-            }
-        });
+    };
 
-
-        chrome.storage.local.set({
-            raw: JSON.stringify(stack),
-        });
+    stackStorage.get(raw => {
+        if (typeof raw === 'undefined') {
+            stackStorage.reset();
+        } else {
+            let stack = JSON.parse(raw);
+            stack.push({
+                content: content,
+                date: formatDate(),
+                noteTitle: '',
+                footnote: {
+                    pageTitle,
+                    url
+                }
+            });
+            stackStorage.set(JSON.stringify(stack));
+        }
     });
 }
 

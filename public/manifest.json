@@ -8,11 +8,11 @@
     "default_popup": "popup.html"
   },
   "content_scripts": [{
-      "js": ["contentScript.js"],
+      "js": ["oddcastScript.js"],
       "matches": ["http://www.oddcast.com/ttsdemo/index.php"],
       "run_at": "document_end"
     }, {
-      "js": ["miraiScript.js"],
+      "js": ["miraiTranslateScript.js"],
       "matches": ["https://miraitranslate.com/trial/", "https://miraitranslate.com/en/trial/"],
       "run_at": "document_end"
     },
@@ -24,7 +24,7 @@
     }
   ],
   "web_accessible_resources": ["images/*", "webfonts/*", "icons/*"],
-  "content_security_policy": "script-src 'self' 'unsafe-eval' chrome-extension-resource: ; object-src 'self' ; child-src 'self' ; style-src 'self' ; frame-src 'self' https://www.vocabulary.com/dictionary/ https://twitter.com; default-src 'self' ; img-src 'self' ; connect-src 'self' ",
+  "content_security_policy": "script-src 'self' 'unsafe-eval' chrome-extension-resource: ; object-src 'self' ; child-src 'self' ; style-src 'self' ; frame-src 'self' ; default-src 'self' ; img-src 'self' ; connect-src 'self' ",
   "description": "A simple clipboard with which you can stack pieces of text while reading",
   "icons": {
     "16": "icons/icon_16.png",

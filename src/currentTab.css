@@ -1,26 +1,69 @@
-/* material icons */
-/* @font-face {
-    font-family: 'Material Icons';
-    font-style: normal;
-    font-weight: 400;
-    src: url('chrome-extension://__MSG_@@extension_id__/images/Material Icons.woff2') format('woff2');
+/* button styles */
+.stackButton {
+    transform: scale(0.95);
+    flex: 1;
+    padding: 5px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
 }
 
-.material-icons {
-    font-family: 'Material Icons';
-    font-weight: normal;
-    font-style: normal;
-    font-size: 24px;
-    line-height: 1;
-    letter-spacing: normal;
-    text-transform: none;
-    display: inline-block;
-    white-space: nowrap;
-    word-wrap: normal;
-    direction: ltr;
-    -webkit-font-feature-settings: 'liga';
-    -webkit-font-smoothing: antialiased;
-} */
+.stackButton:hover {
+    color: rgb(141, 223, 253) !important;
+    cursor: pointer;
+}
+
+/* bubble styles */
+#bubble {
+    display: none;
+    flex-wrap: nowrap;
+    position: absolute;
+    z-index: 999999;
+    width: 200px;
+    height: 70px;
+    top: 0px;
+    left: 0px;
+    padding: 0px 0px;
+    border-width: 0px;
+    border-style: solid;
+    border-color: black;
+    border-radius: 4px;
+    opacity: 0.9;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+#bubble::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    left: 25%;
+    bottom: 0;
+    border: 8px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.8) !important;
+    border-bottom: 0;
+    border-right: 0;
+    margin-left: -8px;
+    margin-bottom: -8px;
+}
+
+#leftContainer {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    width: 80%;
+    height: 100%;
+}
+
+#rightContainer {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    width: 20%;
+    height: 100%;
+    padding-left: 5px;
+    border-left: 1px solid rgba(255, 255, 255, 0.4);
+}
 
 /* modification on font awesome */
 .fab {
@@ -33,86 +76,4 @@
 .fas {
     margin-top: 4px !important;
     font-size: 18px !important;
-
-}
-
-/* bubble styles */
-.stackButton {
-    transform: scale(0.95);
-    flex: 1;
-    padding: 5px;
-}
-
-.stackButton:hover {
-    transform: scale(0.95);
-    color: rgb(141, 223, 253) !important;
-    cursor: default;
-}
-
-#leftContainer {
-    width: 80%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    /* align-items: center; */
-}
-
-#rightContainer {
-    width: 20%;
-    height: 100%;
-
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    border-left: 1px solid rgba(255, 255, 255, 0.4) !important;
-    padding-left: 5px;
-    /* align-items: center; */
-
-}
-
-#bubble {
-    width: 200px !important;
-    height: 70px !important;
-
-    top: 0px;
-    left: 0px;
-    z-index: 999999 !important;
-
-    padding: 0px 0px !important;
-
-    flex-wrap: nowrap;
-
-    position: absolute !important;
-    display: none;
-
-    opacity: 0.9 !important;
-    background-color: rgba(0, 0, 0, 0.8) !important;
-    /* background-color: darkslategray !important; */
-
-    border-width: 0px !important;
-    border-style: solid !important;
-    border-color: black !important;
-    border-radius: 4px !important;
-
-    color: white !important;
-}
-
-#bubble::after {
-    content: '';
-
-    width: 0;
-    height: 0;
-    left: 25%;
-    bottom: 0;
-
-    position: absolute;
-
-    border: 8px solid transparent;
-    border-top-color: rgba(0, 0, 0, 0.8) !important;
-    border-bottom: 0;
-    border-right: 0;
-
-    margin-left: -8px;
-    margin-bottom: -8px;
 }

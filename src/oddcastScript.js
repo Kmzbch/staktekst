@@ -1,5 +1,5 @@
 chrome.runtime.sendMessage({}, response => {
-  // get DOM elements of the form
+  // get the input form of the page
   let sourceInput = document.querySelector('#flash-speck-area');
   let sourceLanguage = document.querySelector('#languageBtn');
   let sourceVoice = document.querySelector('#voiceBtn');

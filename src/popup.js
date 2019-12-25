@@ -461,7 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
 /** Bubble */
 // bubble stay in the page
 import './font-awesome.min.css';
-import CommandPreset from './CommandPreset.js';
+import IconPreset from './IconPreset.js';
 
 const bubbleDOM = createBubbleDOM();
 
@@ -493,10 +493,6 @@ function renderBubble() {
 }
 
 function sendCommandMessage(command) {
-  console.log(command);
-  console.log(document.getSelection().toString());
-
-  //
   let textitem = window.getSelection().getRangeAt(0).commonAncestorContainer.parentElement;
   let aTag, url, title;
   if (textitem.classList.contains('clip')) {
@@ -509,7 +505,6 @@ function sendCommandMessage(command) {
   }
 
   let words = document.getSelection().toString();
-  console.log(words);
   words = words.replace(/check\s$/, "");
   console.log(words);
   if (command === "extendedcopy") {
@@ -517,19 +512,11 @@ function sendCommandMessage(command) {
   } else if (command === 'pushtext') {
     addItemToStack(words);
     renderTextStack();
-    // pushText(words, url, title);
   } else {
     chrome.runtime.sendMessage({
       command: command,
       selection: words
     });
-
-    // let item = CommandPreset.PRESET_CONTEXT_MENUS.find(item => item.id === command);
-    // let replacedUrl = item.url.replace('%s', words);
-
-    // document.querySelector('#hiddenIframe').src = replacedUrl;
-
-
   }
 }
 
@@ -561,7 +548,6 @@ function createIconDOM({
     sendCommandMessage(command)
   });
 
-
   return iconDOM;
 }
 
@@ -576,10 +562,10 @@ function createBubbleDOM() {
   let rightContainer = document.createElement("div");
   rightContainer.setAttribute("id", "rightContainer");
 
-  CommandPreset.SEARCH_ENGINE_ICONS.forEach(icon => {
+  IconPreset.SEARCH_ENGINE_ICONS.forEach(icon => {
     leftContainer.appendChild(createIconDOM(icon));
   });
-  CommandPreset.SYSTEM_COMMAND_ICONS.forEach(icon => {
+  IconPreset.SYSTEM_COMMAND_ICONS.forEach(icon => {
     rightContainer.appendChild(createIconDOM(icon));
   });
 

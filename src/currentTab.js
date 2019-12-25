@@ -1,29 +1,26 @@
 'use strict';
 
 import './currentTab.css';
-import CommandPreset from './CommandPreset.js';
-
-function sendCommandMessage(command) {
-    chrome.runtime.sendMessage({
-        command: command,
-        selection: document.getSelection().toString()
-    });
-}
+import IconPreset from './IconPreset.js';
 
 /* DOM creation and manipulation */
 const createIconDOM = ({
     className,
     title,
     innerText = "",
-    command
+    command: commandId
 }) => {
-    let iconDOM = document.createElement("i");
-    iconDOM.setAttribute("class", className);
-    iconDOM.setAttribute("title", title);
+    let iconDOM = document.createElement('i');
+
+    iconDOM.setAttribute('class', className);
+    iconDOM.setAttribute('title', title);
     iconDOM.innerText = innerText;
 
-    iconDOM.addEventListener("mousedown", () => {
-        sendCommandMessage(command)
+    iconDOM.addEventListener('mousedown', () => {
+        chrome.runtime.sendMessage({
+            command: commandId,
+            selection: document.getSelection().toString()
+        });
     });
 
     return iconDOM;
@@ -31,18 +28,18 @@ const createIconDOM = ({
 
 const createBubbleDOM = () => {
 
-    let bubbleDOM = document.createElement("div");
-    let leftContainer = document.createElement("div");
-    let rightContainer = document.createElement("div");
+    let bubbleDOM = document.createElement('div');
+    let leftContainer = document.createElement('div');
+    let rightContainer = document.createElement('div');
 
-    bubbleDOM.setAttribute("id", "bubble");
-    leftContainer.setAttribute("id", "leftContainer");
-    rightContainer.setAttribute("id", "rightContainer");
+    bubbleDOM.setAttribute('id', 'bubble');
+    leftContainer.setAttribute('id', 'leftContainer');
+    rightContainer.setAttribute('id', 'rightContainer');
 
-    CommandPreset.SEARCH_ENGINE_ICONS.forEach(icon => {
+    IconPreset.SEARCH_ENGINE_ICONS.forEach(icon => {
         leftContainer.appendChild(createIconDOM(icon));
     });
-    CommandPreset.SYSTEM_COMMAND_ICONS.forEach(icon => {
+    IconPreset.SYSTEM_COMMAND_ICONS.forEach(icon => {
         rightContainer.appendChild(createIconDOM(icon));
     });
 
@@ -57,29 +54,24 @@ const renderBubble = () => {
         let selection = document.getSelection();
 
         if (selection.toString() === '') {
-            bubbleDOM.style.display = 'none';
+            bubble.style.display = 'none';
         } else {
-            bubbleDOM.style.display = 'flex';
+            bubble.style.display = 'flex';
 
             let boundingCR = selection.getRangeAt(0).getBoundingClientRect();
-            bubbleDOM.style.top = (boundingCR.top - 80) + window.scrollY + 'px';
-            bubbleDOM.style.left = Math.floor((boundingCR.left + boundingCR.right) / 2) - 50 + window.scrollX + 'px';
+            bubble.style.top = (boundingCR.top - 80) + window.scrollY + 'px';
+            bubble.style.left = Math.floor((boundingCR.left + boundingCR.right) / 2) - 50 + window.scrollX + 'px';
         }
     }, 30)
 }
 
-// bubble stay in the page
-const bubbleDOM = createBubbleDOM();
-
-document.body.appendChild(bubbleDOM);
-
-document.addEventListener("mouseup", renderBubble);
-
-chrome.runtime.onMessage.addListener(
-    // respond with selected text
-    function getMessage(request, sender, sendResponse) {
-        sendResponse({
-            selection: document.getSelection().toString()
-        });
+const bubble = (() => {
+    let elem = document.querySelector('#bubble');
+    if (elem == null) {
+        elem = createBubbleDOM();
+        document.body.appendChild(elem);
     }
-);
+    return elem;
+})();
+
+document.addEventListener('mouseup', renderBubble);
