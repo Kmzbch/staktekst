@@ -1,8 +1,8 @@
 import './popup.css';
-// import './popup_listview.css';
 
 import {
   escapeRegExp,
+  copyTextWithTitleUrl,
   extractTextInfo,
   containsJapanese,
   formatDate
@@ -29,74 +29,21 @@ const topOpener = (
 const textareaOpener = document.querySelector('.opener');
 const textarea = document.querySelector('.add-textitem');
 const stackDOM = document.querySelector('.textstack');
-
 const resetBtn = document.querySelector('.resetBtn');
+const viewSwitcher = document.querySelector('.switchview');
 
 let stack = [];
 let dateStack = [];
 
-
-
-// document.addEventListener('DOMContentLoaded', function () {
-//   if (window.outerWidth > 465) {
-//     console.log(document.URL);
-//     let elem = document.createElement('div');
-//     elem.id = 'hiddenContainer';
-//     elem.innerHTML = '<iframe id="hiddenIframe" src="https://www.vocabulary.com/dictionary/identity"></iframe>';
-//     document.body.append(elem);
-
-//   }
-// })
-
-
-function switchStyles() {
-  const defaultStyles = document.querySelector('#style_default');
-  const listviewStyles = document.querySelector('#style_listview');
-
-  if (defaultStyles.disabled) {
-    defaultStyles.disabled = false;
-    listviewStyles.disabled = true;
-    // searchCancelBtn.dispatchEvent(new Event('click'));
-  } else {
-    // searchbox.value = '#note';
-    // searchbox.dispatchEvent(new Event('input'));
-    defaultStyles.disabled = true;
-    listviewStyles.disabled = false;
-
-  }
-}
-const viewSwitcher = document.querySelector('.switchview');
-
-viewSwitcher.addEventListener('click', () => {
-  switchStyles();
-});
-
-
-
-/* module-specific utilities */
 const renderStackDOM = (content, footnote, date = formatDate()) => {
   const {
     pageTitle: pageTitle,
     url
   } = footnote;
-  const MAX_LENGTH = containsJapanese(pageTitle) ? 25 : 40;
-  const abbreviation = pageTitle.length > MAX_LENGTH ? `${pageTitle.substring(0, MAX_LENGTH)}...` : pageTitle;
 
-  // const template = `
-  //   <div class="stackwrapper">
-  //     <input type="text" class="title-input">
-  //     ${content}
-  //     <i class="material-icons checkbox">check</i>
-  //     <div class="spacer"></div>
-  //     <div class="footnote"></div>
-  //   </div>
-  //   `;
-  // const template = `<div class="stackwrapper">${content}<i class="material-icons checkbox">check</i><input type="date" class="calendar"><div class="spacer"></div><div class="footnote"></div></div>`;
   const template = `<div class="stackwrapper">${content}<i class="material-icons checkbox">check</i><div class="spacer"></div><div class="footnote"></div></div>`;
 
   stackDOM.innerHTML += template;
-
-
 
   // increase the hight to avoid overflow
   let lastTextItem = stackDOM.lastElementChild;
@@ -104,7 +51,7 @@ const renderStackDOM = (content, footnote, date = formatDate()) => {
   // consider text item without url as a note
   if (url) {
     lastTextItem.classList.add("clip");
-    lastTextItem.querySelector('.footnote').innerHTML = `<a href="${url}" target="_blank">${abbreviation}</a><input type="hidden" value=${pageTitle}>`;
+    lastTextItem.querySelector('.footnote').innerHTML = `<a href="${url}" target="_blank">${pageTitle}</a>`;
   } else {
     lastTextItem.classList.add("note");
     lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#note</span>`;
@@ -126,6 +73,20 @@ const renderStackDOM = (content, footnote, date = formatDate()) => {
 
 }
 
+// switch between default textview and listview
+const switchStyles = () => {
+  const defaultStyles = document.querySelector('#style_default');
+  const listviewStyles = document.querySelector('#style_listview');
+
+  if (defaultStyles.disabled) {
+    defaultStyles.disabled = false;
+    listviewStyles.disabled = true;
+  } else {
+    defaultStyles.disabled = true;
+    listviewStyles.disabled = false;
+  }
+}
+
 const switchSortOrder = ({
   byNew = true
 }) => {
@@ -137,22 +98,6 @@ const switchSortOrder = ({
     stackDOM.style.flexDirection = 'column';
   }
 }
-
-// const updateItem = (title, content) => {
-//   let pos = stack.map((e) = e.content).indexOf(content);
-//   console.log(title);
-//   console.log(pos);
-//   // stack.push({
-//   //   content: content,
-//   //   date: formatDate(),
-//   //   noteTitle: "",
-//   //   footnote: {
-//   //     pageTitle: "",
-//   //     url: ""
-//   //   }
-//   // });
-//   // stackStorage.set(JSON.stringify(stack));
-// };
 
 const addItemToStack = (content) => {
   stack.push({
@@ -347,7 +292,6 @@ const initializeEventListeners = () => {
   stackDOM.addEventListener('click', e => {
     // tag filter
     if (e.target.classList.contains('tag')) {
-      console.log(e.target.innerHTML);
       searchbox.value = e.target.innerHTML.slice(1);
       searchbox.dispatchEvent(new Event('input'));
     } else {
@@ -377,35 +321,9 @@ const initializeEventListeners = () => {
 
   });
 
-  // to do: title form
-  // stackDOM.addEventListener('dblclick', e => {
-  //   let titleInput = e.target.querySelector('.title-input');
-  //   console.log(titleInput);
-  //   titleInput.style.display = "block";
-  //   titleInput.focus();
-  //   titleInput.addEventListener('keyup', (e) => {
-  //     if (e.keyCode === 13) {
-  //       let title = e.target.value.trim();
-  //       let content = e.target.parentElement.textContent;
-  //       console.log(content);
-  //       // let footnote = {
-  //       //   pageTitle: "",
-  //       //   url: ""
-  //       // };
-  //       // updateItem(title, content);
-  //       // // renderStackDOM(text, footnote);
-
-  //       // headerBoard.classList.remove('entering');
-  //       // headerBoard.textContent = "Item Updated!";
-  //       // console.log(title);
-  //       return false;
-  //     }
-
-
-
-  //   });
-  // });
-
+  viewSwitcher.addEventListener('click', () => {
+    switchStyles();
+  });
 
   resetBtn.addEventListener('click', () => {
     stackStorage.reset();
@@ -414,6 +332,7 @@ const initializeEventListeners = () => {
     }
     textarea.value = '';
     stack = [];
+    dateStack = [];
   });
 }
 
@@ -451,62 +370,29 @@ const addHighlight = (html, regex) => {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // document.getElementById('style_default').disabled = true;
-  // document.getElementById('style_listview').disabled = false;
   renderTextStack()
   initializeEventListeners();
 });
 
-
 /** Bubble */
-// bubble stay in the page
-import './font-awesome.min.css';
 import IconPreset from './IconPreset.js';
 
-const bubbleDOM = createBubbleDOM();
-
-document.body.appendChild(bubbleDOM);
-
-// chrome.runtime.onMessage.addListener(getMessage);
-document.addEventListener("mouseup", renderBubble);
-
-// function getMessage(request, sender, sendResponse) {
-//   console.log('!!!!');
-//   sendResponse({
-//       selection: document.getSelection().toString()
-//   });
-// }
-function renderBubble() {
-  setTimeout(() => {
-    let selection = document.getSelection();
-
-    if (selection.toString() === "") {
-      bubbleDOM.style.display = "none";
-    } else {
-      bubbleDOM.style.display = "flex";
-
-      let boundingCR = selection.getRangeAt(0).getBoundingClientRect();
-      bubbleDOM.style.top = (boundingCR.top - 80) + window.scrollY + 'px';
-      bubbleDOM.style.left = Math.floor((boundingCR.left + boundingCR.right) / 2) - 50 + window.scrollX + 'px';
-    }
-  }, 30)
-}
-
 function sendCommandMessage(command) {
+  // get url and title from footnote
   let textitem = window.getSelection().getRangeAt(0).commonAncestorContainer.parentElement;
   let aTag, url, title;
+
   if (textitem.classList.contains('clip')) {
     aTag = textitem.querySelector('a');
     url = aTag.href;
-    title = textitem.querySelector('input').value || null;
+    title = aTag.innerText || null;
   } else {
     url = "";
     title = "";
   }
 
-  let words = document.getSelection().toString();
-  words = words.replace(/check\s$/, "");
-  console.log(words);
+  let words = document.getSelection().toString().replace(/check\s$/, "");
+
   if (command === "extendedcopy") {
     copyTextWithTitleUrl(words, title, url);
   } else if (command === 'pushtext') {
@@ -520,47 +406,35 @@ function sendCommandMessage(command) {
   }
 }
 
-function copyTextWithTitleUrl(content, title, url) {
-  // use hidden DOM to copy text
-  let copyFrom = document.createElement("textarea");
-  copyFrom.textContent = content + "\n\n" + title + "\n" + url;
-  document.body.appendChild(copyFrom);
-  copyFrom.select();
-  document.execCommand('copy');
-  copyFrom.blur();
-  document.body.removeChild(copyFrom);
-}
-
-
 /* DOM creation and manipulation */
-function createIconDOM({
+const createIconDOM = ({
   className,
   title,
   innerText = "",
   command
-}) {
-  let iconDOM = document.createElement("i");
-  iconDOM.setAttribute("class", className);
-  iconDOM.setAttribute("title", title);
+}) => {
+  let iconDOM = document.createElement('i');
+
+  iconDOM.setAttribute('class', className);
+  iconDOM.setAttribute('title', title);
   iconDOM.innerText = innerText;
 
-  iconDOM.addEventListener("mousedown", () => {
+  iconDOM.addEventListener('mousedown', () => {
     sendCommandMessage(command)
   });
 
   return iconDOM;
 }
 
-function createBubbleDOM() {
+const createBubbleDOM = () => {
 
-  let bubbleDOM = document.createElement("div");
-  bubbleDOM.setAttribute("id", "bubble");
+  let bubbleDOM = document.createElement('div');
+  let leftContainer = document.createElement('div');
+  let rightContainer = document.createElement('div');
 
-  let leftContainer = document.createElement("div");
-  leftContainer.setAttribute("id", "leftContainer");
-
-  let rightContainer = document.createElement("div");
-  rightContainer.setAttribute("id", "rightContainer");
+  bubbleDOM.setAttribute('id', 'bubble');
+  leftContainer.setAttribute('id', 'leftContainer');
+  rightContainer.setAttribute('id', 'rightContainer');
 
   IconPreset.SEARCH_ENGINE_ICONS.forEach(icon => {
     leftContainer.appendChild(createIconDOM(icon));
@@ -574,3 +448,30 @@ function createBubbleDOM() {
 
   return bubbleDOM;
 }
+
+const renderBubble = () => {
+  setTimeout(() => {
+    let selection = document.getSelection();
+
+    if (selection.toString() === '') {
+      bubble.style.display = 'none';
+    } else {
+      bubble.style.display = 'flex';
+
+      let boundingCR = selection.getRangeAt(0).getBoundingClientRect();
+      bubble.style.top = (boundingCR.top - 80) + window.scrollY + 'px';
+      bubble.style.left = Math.floor((boundingCR.left + boundingCR.right) / 2) - 50 + window.scrollX + 'px';
+    }
+  }, 30)
+}
+
+const bubble = (() => {
+  let elem = document.querySelector('#bubble');
+  if (elem == null) {
+    elem = createBubbleDOM();
+    document.body.appendChild(elem);
+  }
+  return elem;
+})();
+
+document.addEventListener('mouseup', renderBubble);

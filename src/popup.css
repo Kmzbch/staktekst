@@ -320,6 +320,17 @@ input:focus {
     font-size: 12px !important;
     -moz-user-select: none;
     user-select: none;
+
+    width: 70%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: rgba(138, 175, 189, 0.8);
+
+}
+
+.footnote:hover {
+    color: rgb(32, 123, 156) !important;
 }
 
 .tag:hover {

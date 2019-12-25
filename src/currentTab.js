@@ -3,12 +3,20 @@
 import './currentTab.css';
 import IconPreset from './IconPreset.js';
 
+/* */
+const sendCommandMessage = (command) => {
+    chrome.runtime.sendMessage({
+        command: command,
+        selection: document.getSelection().toString()
+    });
+}
+
 /* DOM creation and manipulation */
 const createIconDOM = ({
     className,
     title,
     innerText = "",
-    command: commandId
+    command
 }) => {
     let iconDOM = document.createElement('i');
 
@@ -17,10 +25,7 @@ const createIconDOM = ({
     iconDOM.innerText = innerText;
 
     iconDOM.addEventListener('mousedown', () => {
-        chrome.runtime.sendMessage({
-            command: commandId,
-            selection: document.getSelection().toString()
-        });
+        sendCommandMessage(command)
     });
 
     return iconDOM;
