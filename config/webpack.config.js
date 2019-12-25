@@ -13,9 +13,9 @@ const config = merge(common, {
     currentTab: PATHS.src + "/currentTab.js",
     miraiTranslateScript: PATHS.src + "/miraiTranslateScript.js",
     oddcastScript: PATHS.src + '/oddcastScript.js',
-    iconPreset: PATHS.src + "/IconPreset.js",
     common_lib: PATHS.src + "/common_lib.js",
-    popup_listview: PATHS.src + '/popup_listview.css'
+    popup_listview: PATHS.src + '/popup_listview.css',
+    bubble_lib: PATHS.src + "/bubble_lib.js",
   },
 });
 

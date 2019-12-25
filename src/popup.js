@@ -1,5 +1,5 @@
 import './popup.css';
-
+import * as bubble_lib from './bubble_lib.js';
 import {
   escapeRegExp,
   copyTextWithTitleUrl,
@@ -367,106 +367,5 @@ const addHighlight = (html, regex) => {
 document.addEventListener('DOMContentLoaded', () => {
   renderTextStack()
   initializeEventListeners();
+  document.addEventListener('mouseup', bubble_lib.renderBubble);
 });
-
-/** Bubble */
-import IconPreset from './IconPreset.js';
-
-function sendCommandMessage(command) {
-  // get url and title from footnote
-  let textitem = window.getSelection().getRangeAt(0).commonAncestorContainer.parentElement;
-  let aTag, url, title;
-
-  if (textitem.classList.contains('clip')) {
-    aTag = textitem.querySelector('a');
-    url = aTag.href;
-    title = aTag.innerText || null;
-  } else {
-    url = "";
-    title = "";
-  }
-
-  let words = document.getSelection().toString().replace(/check\s$/, "");
-
-  if (command === "extendedcopy") {
-    copyTextWithTitleUrl(words, title, url);
-  } else if (command === 'pushtext') {
-    addItemToStack(words);
-    renderTextStack();
-  } else {
-    chrome.runtime.sendMessage({
-      command: command,
-      selection: words
-    });
-  }
-}
-
-/* DOM creation and manipulation */
-const createIconDOM = ({
-  className,
-  title,
-  innerText = "",
-  command
-}) => {
-  let iconDOM = document.createElement('i');
-
-  iconDOM.setAttribute('class', className);
-  iconDOM.setAttribute('title', title);
-  iconDOM.innerText = innerText;
-
-  iconDOM.addEventListener('mousedown', () => {
-    sendCommandMessage(command)
-  });
-
-  return iconDOM;
-}
-
-const createBubbleDOM = () => {
-
-  let bubbleDOM = document.createElement('div');
-  let leftContainer = document.createElement('div');
-  let rightContainer = document.createElement('div');
-
-  bubbleDOM.setAttribute('id', 'bubble');
-  leftContainer.setAttribute('id', 'leftContainer');
-  rightContainer.setAttribute('id', 'rightContainer');
-
-  IconPreset.SEARCH_ENGINE_ICONS.forEach(icon => {
-    leftContainer.appendChild(createIconDOM(icon));
-  });
-  IconPreset.SYSTEM_COMMAND_ICONS.forEach(icon => {
-    rightContainer.appendChild(createIconDOM(icon));
-  });
-
-  bubbleDOM.appendChild(leftContainer);
-  bubbleDOM.appendChild(rightContainer);
-
-  return bubbleDOM;
-}
-
-const renderBubble = () => {
-  setTimeout(() => {
-    let selection = document.getSelection();
-
-    if (selection.toString() === '') {
-      bubble.style.display = 'none';
-    } else {
-      bubble.style.display = 'flex';
-
-      let boundingCR = selection.getRangeAt(0).getBoundingClientRect();
-      bubble.style.top = (boundingCR.top - 80) + window.scrollY + 'px';
-      bubble.style.left = Math.floor((boundingCR.left + boundingCR.right) / 2) - 50 + window.scrollX + 'px';
-    }
-  }, 30)
-}
-
-const bubble = (() => {
-  let elem = document.querySelector('#bubble');
-  if (elem == null) {
-    elem = createBubbleDOM();
-    document.body.appendChild(elem);
-  }
-  return elem;
-})();
-
-document.addEventListener('mouseup', renderBubble);
