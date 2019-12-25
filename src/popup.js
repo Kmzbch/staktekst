@@ -91,6 +91,7 @@ const renderStackDOM = (content, footnote, date = formatDate()) => {
   //     <div class="footnote"></div>
   //   </div>
   //   `;
+  // const template = `<div class="stackwrapper">${content}<i class="material-icons checkbox">check</i><input type="date" class="calendar"><div class="spacer"></div><div class="footnote"></div></div>`;
   const template = `<div class="stackwrapper">${content}<i class="material-icons checkbox">check</i><div class="spacer"></div><div class="footnote"></div></div>`;
 
   stackDOM.innerHTML += template;

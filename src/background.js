@@ -72,17 +72,18 @@ function executeCommand(command, words) {
           });
         } else {
           // normal
-          // chrome.tabs.create({
-          //   url: replacedUrl
-          // });
-
-          // panel
-          chrome.windows.create({
-            url: replacedUrl,
-            type: "panel",
-            width: 600,
-            height: 700
+          chrome.tabs.create({
+            url: replacedUrl
           });
+
+          // // panel
+          // chrome.windows.create({
+          //   url: replacedUrl,
+          //   type: "panel",
+          //   width: 784,
+          //   height: 912,
+          //   left: screenLeft - window.outerWidth
+          // });
         }
       } else {
 

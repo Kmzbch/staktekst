@@ -37,6 +37,10 @@ html {
     background: rgba(0, 0, 0, 0.3);
 }
 
+.calendar {
+    display: none;
+}
+
 #hiddenIframe {
     position: absolute;
     top: 0px;

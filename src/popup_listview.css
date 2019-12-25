@@ -268,6 +268,10 @@ input:focus {
     margin: 10px;
 }
 
+.date::after {
+    content: ' Added:';
+}
+
 /* clip styles */
 /* .clip:hover {
     background: azure !important;
