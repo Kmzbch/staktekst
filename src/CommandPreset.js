@@ -30,23 +30,6 @@ const commands = [{
         title: "Youglish",
         contexts: ["selection"],
         url: "https://youglish.com/search/%s",
-        option: ({
-            url
-        }) => {
-            chrome.windows.create({
-                url: url,
-                type: "popup",
-                width: 480,
-                height: 700,
-                focused: true,
-            });
-        }
-    },
-    {
-        id: "smmry",
-        title: "記事を要約(Smmry.com)",
-        contexts: ["page"],
-        url: "https://smmry.com/%u#&SM_LENGTH=10",
     },
     {
         id: "dopeoplesayit",
@@ -73,30 +56,6 @@ const commands = [{
         url: "https://www.vocabulary.com/dictionary/%s",
     },
     {
-        id: "powert",
-        title: "Powere Thesaurus",
-        contexts: ["selection"],
-        url: "https://www.powerthesaurus.org/%s/synonyms",
-    },
-    {
-        id: "ud",
-        title: "Urban Dictionary",
-        url: "https://www.urbandictionary.com/define.php?term=%s",
-        contexts: ["selection"],
-    },
-    {
-        id: "sc",
-        title: "Scrapbox",
-        contexts: ["selection"],
-        url: "https://scrapbox.io/english-idioms/search/page?q=%s",
-    },
-    {
-        id: "keep",
-        title: "Keep",
-        contexts: ["selection"],
-        url: "https://keep.google.com/#search/text%253D%s",
-    },
-    {
         id: "sep2",
         type: 'separator',
         contexts: ["selection"],
@@ -106,12 +65,6 @@ const commands = [{
         title: "Word Sketch",
         contexts: ["selection"],
         url: "https://skell.sketchengine.co.uk/run.cgi/wordsketch?lpos=&query=%s",
-    },
-    {
-        id: "hc",
-        title: "Hyper Collocation",
-        contexts: ["selection"],
-        url: "https://hypcol.marutank.net/ja/?d=f&q=%s",
     },
     {
         id: "google",

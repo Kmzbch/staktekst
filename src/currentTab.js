@@ -1,13 +1,7 @@
+'use strict';
+
 import './currentTab.css';
 import CommandPreset from './CommandPreset.js';
-
-/* communicate with background.js */
-function getMessage(request, sender, sendResponse) {
-    console.log('!!!!');
-    sendResponse({
-        selection: document.getSelection().toString()
-    });
-}
 
 function sendCommandMessage(command) {
     chrome.runtime.sendMessage({
@@ -17,12 +11,12 @@ function sendCommandMessage(command) {
 }
 
 /* DOM creation and manipulation */
-function createIconDOM({
+const createIconDOM = ({
     className,
     title,
     innerText = "",
     command
-}) {
+}) => {
     let iconDOM = document.createElement("i");
     iconDOM.setAttribute("class", className);
     iconDOM.setAttribute("title", title);
@@ -32,19 +26,17 @@ function createIconDOM({
         sendCommandMessage(command)
     });
 
-
     return iconDOM;
 }
 
-function createBubbleDOM() {
+const createBubbleDOM = () => {
 
     let bubbleDOM = document.createElement("div");
-    bubbleDOM.setAttribute("id", "bubble");
-
     let leftContainer = document.createElement("div");
-    leftContainer.setAttribute("id", "leftContainer");
-
     let rightContainer = document.createElement("div");
+
+    bubbleDOM.setAttribute("id", "bubble");
+    leftContainer.setAttribute("id", "leftContainer");
     rightContainer.setAttribute("id", "rightContainer");
 
     CommandPreset.SEARCH_ENGINE_ICONS.forEach(icon => {
@@ -60,14 +52,14 @@ function createBubbleDOM() {
     return bubbleDOM;
 }
 
-function renderBubble() {
+const renderBubble = () => {
     setTimeout(() => {
         let selection = document.getSelection();
 
-        if (selection.toString() === "") {
-            bubbleDOM.style.display = "none";
+        if (selection.toString() === '') {
+            bubbleDOM.style.display = 'none';
         } else {
-            bubbleDOM.style.display = "flex";
+            bubbleDOM.style.display = 'flex';
 
             let boundingCR = selection.getRangeAt(0).getBoundingClientRect();
             bubbleDOM.style.top = (boundingCR.top - 80) + window.scrollY + 'px';
@@ -81,5 +73,13 @@ const bubbleDOM = createBubbleDOM();
 
 document.body.appendChild(bubbleDOM);
 
-chrome.runtime.onMessage.addListener(getMessage);
 document.addEventListener("mouseup", renderBubble);
+
+chrome.runtime.onMessage.addListener(
+    // respond with selected text
+    function getMessage(request, sender, sendResponse) {
+        sendResponse({
+            selection: document.getSelection().toString()
+        });
+    }
+);
