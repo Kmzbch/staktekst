@@ -67,7 +67,7 @@ const createIconDOM = ({
 
     iconDOM.addEventListener('mousedown', () => {
         sendCommandMessage(command);
-        // remove bubble
+        // remove selection and bubble
         document.getSelection().removeAllRanges();
         renderBubble();
     });

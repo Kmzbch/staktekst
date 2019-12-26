@@ -8,6 +8,10 @@
     background-color: orange;
 }
 
+.marked {
+    background-color: blue;
+}
+
 .spacer {
     height: 16px;
 }
@@ -147,6 +151,19 @@ input:focus {
     -moz-user-select: none;
 }
 
+#toolbox {
+    position: absolute;
+    width: 130px;
+    /* right: 18px; */
+    left: 310px;
+
+    top: 13px;
+    justify-content: space-around;
+    display: flex;
+    flex-direction: row;
+}
+
+
 /* .opener */
 .opener-top:hover {
     opacity: 1;
@@ -157,10 +174,9 @@ input:focus {
 }
 
 .opener-top {
-    position: absolute;
+
     color: white;
-    left: 315px;
-    top: 13px;
+    /* left: 315px; */
     margin: auto;
     opacity: 0.3;
     font-size: 14px;
@@ -175,11 +191,29 @@ input:focus {
 }
 
 .switchview {
-    position: absolute;
     color: white;
     opacity: 0.3;
     /* z-index: 1; */
-    left: 345px;
+    /* left: 345px; */
+    top: 13px;
+    margin: auto;
+    font-size: 14px;
+}
+
+
+.fileexport:hover {
+    transition: 0.2s;
+    opacity: 1;
+    cursor: pointer;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+.fileexport {
+    color: white;
+    opacity: 0.3;
+    /* z-index: 1; */
+    /* left: 345px; */
     top: 13px;
     margin: auto;
     font-size: 14px;

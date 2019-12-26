@@ -7,8 +7,8 @@
   <link rel="stylesheet" href="css/font-awesome.min.css" type='text/css' />
   <link rel="stylesheet" href="css/solid.min.css" type='text/css' />
   <link rel="stylesheet" href="css/brands.min.css" type='text/css' />
-  <link rel="stylesheet" href="popup.css" type='text/css' id='style_default' />
-  <link rel="stylesheet" href="popup_listview.css" type='text/css' id='style_listview' disabled />
+  <link rel="stylesheet" href="popup.css" type='text/css' id='style_default' disabled />
+  <link rel="stylesheet" href="popup_listview.css" type='text/css' id='style_listview' />
 </head>
 
 <body>
@@ -19,8 +19,12 @@
         <input class="searchbox" type="search" autofocus="true" spellcheck="false" placeholder="テキストを検索..." />
         <span class="material-icons search-cancel">cancel</span>
       </div>
-      <i class="material-icons opener-top">post_add</i>
-      <i class="material-icons switchview">reorder</i>
+      <div id="toolbox">
+        <i class="material-icons opener-top">post_add</i>
+        <i class="material-icons switchview">reorder</i>
+        <i class="material-icons fileexport">get_app</i>
+
+      </div>
       <div class="header-board"></div>
     </header>
     <div id="main">
@@ -32,6 +36,7 @@
       <div class="textstack">
       </div>
     </div>
+
     <footer class="sticky">
       <div class="button-container">
         <button class="resetBtn button">スタックを空にする</button>

@@ -1,4 +1,3 @@
-import './popup.css';
 import * as bubble_lib from './bubble_lib.js';
 import {
   escapeRegExp,
@@ -13,6 +12,7 @@ const footer = document.querySelector('footer');
 const searchbox = document.querySelector('.searchbox');
 const searchCancelBtn = document.querySelector('.search-cancel');
 const headerBoard = document.querySelector('.header-board');
+const toolBox = document.querySelector('#toolbox');
 const sortBy = document.querySelector('.sort-by');
 const topOpener = (
   () => {
@@ -46,6 +46,7 @@ const viewSwitcher = (
 
 let stack = [];
 let dateStack = [];
+let timer = null;
 
 // const Observable = require('./Observable')
 // const Observer = require('./Observer')
@@ -66,14 +67,27 @@ const switchViewStyles = () => {
   if (defaultStyles.disabled) {
     defaultStyles.disabled = false;
     listviewStyles.disabled = true;
+    viewSwitcher.textContent = "reorder";
+
+    switchSortOrder({
+      byNew: true
+    });
   } else {
     defaultStyles.disabled = true;
     listviewStyles.disabled = false;
+    viewSwitcher.textContent = "format_list_bulleted";
+
+    switchSortOrder({
+      byNew: false
+    });
   }
+
 }
 
-const switchSortOrder = () => {
-  let byNew = !sortBy.innerHTML.includes('New');
+const switchSortOrder = ({
+  byNew = !sortBy.innerHTML.includes('New')
+}) => {
+  // let byNew = !sortBy.innerHTML.includes('New');
   if (byNew) {
     sortBy.innerHTML = 'New <i class="material-icons">arrow_upward</i>';
     stackDOM.style.flexDirection = 'column-reverse';
@@ -232,8 +246,9 @@ const initializeEventListeners = () => {
   })
 
   textareaOpener.addEventListener('click', () => {
-    topOpener.style.display = 'none';
-    viewSwitcher.style.display = 'none';
+
+    toolBox.style.display = 'none';
+
     textareaOpener.style.display = 'none';
     sortBy.style.display = 'none';
     textarea.style.display = 'flex';
@@ -250,6 +265,11 @@ const initializeEventListeners = () => {
   });
 
   textarea.addEventListener('input', (e) => {
+    toolBox.style.display = "none";
+
+    if (timer) {
+      clearTimeout(timer)
+    }
     if (!headerBoard.classList.contains('entering')) {
       headerBoard.classList.add('entering');
     }
@@ -262,8 +282,8 @@ const initializeEventListeners = () => {
       headerBoard.classList.remove('entering');
     }
     headerBoard.textContent = '';
-    topOpener.style.display = 'inline';
-    viewSwitcher.style.display = 'inline';
+
+    toolBox.style.display = 'flex';
 
     textareaOpener.style.display = 'block';
     sortBy.style.display = 'inline-block';
@@ -289,6 +309,10 @@ const initializeEventListeners = () => {
 
       headerBoard.classList.remove('entering');
       headerBoard.textContent = "Item Added!";
+      timer = setTimeout(() => {
+        headerBoard.textContent = '';
+        toolBox.style.display = 'flex';
+      }, 700);
       textarea.value = '';
       return false;
     }
@@ -318,6 +342,7 @@ const initializeEventListeners = () => {
         parent.style.color = 'black !important'
         parent.style.opacity = '0.5';
         parent.style.textDecoration = 'line-through';
+        toolBox.style.display = 'none';
         headerBoard.textContent = "Item Removed!";
 
         // remove
@@ -327,7 +352,8 @@ const initializeEventListeners = () => {
           removeItemFromStorage(index);
           parent.remove();
           setTimeout(() => {
-            headerBoard.textContent = "";
+            headerBoard.textContent = '';
+            toolBox.style.display = 'flex';
           }, 700);
         }, 450);
       }
@@ -384,5 +410,9 @@ const addHighlight = (html, regex) => {
 document.addEventListener('DOMContentLoaded', () => {
   renderTextStack()
   initializeEventListeners();
+
+  // workaround for view switcher delay
+  switchViewStyles();
+
   document.addEventListener('mouseup', bubble_lib.renderBubble);
 });

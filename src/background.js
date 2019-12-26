@@ -75,13 +75,13 @@ const executeCommand = (commandId, text) => {
       chrome.tabs.create({
         url: urlWithQuery
       });
-      // // panel
+      // let offsetX = Math.floor(screen.width / 2);
       // chrome.windows.create({
-      //   url: replacement,
+      //   url: urlWithQuery,
       //   type: "panel",
-      //   width: 784,
+      //   width: offsetX,
       //   height: 912,
-      //   left: screenLeft - window.outerWidth
+      //   left: 0
       // });
     }
   });
