@@ -30,7 +30,19 @@ const textareaOpener = document.querySelector('.opener');
 const textarea = document.querySelector('.add-textitem');
 const stackDOM = document.querySelector('.textstack');
 const resetBtn = document.querySelector('.resetBtn');
-const viewSwitcher = document.querySelector('.switchview');
+const viewSwitcher = (
+  () => {
+    let elem = document.querySelector('.switchview');
+    if (elem === null) {
+      elem = document.createElement('i');
+      elem.className = 'material-icons';
+      elem.classList.add('switchview');
+      elem.textContent = 'reorder';
+    }
+    return elem;
+  }
+)();
+
 
 let stack = [];
 let dateStack = [];
@@ -76,19 +88,12 @@ const switchStickyVisibility = () => {
   if (window.pageYOffset == 0) {
     header.style.opacity = '1';
     footer.style.opacity = '1';
-    setTimeout(() => {
-      headerBoard.parentNode.removeChild(topOpener);
-    }, 60);
   } else if (document.body.offsetHeight + window.scrollY >= document.body.scrollHeight) {
     header.style.opacity = '1';
     footer.style.opacity = '1';
-    headerBoard.parentNode.insertBefore(topOpener, headerBoard);
   } else {
     header.style.opacity = '0';
     footer.style.opacity = '0';
-    setTimeout(() => {
-      headerBoard.parentNode.insertBefore(topOpener, headerBoard);
-    }, 50);
   }
 }
 
@@ -228,6 +233,7 @@ const initializeEventListeners = () => {
 
   textareaOpener.addEventListener('click', () => {
     topOpener.style.display = 'none';
+    viewSwitcher.style.display = 'none';
     textareaOpener.style.display = 'none';
     sortBy.style.display = 'none';
     textarea.style.display = 'flex';
@@ -255,8 +261,9 @@ const initializeEventListeners = () => {
     if (headerBoard.classList.contains('entering')) {
       headerBoard.classList.remove('entering');
     }
-    headerBoard.textContent = "";
+    headerBoard.textContent = '';
     topOpener.style.display = 'inline';
+    viewSwitcher.style.display = 'inline';
 
     textareaOpener.style.display = 'block';
     sortBy.style.display = 'inline-block';

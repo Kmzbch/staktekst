@@ -157,6 +157,7 @@ input:focus {
 
 .switchview:hover {
     transition: 0.2s;
+    opacity: 1;
     cursor: pointer;
     -moz-user-select: none;
     user-select: none;
@@ -165,8 +166,9 @@ input:focus {
 .switchview {
     position: absolute;
     color: white;
-    z-index: 1;
-    left: 350px;
+    opacity: 0.3;
+    /* z-index: 1; */
+    left: 345px;
     top: 13px;
     margin: auto;
     font-size: 14px;
