@@ -16,6 +16,8 @@ const config = merge(common, {
     common_lib: PATHS.src + "/common_lib.js",
     popup_listview: PATHS.src + '/popup_listview.css',
     bubble_lib: PATHS.src + "/bubble_lib.js",
+    Observer: PATHS.src + "/Observer.js",
+    Observable: PATHS.src + "/Observable.js"
   },
 });
 

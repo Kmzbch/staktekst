@@ -35,6 +35,17 @@ const viewSwitcher = document.querySelector('.switchview');
 let stack = [];
 let dateStack = [];
 
+// const Observable = require('./Observable')
+// const Observer = require('./Observer')
+
+// const observable = new Observable();
+// const observer1 = new Observer(stack);
+// observable.subscribe(observer1);
+
+// observable.notifyAll()
+
+
+
 /* switcher */
 const switchViewStyles = () => {
   const defaultStyles = document.querySelector('#style_default');
@@ -178,7 +189,6 @@ const renderTextStack = () => {
     }
   });
 };
-
 
 const initializeEventListeners = () => {
   window.onscroll = switchStickyVisibility;
