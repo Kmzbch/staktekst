@@ -152,6 +152,7 @@ const renderStackDOM = (content, footnote, date = formatDate()) => {
     }
   }
 
+
   // tag stack
   if (typeof hashtag !== 'undefined') {
     hashtag.forEach(t => {
@@ -328,6 +329,7 @@ const initializeEventListeners = () => {
     textarea.style.display = 'flex';
     tagarea.style.display = 'flex';
 
+    console.log('!!');
     textarea.focus();
   });
 
@@ -416,7 +418,8 @@ const initializeEventListeners = () => {
   // });
 
 
-  header.addEventListener('mouseover', () => {
+
+  searchbox.addEventListener('focus', () => {
     // while (tagArea.firstChild) {
     //   tagArea.removeChild(tagArea.firstChild);
     // }
