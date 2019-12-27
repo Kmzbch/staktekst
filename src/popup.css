@@ -4,6 +4,60 @@
     z-index: 999999;
 }
 
+#tagarea {
+    display: none;
+    position: relative;
+    width: 375px;
+    height: 20px;
+    padding: 9px;
+    padding-top: 0;
+    border-top: 0;
+    margin-top: 0;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 5px;
+    background-color: azure;
+}
+
+.hashtag:hover {
+    color: rgba(0, 0, 0, 0.6);
+    font-weight: bold;
+}
+
+
+/* .hashtag:hover::after {
+    content: "\00d7";
+    margin-left: 2px;
+} */
+.hashtag:not(.default):hover::after {
+    content: "\00d7";
+    margin-left: 2px;
+}
+
+.hashtag::before {
+    content: "#";
+}
+
+
+.hashtag {
+    padding: 5px;
+    /* color: lightsalmon !important; */
+    color: rgba(0, 0, 0, 0.5);
+    /* font-weight: bold; */
+    /* border: 1px solid lightsalmon; */
+    /* border-radius: 3px; */
+    margin-left: 0px 3px 0px 0px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+
+}
+
+.error {
+    color: red;
+    float: right;
+    right: 6px;
+}
+
 .highlighted {
     background-color: orange;
 }
@@ -266,7 +320,9 @@ input:focus {
     margin-left: auto;
     margin-right: auto;
     margin-top: 10px;
-    margin-bottom: 5px;
+    /* margin-bottom: 5px; */
+    border-bottom: 0;
+
     background: azure;
     color: rgba(0, 0, 0, 0.7);
     resize: none;
@@ -371,6 +427,10 @@ input:focus {
 
 .tag:hover {
     font-weight: bold;
+}
+
+.tag {
+    margin-right: 6px;
 }
 
 /* remove */

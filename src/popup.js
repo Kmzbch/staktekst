@@ -1,3 +1,4 @@
+import './popup.css';
 import * as bubble_lib from './bubble_lib.js';
 import {
   escapeRegExp,
@@ -42,6 +43,7 @@ const viewSwitcher = (
     return elem;
   }
 )();
+const tagArea = document.querySelector('#tagarea');
 
 
 let stack = [];
@@ -113,10 +115,16 @@ const switchStickyVisibility = () => {
 
 /* stack operation*/
 const renderStackDOM = (content, footnote, date = formatDate()) => {
+  // const {
+  //   pageTitle: pageTitle,
+  //   url
+  // } = footnote;
   const {
     pageTitle: pageTitle,
-    url
+    url,
+    hashtag: hashtag
   } = footnote;
+
 
   const template = `<div class="stackwrapper">${content}<i class="material-icons checkbox">check</i><div class="spacer"></div><div class="footnote"></div></div>`;
 
@@ -131,6 +139,14 @@ const renderStackDOM = (content, footnote, date = formatDate()) => {
   } else {
     lastTextItem.classList.add("note");
     lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#note</span>`;
+    if (typeof hashtag !== 'undefined') {
+      hashtag.forEach(t => {
+        let tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.textContent = '#' + t;
+        lastTextItem.querySelector('.footnote').appendChild(tag);
+      })
+    }
   }
 
   let dateDiv = document.createElement('div');
@@ -149,15 +165,28 @@ const renderStackDOM = (content, footnote, date = formatDate()) => {
 
 }
 
-const addItemToStack = (content) => {
+// const addItemToStack = (content) => {
+//   stack.push({
+//     content: content,
+//     date: formatDate(),
+//     noteTitle: "",
+//     footnote: {
+//       pageTitle: "",
+//       url: ""
+//     }
+//   });
+//   stackStorage.set(JSON.stringify(stack));
+// };
+const addItemToStack = (content, footnote = {}) => {
   stack.push({
     content: content,
     date: formatDate(),
     noteTitle: "",
     footnote: {
       pageTitle: "",
-      url: ""
-    }
+      url: "",
+      hashtag: footnote.hashtag
+    },
   });
   stackStorage.set(JSON.stringify(stack));
 };
@@ -233,6 +262,7 @@ const initializeEventListeners = () => {
   })
 
   /* add-sort container */
+
   topOpener.addEventListener('click', () => {
     textareaOpener.dispatchEvent(new Event('click'));
   });
@@ -252,11 +282,20 @@ const initializeEventListeners = () => {
     textareaOpener.style.display = 'none';
     sortBy.style.display = 'none';
     textarea.style.display = 'flex';
+    tagarea.style.display = 'flex';
+
     textarea.focus();
   });
 
   /* textarea */
   textarea.addEventListener('focus', (e) => {
+    if (tagArea.childElementCount === 0) {
+      let defaultTag = document.createElement('span');
+      defaultTag.classList.add('hashtag');
+      defaultTag.classList.add('default');
+      defaultTag.textContent = 'note';
+      tagArea.appendChild(defaultTag);
+    }
     if (!headerBoard.classList.contains('entering')) {
       headerBoard.classList.add('entering');
     }
@@ -273,11 +312,67 @@ const initializeEventListeners = () => {
     if (!headerBoard.classList.contains('entering')) {
       headerBoard.classList.add('entering');
     }
+
     let info = extractTextInfo(e.target.value);
+
+    let err = tagArea.querySelector('.error');
+    if (err !== null) {
+      err.parentElement.removeChild(err);
+    }
+
+    let tags = e.target.value.match(/(^|\s)((#|＃)[^\s]+)(\s$|\n)/);
+
+    if (tags !== null) {
+      let regex = new RegExp(`(^|\\s)${escapeRegExp(tags[2])}(\\s$|\\n)`);
+      let tagsAdded = tagarea.querySelectorAll('.hashtag').length;
+      console.log(tagsAdded);
+      if (tagsAdded >= 5) {
+        const errorMessage = document.createElement('span');
+        errorMessage.className = 'error';
+        errorMessage.textContent = 'タグは最大5個まで';
+        tagarea.appendChild(errorMessage);
+      } else {
+        e.target.value = e.target.value.replace(regex, '')
+        if (tags) {
+          let tagItem = document.createElement('span');
+          tagItem.classList.add('hashtag');
+          tagItem.textContent = tags[2].slice(1);
+          tagItem.addEventListener('click', (e) => {
+
+            e.target.parentElement.removeChild(e.target);
+          });
+
+          tagArea.appendChild(tagItem);
+        }
+      }
+
+
+    }
+
     headerBoard.innerHTML = `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`;
   })
 
-  textarea.addEventListener('focusout', () => {
+
+  // textarea.addEventListener('focusout', () => {
+  //   if (headerBoard.classList.contains('entering')) {
+  //     headerBoard.classList.remove('entering');
+  //   }
+  //   headerBoard.textContent = '';
+
+  //   toolBox.style.display = 'flex';
+
+  //   textareaOpener.style.display = 'block';
+  //   sortBy.style.display = 'inline-block';
+  //   textarea.style.display = 'none';
+  //   tagArea.style.display = 'none';
+  // });
+
+
+  header.addEventListener('mouseover', () => {
+    // while (tagArea.firstChild) {
+    //   tagArea.removeChild(tagArea.firstChild);
+    // }
+
     if (headerBoard.classList.contains('entering')) {
       headerBoard.classList.remove('entering');
     }
@@ -288,33 +383,77 @@ const initializeEventListeners = () => {
     textareaOpener.style.display = 'block';
     sortBy.style.display = 'inline-block';
     textarea.style.display = 'none';
-  });
+    tagArea.style.display = 'none';
+  })
+
+  stackDOM.addEventListener('mouseover', () => {
+    // while (tagArea.firstChild) {
+    //   tagArea.removeChild(tagArea.firstChild);
+    // }
+
+    if (headerBoard.classList.contains('entering')) {
+      headerBoard.classList.remove('entering');
+    }
+    headerBoard.textContent = '';
+
+    toolBox.style.display = 'flex';
+
+    textareaOpener.style.display = 'block';
+    sortBy.style.display = 'inline-block';
+    textarea.style.display = 'none';
+    tagArea.style.display = 'none';
+
+  })
 
   textarea.addEventListener('keyup', (e) => {
     if (e.keyCode === 13) {
-      let text = textarea.value.trim();
-      if (text === '' || text === '\n') {
+      let err = tagArea.querySelector('.error');
+      if (err === null) {
+        let text = textarea.value.trim();
+        if (text === '' || text === '\n') {
+          textarea.value = '';
+          return false;
+        }
+
+        // let footnote = {
+        //   pageTitle: "",
+        //   url: ""
+        // };
+        // addItemToStack(text);
+        // renderStackDOM(text, footnote);
+
+        let tagDOMs = tagArea.childNodes;
+        let tags = []
+        // exclude the first element
+        for (let i = 1; i < tagDOMs.length; i++) {
+          tags.push(tagDOMs[i].innerText);
+        }
+
+        let footnote = {
+          pageTitle: "",
+          url: "",
+          hashtag: tags
+        };
+
+        addItemToStack(text, footnote);
+        renderStackDOM(text, footnote);
+
+
+        while (tagArea.lastChild && tagArea.children.length > 1) {
+          tagArea.removeChild(tagArea.lastChild);
+        }
+
+        headerBoard.classList.remove('entering');
+        headerBoard.textContent = "Item Added!";
+        timer = setTimeout(() => {
+          headerBoard.textContent = '';
+          toolBox.style.display = 'flex';
+        }, 700);
         textarea.value = '';
-        textarea.dispatchEvent(new Event('focusout'));
         return false;
+
       }
 
-      let footnote = {
-        pageTitle: "",
-        url: ""
-      };
-
-      addItemToStack(text);
-      renderStackDOM(text, footnote);
-
-      headerBoard.classList.remove('entering');
-      headerBoard.textContent = "Item Added!";
-      timer = setTimeout(() => {
-        headerBoard.textContent = '';
-        toolBox.style.display = 'flex';
-      }, 700);
-      textarea.value = '';
-      return false;
     }
 
   });
@@ -330,7 +469,9 @@ const initializeEventListeners = () => {
   stackDOM.addEventListener('click', e => {
     // tag filter
     if (e.target.classList.contains('tag')) {
-      searchbox.value = e.target.innerHTML.slice(1);
+      // searchbox.value = e.target.innerHTML.slice(1);
+      searchbox.value = e.target.innerHTML;
+
       searchbox.dispatchEvent(new Event('input'));
     } else {
 
