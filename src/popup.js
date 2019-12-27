@@ -5,7 +5,8 @@ import {
   copyTextWithTitleUrl,
   extractTextInfo,
   containsJapanese,
-  formatDate
+  formatDate,
+  adjustDOMHeight
 } from './common_lib.js';
 
 const header = document.querySelector('header');
@@ -47,6 +48,8 @@ const tagArea = document.querySelector('#tagarea');
 
 
 let stack = [];
+let tagStack = ['note'];
+
 let dateStack = [];
 let timer = null;
 
@@ -149,6 +152,17 @@ const renderStackDOM = (content, footnote, date = formatDate()) => {
     }
   }
 
+  // tag stack
+  if (typeof hashtag !== 'undefined') {
+    hashtag.forEach(t => {
+      let index = tagStack.indexOf(t);
+      if (index === -1) {
+        tagStack.push(t);
+      }
+    })
+  }
+
+  // date
   let dateDiv = document.createElement('div');
   dateDiv.className = 'date';
   dateDiv.textContent = date;
@@ -234,6 +248,7 @@ const renderTextStack = () => {
       stack.forEach(res => {
         renderStackDOM(res.content, res.footnote, res.date);
       });
+      tagStack = tagStack.sort();
     }
   });
 };
@@ -249,12 +264,41 @@ const initializeEventListeners = () => {
     if (term) {
       searchCancelBtn.style = 'display: block !important';
       footer.style.display = 'none';
+      toolBox.style.display = 'none';
     } else {
       searchCancelBtn.style = 'display: none !important';
       footer.style.display = 'block';
       headerBoard.textContent = '';
+      toolBox.style.display = 'flex';
     }
+
   });
+
+  searchbox.addEventListener('keyup', (e) => {
+    // if (searchbox.value.slice(0, 1) === '#') {
+    if (e.keyCode === 38 && e.ctrlKey) {
+      let tagQuery = tagStack.pop();
+      if (searchbox.value === '#' + tagQuery) {
+        tagStack.unshift(tagQuery);
+        tagQuery = tagStack.pop();
+      }
+      searchbox.value = '#' + tagQuery;
+      tagStack.unshift(tagQuery);
+      searchbox.dispatchEvent(new Event('input'));
+    } else if (e.keyCode === 40 && e.ctrlKey) {
+      let tagQuery = tagStack.shift();
+      if (searchbox.value === '#' + tagQuery) {
+        tagStack.push(tagQuery);
+        tagQuery = tagStack.shift();
+      }
+      searchbox.value = '#' + tagQuery;
+      tagStack.push(tagQuery);
+      searchbox.dispatchEvent(new Event('input'));
+    }
+
+    // }
+
+  })
 
   searchCancelBtn.addEventListener('click', () => {
     searchbox.value = '';
@@ -294,6 +338,8 @@ const initializeEventListeners = () => {
       defaultTag.classList.add('hashtag');
       defaultTag.classList.add('default');
       defaultTag.textContent = 'note';
+      //
+
       tagArea.appendChild(defaultTag);
     }
     if (!headerBoard.classList.contains('entering')) {
@@ -304,6 +350,9 @@ const initializeEventListeners = () => {
   });
 
   textarea.addEventListener('input', (e) => {
+
+    adjustDOMHeight(textarea, 25);
+
     toolBox.style.display = "none";
 
     if (timer) {
@@ -338,7 +387,6 @@ const initializeEventListeners = () => {
           tagItem.classList.add('hashtag');
           tagItem.textContent = tags[2].slice(1);
           tagItem.addEventListener('click', (e) => {
-
             e.target.parentElement.removeChild(e.target);
           });
 
@@ -414,13 +462,6 @@ const initializeEventListeners = () => {
           textarea.value = '';
           return false;
         }
-
-        // let footnote = {
-        //   pageTitle: "",
-        //   url: ""
-        // };
-        // addItemToStack(text);
-        // renderStackDOM(text, footnote);
 
         let tagDOMs = tagArea.childNodes;
         let tags = []

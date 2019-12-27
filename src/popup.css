@@ -315,7 +315,7 @@ input:focus {
 .add-textitem {
     display: none;
     width: 375px;
-    height: 50px;
+    height: 25px;
     padding: 9px;
     margin-left: auto;
     margin-right: auto;

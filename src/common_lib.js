@@ -84,11 +84,42 @@ function pushText(content, pageTitle = '', url = '') {
     });
 }
 
+function adjustDOMHeight(ta, minHeight) {
+    const isOverflown = ({
+        clientWidth,
+        clientHeight,
+        scrollWidth,
+        scrollHeight
+    }) => {
+        return scrollHeight > clientHeight || scrollWidth > clientWidth;
+    }
+
+    // variable height
+    while (!isOverflown(ta)) {
+        let initialHeight = parseFloat(getComputedStyle(ta).height);
+        if (initialHeight < minHeight) {} else {
+            ta.style.height = (initialHeight - 10) + "px";
+        }
+    }
+
+    while (isOverflown(ta)) {
+        let initialHeight = parseFloat(getComputedStyle(ta).height);
+        let adjustedHeight = (initialHeight + 10);
+        if (adjustedHeight < minHeight) {
+            adjustedHeight = minHeight;
+        }
+        ta.style.height = adjustedHeight + "px";
+    }
+
+}
+
+
 export {
     copyTextWithTitleUrl,
     pushText,
     escapeRegExp,
     extractTextInfo,
     containsJapanese,
-    formatDate
+    formatDate,
+    adjustDOMHeight
 }
