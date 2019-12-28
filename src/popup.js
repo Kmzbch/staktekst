@@ -142,14 +142,17 @@ const updateSearchResult = (e) => {
     let termRegex;
     let hits = 0;
 
+
     // Search in Japanese/English
     if (containsJapanese(term)) {
       termRegex = new RegExp(`(${escapeRegExp(term)})(.*?)`, 'ig');
     } else {
       termRegex = new RegExp(`\\b(${escapeRegExp(term)})(.*?)\\b`, 'ig');
+
     }
 
     Array.from(stackDOM.children)
+      .filter(textItem => !textItem.classList.contains('date'))
       .map(textItem => {
         // remove text decoration and highlight
         textItem.firstChild.innerHTML = textItem.firstChild.innerText;
@@ -163,13 +166,17 @@ const updateSearchResult = (e) => {
       })
       .filter(textItem => !textItem.classList.contains('filtered'))
       .forEach(textItem => {
+        let contentDIV = textItem.firstElementChild;
         // add highlight when searching
         if (term.length >= 1) {
-          let contentDIV = textItem.firstElementChild;
-          contentDIV.innerHTML = contentDIV.innerHTML.replace(termRegex, "<span class='highlighted'>$1</span>$2");
+          contentDIV.innerHTML = contentDIV.textContent.replace(termRegex, "<span class='highlighted'>$1</span>$2");
+
+        }
+        // urls can be hit without highlight
+        if (contentDIV.textContent.match(/(https?:\/\/[^\s]+)/g)) {
+          contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[^\s]+)/g, "<a class='emphasized' href='$1' target='_blank'>$1</a>");
         }
       });
-
     return hits;
   };
 }
@@ -225,6 +232,10 @@ const renderTextItem = (content, footnote, date = formatDate()) => {
 
   // consider text item without url as a note
   let lastTextItem = stackDOM.lastElementChild;
+
+  // 
+  let contentDIV = lastTextItem.firstElementChild;
+  contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[^\s]+)/g, "<a href='$1' target='_blank'>$1</a>");
 
   if (url) {
     lastTextItem.classList.add("clip");
@@ -425,10 +436,6 @@ const initializeEventListeners = () => {
 
         let hashtags = removeHashTags();
 
-        // for (let i = 1; i < tagarea.childNodes.length; i++) {
-        //   hashtags.push(tagarea.childNodes[i].innerText);
-        // }
-
         let footnote = {
           pageTitle: "",
           url: "",
@@ -438,7 +445,7 @@ const initializeEventListeners = () => {
         addTextItemToStack(text, footnote);
         renderTextItem(text, footnote);
 
-
+        // display message
         headerBoard.classList.remove('entering');
         headerBoard.textContent = "Item Added!";
         timer = setTimeout(() => {
@@ -446,6 +453,7 @@ const initializeEventListeners = () => {
           toolBox.style.display = 'flex';
         }, 700);
 
+        // clear form and holders
         textarea.value = '';
         textHolder = '';
         tagsHolder = [];
@@ -510,7 +518,6 @@ const restoreTextArea = () => {
         addNewTagItem(tag);
       })
     }
-
     chrome.storage.local.set({
       textarea: '',
       tags: []
