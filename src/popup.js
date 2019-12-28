@@ -31,7 +31,7 @@ const topOpener = (
 const textareaOpener = document.querySelector('.opener');
 const textarea = document.querySelector('.add-textitem');
 const stackDOM = document.querySelector('.textstack');
-const resetBtn = document.querySelector('.resetBtn');
+const resetButton = document.querySelector('.resetBtn');
 const viewSwitcher = (
   () => {
     let elem = document.querySelector('.switchview');
@@ -45,54 +45,39 @@ const viewSwitcher = (
   }
 )();
 const tagArea = document.querySelector('#tagarea');
-
-
 let stack = [];
 let tagStack = ['note'];
-
 let dateStack = [];
+let textHolder = '';
+let tagsHolder = [];
 let timer = null;
+let background = chrome.extension.getBackgroundPage();
 
-// const Observable = require('./Observable')
-// const Observer = require('./Observer')
+/* switches */
+const switchStyles = () => {
+  let defaultview = document.querySelector('#style_default');
+  let listview = document.querySelector('#style_listview');
 
-// const observable = new Observable();
-// const observer1 = new Observer(stack);
-// observable.subscribe(observer1);
-
-// observable.notifyAll()
-
-
-
-/* switcher */
-const switchViewStyles = () => {
-  const defaultStyles = document.querySelector('#style_default');
-  const listviewStyles = document.querySelector('#style_listview');
-
-  if (defaultStyles.disabled) {
-    defaultStyles.disabled = false;
-    listviewStyles.disabled = true;
-    viewSwitcher.textContent = "reorder";
-
+  if (defaultview.disabled) {
+    defaultview.disabled = false;
+    listview.disabled = true;
+    viewSwitcher.textContent = 'reorder';
     switchSortOrder({
       byNew: true
     });
   } else {
-    defaultStyles.disabled = true;
-    listviewStyles.disabled = false;
-    viewSwitcher.textContent = "format_list_bulleted";
-
+    defaultview.disabled = true;
+    listview.disabled = false;
+    viewSwitcher.textContent = 'format_list_bulleted';
     switchSortOrder({
       byNew: false
     });
   }
-
 }
 
 const switchSortOrder = ({
   byNew = !sortBy.innerHTML.includes('New')
 }) => {
-  // let byNew = !sortBy.innerHTML.includes('New');
   if (byNew) {
     sortBy.innerHTML = 'New <i class="material-icons">arrow_upward</i>';
     stackDOM.style.flexDirection = 'column-reverse';
@@ -116,18 +101,147 @@ const switchStickyVisibility = () => {
   }
 }
 
+const switchTextAreaOpenerIcons = () => {
+  if (textareaOpener.textContent === 'post_add') {
+    textareaOpener.textContent = 'add';
+  } else if (textareaOpener.textContent === 'add') {
+    textareaOpener.textContent = 'post_add';
+  }
+}
+
+const showAddTextItemForm = () => {
+  updateHeaderBoard();
+  // hide
+  toolBox.style.display = 'none';
+  textareaOpener.style.display = 'none';
+  sortBy.style.display = 'none';
+  // show form
+  textarea.style.display = 'flex';
+  tagarea.style.display = 'flex';
+
+  textarea.focus();
+}
+
+const hideAddTextItemForm = () => {
+  if (headerBoard.classList.contains('entering')) {
+    headerBoard.classList.remove('entering');
+  }
+  headerBoard.textContent = '';
+
+  toolBox.style.display = 'flex';
+  textareaOpener.style.display = 'block';
+  sortBy.style.display = 'inline-block';
+  // hide form
+  textarea.style.display = 'none';
+  tagarea.style.display = 'none';
+}
+
+const updateHeaderBoard = () => {
+  if (!headerBoard.classList.contains('entering')) {
+    headerBoard.classList.add('entering');
+  }
+  let info = extractTextInfo(textarea.value);
+  headerBoard.innerHTML = `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`;
+}
+
+const updateSearchResult = (e) => {
+  let term = e.target.value.trim().toLowerCase();
+  let hits = filterTextItems(term);
+
+  // change styles on search
+  if (term) {
+    searchCancelBtn.style = 'display: block !important';
+    footer.style.display = 'none';
+    toolBox.style.display = 'none';
+    headerBoard.textContent = hits === 0 ? 'No Results' : `${hits} of ${stackDOM.children.length}`;
+  } else {
+    searchCancelBtn.style = 'display: none !important';
+    footer.style.display = 'block';
+    toolBox.style.display = 'flex';
+    headerBoard.textContent = '';
+  }
+
+  function filterTextItems(term) {
+    let termRegex;
+    let hits = 0;
+
+    // Search in Japanese/English
+    if (containsJapanese(term)) {
+      termRegex = new RegExp(`(${escapeRegExp(term)})(.*?)`, 'ig');
+    } else {
+      termRegex = new RegExp(`\\b(${escapeRegExp(term)})(.*?)\\b`, 'ig');
+    }
+
+    Array.from(stackDOM.children)
+      .map(textItem => {
+        textItem.innerHTML = removeHighlight(textItem.innerHTML);
+        if (textItem.textContent.match(termRegex)) {
+          textItem.classList.remove('filtered');
+          hits++;
+        } else {
+          textItem.classList.add('filtered');
+        }
+        return textItem;
+      })
+      .filter(textItem => !textItem.classList.contains('filtered'))
+      .forEach(textItem => {
+        if (term.length >= 1) {
+          // exclude unnecessary elements and highlight the term
+          let endIndex = textItem.innerHTML.search(/<i class="material-icons checkbox">check<\/i>/i);
+          let textContent = textItem.innerHTML.substring(0, endIndex);
+          let cutoff = textItem.innerHTML.substring(endIndex, textItem.innerHTML.length)
+
+          textItem.innerHTML = addHighlight(textContent, termRegex) + cutoff;
+        }
+      });
+
+    return hits;
+  };
+}
+
+const resetAll = () => {
+  stackStorage.reset();
+  while (stackDOM.firstChild) {
+    stackDOM.removeChild(stackDOM.firstChild);
+  }
+  textarea.value = '';
+  searchbox.value = '';
+  stack = [];
+  dateStack = [];
+  tagStack = ['note'];
+  textHolder = '';
+  tagsHolder = '';
+}
+
+// save text and hashtags in the textarea when closing
+const saveAddItemForm = () => {
+  background.chrome.storage.local.set({
+    textarea: textHolder,
+    tags: tagsHolder
+  });
+}
+
 /* stack operation*/
-const renderStackDOM = (content, footnote, date = formatDate()) => {
-  // const {
-  //   pageTitle: pageTitle,
-  //   url
-  // } = footnote;
+const renderStack = () => {
+  stackStorage.get(raw => {
+    if (typeof raw === 'undefined') {
+      stackStorage.reset();
+    } else {
+      stack = JSON.parse(raw);
+      stack.forEach(res => {
+        renderTextItem(res.content, res.footnote, res.date);
+      });
+      tagStack = tagStack.sort();
+    }
+  });
+};
+
+const renderTextItem = (content, footnote, date = formatDate()) => {
   const {
     pageTitle: pageTitle,
     url,
     hashtag: hashtag
   } = footnote;
-
 
   const template = `<div class="stackwrapper">${content}<i class="material-icons checkbox">check</i><div class="spacer"></div><div class="footnote"></div></div>`;
 
@@ -151,7 +265,6 @@ const renderStackDOM = (content, footnote, date = formatDate()) => {
       })
     }
   }
-
 
   // tag stack
   if (typeof hashtag !== 'undefined') {
@@ -177,22 +290,8 @@ const renderStackDOM = (content, footnote, date = formatDate()) => {
       dateStack.push(date);
     }
   }
-
 }
-
-// const addItemToStack = (content) => {
-//   stack.push({
-//     content: content,
-//     date: formatDate(),
-//     noteTitle: "",
-//     footnote: {
-//       pageTitle: "",
-//       url: ""
-//     }
-//   });
-//   stackStorage.set(JSON.stringify(stack));
-// };
-const addItemToStack = (content, footnote = {}) => {
+const addTextItemToStack = (content, footnote = {}) => {
   stack.push({
     content: content,
     date: formatDate(),
@@ -206,165 +305,84 @@ const addItemToStack = (content, footnote = {}) => {
   stackStorage.set(JSON.stringify(stack));
 };
 
-const filterTextItems = (term) => {
-  let termRegex;
-  let hits = 0;
-
-  if (containsJapanese(term)) {
-    termRegex = new RegExp(`(${escapeRegExp(term)})(.*?)`, 'ig');
-  } else {
-    termRegex = new RegExp(`\\b(${escapeRegExp(term)})(.*?)\\b`, 'ig');
-  }
-
-  Array.from(stackDOM.children)
-    .map(item => {
-      item.innerHTML = removeHighlight(item.innerHTML);
-      if (item.textContent.match(termRegex)) {
-        item.classList.remove('filtered');
-        hits++;
-      } else {
-        item.classList.add('filtered');
-      }
-      return item;
-    })
-    .filter(item => !item.classList.contains('filtered'))
-    .forEach(item => {
-      if (term.length >= 1) {
-        let endIndex = item.innerHTML.search(/<i class="material-icons checkbox">check<\/i>/i);
-        let textContent = item.innerHTML.substring(0, endIndex);
-        let cutoff = item.innerHTML.substring(endIndex, item.innerHTML.length)
-        item.innerHTML = addHighlight(textContent, termRegex) + cutoff;
-      }
-    });
-  headerBoard.textContent = hits === 0 ? 'No Results' : `${hits} of ${stackDOM.children.length}`;
-};
-
-/* initializer */
-const renderTextStack = () => {
-  stackStorage.get(raw => {
-    if (typeof raw === 'undefined') {
-      stackStorage.reset();
-    } else {
-      stack = JSON.parse(raw);
-      stack.forEach(res => {
-        renderStackDOM(res.content, res.footnote, res.date);
-      });
-      tagStack = tagStack.sort();
-    }
-  });
-};
+const removeTextItemFromStack = (index) => {
+  stack.splice(index, 1);
+  stackStorage.set(JSON.stringify(stack));
+}
 
 const initializeEventListeners = () => {
+  /* window */
   window.onscroll = switchStickyVisibility;
 
-  /* searchbox */
-  searchbox.addEventListener('input', (e) => {
-    const term = searchbox.value.trim().toLowerCase();
-    filterTextItems(term);
-    // change styles on search
-    if (term) {
-      searchCancelBtn.style = 'display: block !important';
-      footer.style.display = 'none';
-      toolBox.style.display = 'none';
-    } else {
-      searchCancelBtn.style = 'display: none !important';
-      footer.style.display = 'block';
-      headerBoard.textContent = '';
-      toolBox.style.display = 'flex';
-    }
+  window.onunload = saveAddItemForm; // fired when popup.html closing
 
-  });
+  /* search container */
+  searchbox.addEventListener('input', updateSearchResult);
 
   searchbox.addEventListener('keyup', (e) => {
-    // if (searchbox.value.slice(0, 1) === '#') {
-    if (e.keyCode === 38 && e.ctrlKey) {
-      let tagQuery = tagStack.pop();
-      if (searchbox.value === '#' + tagQuery) {
-        tagStack.unshift(tagQuery);
+    // rotate search query of hashtags
+    if (e.ctrlKey) {
+      let tagQuery = "";
+      if (e.keyCode === 38) {
         tagQuery = tagStack.pop();
-      }
-      searchbox.value = '#' + tagQuery;
-      tagStack.unshift(tagQuery);
-      searchbox.dispatchEvent(new Event('input'));
-    } else if (e.keyCode === 40 && e.ctrlKey) {
-      let tagQuery = tagStack.shift();
-      if (searchbox.value === '#' + tagQuery) {
-        tagStack.push(tagQuery);
+
+        if (searchbox.value === '#' + tagQuery) {
+          tagStack.unshift(tagQuery);
+          tagQuery = tagStack.pop();
+        }
+        tagStack.unshift(tagQuery);
+      } else if (e.keyCode === 40) {
         tagQuery = tagStack.shift();
+
+        if (searchbox.value === '#' + tagQuery) {
+          tagStack.push(tagQuery);
+          tagQuery = tagStack.shift();
+        }
+        tagStack.push(tagQuery);
       }
-      searchbox.value = '#' + tagQuery;
-      tagStack.push(tagQuery);
-      searchbox.dispatchEvent(new Event('input'));
+      fireSearchWithQuery('#' + tagQuery);
     }
-
-    // }
-
   })
+
+  searchbox.addEventListener('focus', hideAddTextItemForm);
 
   searchCancelBtn.addEventListener('click', () => {
-    searchbox.value = '';
-    searchbox.dispatchEvent(new Event('input'));
+    fireSearchWithQuery('');
   })
 
-  /* add-sort container */
-
+  /* toolbox container */
   topOpener.addEventListener('click', () => {
     textareaOpener.dispatchEvent(new Event('click'));
   });
 
-  textareaOpener.addEventListener('mouseover', () => {
-    textareaOpener.textContent = 'post_add';
-  })
+  viewSwitcher.addEventListener('click', switchStyles);
 
-  textareaOpener.addEventListener('mouseout', () => {
-    textareaOpener.textContent = 'add';
-  })
+  // to-do: download btn
 
-  textareaOpener.addEventListener('click', () => {
+  /* add-sort container */
+  textareaOpener.addEventListener('mouseover', switchTextAreaOpenerIcons);
 
-    toolBox.style.display = 'none';
+  textareaOpener.addEventListener('mouseout', switchTextAreaOpenerIcons);
 
-    textareaOpener.style.display = 'none';
-    sortBy.style.display = 'none';
-    textarea.style.display = 'flex';
-    tagarea.style.display = 'flex';
+  textareaOpener.addEventListener('click', showAddTextItemForm);
 
-    console.log('!!');
-    textarea.focus();
-  });
+  sortBy.addEventListener('click', switchSortOrder);
 
   /* textarea */
-  textarea.addEventListener('focus', (e) => {
-    if (tagArea.childElementCount === 0) {
-      let defaultTag = document.createElement('span');
-      defaultTag.classList.add('hashtag');
-      defaultTag.classList.add('default');
-      defaultTag.textContent = 'note';
-      //
-
-      tagArea.appendChild(defaultTag);
-    }
-    if (!headerBoard.classList.contains('entering')) {
-      headerBoard.classList.add('entering');
-    }
-    let info = extractTextInfo(e.target.value);
-    headerBoard.innerHTML = `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`;
-  });
-
   textarea.addEventListener('input', (e) => {
-
-    adjustDOMHeight(textarea, 25);
-
-    toolBox.style.display = "none";
+    // initialize
+    // save current textarea and tagarea
+    textHolder = e.target.value.trim();
+    // console.log(tagArea.childNodes);
+    // tagArea.childNodes.forEach(t => {
+    //   tagsHolder.push(t);
+    // })
 
     if (timer) {
       clearTimeout(timer)
     }
-    if (!headerBoard.classList.contains('entering')) {
-      headerBoard.classList.add('entering');
-    }
 
-    let info = extractTextInfo(e.target.value);
+    adjustDOMHeight(textarea, 25);
 
     let err = tagArea.querySelector('.error');
     if (err !== null) {
@@ -395,65 +413,9 @@ const initializeEventListeners = () => {
           tagArea.appendChild(tagItem);
         }
       }
-
-
     }
 
-    headerBoard.innerHTML = `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`;
-  })
-
-
-  // textarea.addEventListener('focusout', () => {
-  //   if (headerBoard.classList.contains('entering')) {
-  //     headerBoard.classList.remove('entering');
-  //   }
-  //   headerBoard.textContent = '';
-
-  //   toolBox.style.display = 'flex';
-
-  //   textareaOpener.style.display = 'block';
-  //   sortBy.style.display = 'inline-block';
-  //   textarea.style.display = 'none';
-  //   tagArea.style.display = 'none';
-  // });
-
-
-
-  searchbox.addEventListener('focus', () => {
-    // while (tagArea.firstChild) {
-    //   tagArea.removeChild(tagArea.firstChild);
-    // }
-
-    if (headerBoard.classList.contains('entering')) {
-      headerBoard.classList.remove('entering');
-    }
-    headerBoard.textContent = '';
-
-    toolBox.style.display = 'flex';
-
-    textareaOpener.style.display = 'block';
-    sortBy.style.display = 'inline-block';
-    textarea.style.display = 'none';
-    tagArea.style.display = 'none';
-  })
-
-  stackDOM.addEventListener('mouseover', () => {
-    // while (tagArea.firstChild) {
-    //   tagArea.removeChild(tagArea.firstChild);
-    // }
-
-    if (headerBoard.classList.contains('entering')) {
-      headerBoard.classList.remove('entering');
-    }
-    headerBoard.textContent = '';
-
-    toolBox.style.display = 'flex';
-
-    textareaOpener.style.display = 'block';
-    sortBy.style.display = 'inline-block';
-    textarea.style.display = 'none';
-    tagArea.style.display = 'none';
-
+    updateHeaderBoard();
   })
 
   textarea.addEventListener('keyup', (e) => {
@@ -479,9 +441,8 @@ const initializeEventListeners = () => {
           hashtag: tags
         };
 
-        addItemToStack(text, footnote);
-        renderStackDOM(text, footnote);
-
+        addTextItemToStack(text, footnote);
+        renderTextItem(text, footnote);
 
         while (tagArea.lastChild && tagArea.children.length > 1) {
           tagArea.removeChild(tagArea.lastChild);
@@ -494,6 +455,8 @@ const initializeEventListeners = () => {
           toolBox.style.display = 'flex';
         }, 700);
         textarea.value = '';
+        textHolder = '';
+        tagsHolder = [];
         return false;
 
       }
@@ -502,23 +465,14 @@ const initializeEventListeners = () => {
 
   });
 
-  sortBy.addEventListener('click', switchSortOrder);
-
   /* checkboxes for text stack */
-  stackDOM.addEventListener('mouseover', () => {
-    textarea.style.display = 'none';
-    sortBy.style.display = 'inline-block';
-  });
+  stackDOM.addEventListener('mouseover', hideAddTextItemForm)
 
   stackDOM.addEventListener('click', e => {
     // tag filter
     if (e.target.classList.contains('tag')) {
-      // searchbox.value = e.target.innerHTML.slice(1);
-      searchbox.value = e.target.innerHTML;
-
-      searchbox.dispatchEvent(new Event('input'));
+      fireSearchWithQuery(e.target.innerHTML);
     } else {
-
       if (e.target.classList.contains('checkbox')) {
         const parent = e.target.parentElement;
 
@@ -534,7 +488,8 @@ const initializeEventListeners = () => {
         setTimeout(() => {
           const lists = Array.from(stackDOM.querySelectorAll('.stackwrapper'));
           let index = lists.indexOf(e.target.parentElement);
-          removeItemFromStorage(index);
+
+          removeTextItemFromStack(index);
           parent.remove();
           setTimeout(() => {
             headerBoard.textContent = '';
@@ -546,25 +501,17 @@ const initializeEventListeners = () => {
 
   });
 
-  viewSwitcher.addEventListener('click', switchViewStyles);
+  /* reset button */
+  resetButton.addEventListener('click', resetAll);
 
-  resetBtn.addEventListener('click', () => {
-    stackStorage.reset();
-    while (stackDOM.firstChild) {
-      stackDOM.removeChild(stackDOM.firstChild);
-    }
-    textarea.value = '';
-    stack = [];
-    dateStack = [];
-  });
+  /* inner functions */
+  function fireSearchWithQuery(query) {
+    searchbox.value = query;
+    searchbox.dispatchEvent(new Event('input'));
+  };
 }
 
 /* local storage */
-const removeItemFromStorage = (index) => {
-  stack.splice(index, 1);
-  stackStorage.set(JSON.stringify(stack));
-}
-
 const stackStorage = {
   get: callback => {
     chrome.storage.local.get(['raw'], result => {
@@ -593,11 +540,18 @@ const addHighlight = (html, regex) => {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  renderTextStack()
+  renderStack()
   initializeEventListeners();
 
-  // workaround for view switcher delay
-  switchViewStyles();
+  // workaround to avoid displaying view switcher delay
+  switchStyles();
 
   document.addEventListener('mouseup', bubble_lib.renderBubble);
+
+  // restore textarea value
+  chrome.storage.local.get(['textarea', 'tags'], res => {
+    textarea.textContent = res.textarea;
+    textHolder = res.textarea;
+    console.log(res.tags);
+  })
 });

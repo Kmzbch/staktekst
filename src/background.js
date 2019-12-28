@@ -60,6 +60,8 @@ const BUBBLE_MENUS = [{
   },
 ];
 
+
+
 const executeCommand = (commandId, text) => {
   chrome.tabs.query({
     active: true,
