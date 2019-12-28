@@ -15,42 +15,24 @@ const searchbox = document.querySelector('.searchbox');
 const searchCancelBtn = document.querySelector('.search-cancel');
 const headerBoard = document.querySelector('.header-board');
 const toolBox = document.querySelector('#toolbox');
-const sortBy = document.querySelector('.sort-by');
-const topOpener = (
-  () => {
-    let elem = document.querySelector('.opener-top');
-    if (elem === null) {
-      elem = document.createElement('i');
-      elem.className = 'material-icons';
-      elem.classList.add('opener-top');
-      elem.textContent = 'post_add';
-    }
-    return elem;
-  }
-)();
+const topOpener = document.querySelector('.opener-top');
+const viewSwitcher = document.querySelector('.switchview');
+
 const textareaOpener = document.querySelector('.opener');
+const sortBySwitcher = document.querySelector('.sort-by');
 const textarea = document.querySelector('.add-textitem');
 const stackDOM = document.querySelector('.textstack');
-const resetButton = document.querySelector('.resetBtn');
-const viewSwitcher = (
-  () => {
-    let elem = document.querySelector('.switchview');
-    if (elem === null) {
-      elem = document.createElement('i');
-      elem.className = 'material-icons';
-      elem.classList.add('switchview');
-      elem.textContent = 'reorder';
-    }
-    return elem;
-  }
-)();
+const resetBtn = document.querySelector('.resetBtn');
 const tagArea = document.querySelector('#tagarea');
+
 let stack = [];
 let tagStack = ['note'];
 let dateStack = [];
+
 let textHolder = '';
 let tagsHolder = [];
 let timer = null;
+
 let background = chrome.extension.getBackgroundPage();
 
 /* switches */
@@ -76,13 +58,13 @@ const switchStyles = () => {
 }
 
 const switchSortOrder = ({
-  byNew = !sortBy.innerHTML.includes('New')
+  byNew = !sortBySwitcher.innerHTML.includes('New')
 }) => {
   if (byNew) {
-    sortBy.innerHTML = 'New <i class="material-icons">arrow_upward</i>';
+    sortBySwitcher.innerHTML = 'New <i class="material-icons">arrow_upward</i>';
     stackDOM.style.flexDirection = 'column-reverse';
   } else {
-    sortBy.innerHTML = 'Old <i class="material-icons">arrow_downward</i>';
+    sortBySwitcher.innerHTML = 'Old <i class="material-icons">arrow_downward</i>';
     stackDOM.style.flexDirection = 'column';
   }
 }
@@ -109,20 +91,28 @@ const switchTextAreaOpenerIcons = () => {
   }
 }
 
-const showAddTextItemForm = () => {
+const openAddTextItemForm = () => {
   updateHeaderBoard();
-  // hide
   toolBox.style.display = 'none';
   textareaOpener.style.display = 'none';
-  sortBy.style.display = 'none';
-  // show form
+  sortBySwitcher.style.display = 'none';
+  // open textarea
   textarea.style.display = 'flex';
   tagarea.style.display = 'flex';
-
   textarea.focus();
 }
 
-const hideAddTextItemForm = () => {
+textarea.addEventListener('focus', () => {
+  // add search query of hashtag 
+  if (searchbox.value !== '') {
+    while (tagArea.lastChild && tagArea.children.length > 1) {
+      tagArea.removeChild(tagArea.lastChild);
+    }
+    addNewTagItem(searchbox.value);
+  }
+})
+
+const closeAddTextItemForm = () => {
   if (headerBoard.classList.contains('entering')) {
     headerBoard.classList.remove('entering');
   }
@@ -130,7 +120,7 @@ const hideAddTextItemForm = () => {
 
   toolBox.style.display = 'flex';
   textareaOpener.style.display = 'block';
-  sortBy.style.display = 'inline-block';
+  sortBySwitcher.style.display = 'inline-block';
   // hide form
   textarea.style.display = 'none';
   tagarea.style.display = 'none';
@@ -153,7 +143,7 @@ const updateSearchResult = (e) => {
     searchCancelBtn.style = 'display: block !important';
     footer.style.display = 'none';
     toolBox.style.display = 'none';
-    headerBoard.textContent = hits === 0 ? 'No Results' : `${hits} of ${stackDOM.children.length}`;
+    headerBoard.textContent = hits === 0 ? 'No Results' : `${hits} of ${stack.length}`;
   } else {
     searchCancelBtn.style = 'display: none !important';
     footer.style.display = 'block';
@@ -210,7 +200,7 @@ const resetAll = () => {
   dateStack = [];
   tagStack = ['note'];
   textHolder = '';
-  tagsHolder = '';
+  tagsHolder = [];
 }
 
 // save text and hashtags in the textarea when closing
@@ -262,18 +252,13 @@ const renderTextItem = (content, footnote, date = formatDate()) => {
         tag.className = 'tag';
         tag.textContent = '#' + t;
         lastTextItem.querySelector('.footnote').appendChild(tag);
+        // tag stack
+        let index = tagStack.indexOf(t);
+        if (index === -1) {
+          tagStack.push(t);
+        }
       })
     }
-  }
-
-  // tag stack
-  if (typeof hashtag !== 'undefined') {
-    hashtag.forEach(t => {
-      let index = tagStack.indexOf(t);
-      if (index === -1) {
-        tagStack.push(t);
-      }
-    })
   }
 
   // date
@@ -291,14 +276,15 @@ const renderTextItem = (content, footnote, date = formatDate()) => {
     }
   }
 }
+
 const addTextItemToStack = (content, footnote = {}) => {
   stack.push({
     content: content,
     date: formatDate(),
-    noteTitle: "",
+    noteTitle: '',
     footnote: {
-      pageTitle: "",
-      url: "",
+      pageTitle: '',
+      url: '',
       hashtag: footnote.hashtag
     },
   });
@@ -308,6 +294,18 @@ const addTextItemToStack = (content, footnote = {}) => {
 const removeTextItemFromStack = (index) => {
   stack.splice(index, 1);
   stackStorage.set(JSON.stringify(stack));
+}
+
+const addNewTagItem = (tagName) => {
+  let tagItem = document.createElement('span');
+  tagItem.classList.add('hashtag');
+  tagItem.textContent = tagName.slice(1);
+  tagItem.addEventListener('click', (e) => {
+    e.target.parentElement.removeChild(e.target);
+    let index = tagsHolder.indexOf(tagName);
+    tagsHolder.splice(index, 1);
+  });
+  tagArea.appendChild(tagItem);
 }
 
 const initializeEventListeners = () => {
@@ -322,7 +320,7 @@ const initializeEventListeners = () => {
   searchbox.addEventListener('keyup', (e) => {
     // rotate search query of hashtags
     if (e.ctrlKey) {
-      let tagQuery = "";
+      let tagQuery = '';
       if (e.keyCode === 38) {
         tagQuery = tagStack.pop();
 
@@ -344,10 +342,11 @@ const initializeEventListeners = () => {
     }
   })
 
-  searchbox.addEventListener('focus', hideAddTextItemForm);
+  searchbox.addEventListener('focus', closeAddTextItemForm);
 
   searchCancelBtn.addEventListener('click', () => {
     fireSearchWithQuery('');
+    searchbox.focus();
   })
 
   /* toolbox container */
@@ -364,20 +363,12 @@ const initializeEventListeners = () => {
 
   textareaOpener.addEventListener('mouseout', switchTextAreaOpenerIcons);
 
-  textareaOpener.addEventListener('click', showAddTextItemForm);
+  textareaOpener.addEventListener('click', openAddTextItemForm);
 
-  sortBy.addEventListener('click', switchSortOrder);
+  sortBySwitcher.addEventListener('click', switchSortOrder);
 
   /* textarea */
   textarea.addEventListener('input', (e) => {
-    // initialize
-    // save current textarea and tagarea
-    textHolder = e.target.value.trim();
-    // console.log(tagArea.childNodes);
-    // tagArea.childNodes.forEach(t => {
-    //   tagsHolder.push(t);
-    // })
-
     if (timer) {
       clearTimeout(timer)
     }
@@ -394,26 +385,23 @@ const initializeEventListeners = () => {
     if (tags !== null) {
       let regex = new RegExp(`(^|\\s)${escapeRegExp(tags[2])}(\\s$|\\n)`);
       let tagsAdded = tagarea.querySelectorAll('.hashtag').length;
-      console.log(tagsAdded);
+
       if (tagsAdded >= 5) {
         const errorMessage = document.createElement('span');
         errorMessage.className = 'error';
         errorMessage.textContent = 'タグは最大5個まで';
+
         tagarea.appendChild(errorMessage);
       } else {
         e.target.value = e.target.value.replace(regex, '')
         if (tags) {
-          let tagItem = document.createElement('span');
-          tagItem.classList.add('hashtag');
-          tagItem.textContent = tags[2].slice(1);
-          tagItem.addEventListener('click', (e) => {
-            e.target.parentElement.removeChild(e.target);
-          });
-
-          tagArea.appendChild(tagItem);
+          addNewTagItem(tags[2])
         }
       }
     }
+
+    textHolder = e.target.value.trim();
+    tagsHolder.push(tags[2]);
 
     updateHeaderBoard();
   })
@@ -430,6 +418,7 @@ const initializeEventListeners = () => {
 
         let tagDOMs = tagArea.childNodes;
         let tags = []
+
         // exclude the first element
         for (let i = 1; i < tagDOMs.length; i++) {
           tags.push(tagDOMs[i].innerText);
@@ -458,15 +447,12 @@ const initializeEventListeners = () => {
         textHolder = '';
         tagsHolder = [];
         return false;
-
       }
-
     }
-
   });
 
   /* checkboxes for text stack */
-  stackDOM.addEventListener('mouseover', hideAddTextItemForm)
+  stackDOM.addEventListener('mouseover', closeAddTextItemForm)
 
   stackDOM.addEventListener('click', e => {
     // tag filter
@@ -486,7 +472,7 @@ const initializeEventListeners = () => {
 
         // remove
         setTimeout(() => {
-          const lists = Array.from(stackDOM.querySelectorAll('.stackwrapper'));
+          let lists = Array.from(stackDOM.querySelectorAll('.stackwrapper'));
           let index = lists.indexOf(e.target.parentElement);
 
           removeTextItemFromStack(index);
@@ -502,13 +488,28 @@ const initializeEventListeners = () => {
   });
 
   /* reset button */
-  resetButton.addEventListener('click', resetAll);
+  resetBtn.addEventListener('click', resetAll);
 
   /* inner functions */
   function fireSearchWithQuery(query) {
     searchbox.value = query;
     searchbox.dispatchEvent(new Event('input'));
   };
+}
+
+const restoreTextArea = () => {
+  chrome.storage.local.get(['textarea', 'tags'], res => {
+    textarea.textContent = res.textarea;
+    textHolder = res.textarea;
+    tagsHolder = res.tags;
+    tagsHolder.forEach(tag => {
+      addNewTagItem(tag);
+    })
+    chrome.storage.local.set({
+      textarea: '',
+      tags: []
+    });
+  })
 }
 
 /* local storage */
@@ -540,18 +541,12 @@ const addHighlight = (html, regex) => {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  renderStack()
+  renderStack();
+  restoreTextArea();
   initializeEventListeners();
 
   // workaround to avoid displaying view switcher delay
   switchStyles();
 
   document.addEventListener('mouseup', bubble_lib.renderBubble);
-
-  // restore textarea value
-  chrome.storage.local.get(['textarea', 'tags'], res => {
-    textarea.textContent = res.textarea;
-    textHolder = res.textarea;
-    console.log(res.tags);
-  })
 });
