@@ -114,9 +114,12 @@ const closeAddTextItemForm = () => {
 }
 
 const updateHeaderBoard = () => {
+  toolBox.style.display = 'none';
+
   if (!headerBoard.classList.contains('entering')) {
     headerBoard.classList.add('entering');
   }
+
   let info = extractTextInfo(textarea.value);
   headerBoard.innerHTML = `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`;
 }
@@ -225,7 +228,6 @@ const renderTextItem = (content, footnote, date = formatDate()) => {
     hashtag: hashtag
   } = footnote;
 
-  // const template = `<div class="stackwrapper">${content}<i class="material-icons checkbox">check</i><div class="spacer"></div><div class="footnote"></div></div>`;
   const template = `<div class="stackwrapper"><div class='content'>${content}</div><i class="material-icons checkbox">check</i><div class="spacer"></div><div class="footnote"></div></div>`;
 
   stackDOM.innerHTML += template;
@@ -238,25 +240,24 @@ const renderTextItem = (content, footnote, date = formatDate()) => {
   contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[^\s]+)/g, "<a href='$1' target='_blank'>$1</a>");
 
   if (url) {
-    lastTextItem.classList.add("clip");
-    lastTextItem.querySelector('.footnote').innerHTML = `<a href="${url}" target="_blank">${pageTitle}</a>`;
-
+    lastTextItem.classList.add('clip');
+    lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag hidden">#clip</span><a href="${url}" target="_blank">${pageTitle}</a>`;
   } else {
-    lastTextItem.classList.add("note");
+    lastTextItem.classList.add('note');
     lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#note</span>`;
-    if (typeof hashtag !== 'undefined') {
-      hashtag.forEach(t => {
-        let tag = document.createElement('span');
-        tag.className = 'tag';
-        tag.textContent = '#' + t;
-        lastTextItem.querySelector('.footnote').appendChild(tag);
-        // tag stack
-        let index = tagStack.indexOf(t);
-        if (index === -1) {
-          tagStack.push(t);
-        }
-      })
-    }
+  }
+  if (typeof hashtag !== 'undefined') {
+    hashtag.forEach(t => {
+      let tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.textContent = '#' + t;
+      lastTextItem.querySelector('.footnote').appendChild(tag);
+      // tag stack
+      let index = tagStack.indexOf(t);
+      if (index === -1) {
+        tagStack.push(t);
+      }
+    })
   }
 
   // date
@@ -389,6 +390,7 @@ const initializeEventListeners = () => {
     if (timer) {
       clearTimeout(timer)
     }
+
 
     const MIN_HEIGHT = 25;
 

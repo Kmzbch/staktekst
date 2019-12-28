@@ -4,6 +4,10 @@
     z-index: 999999;
 }
 
+.hidden {
+    display: none;
+}
+
 #tagarea {
     display: none;
     position: relative;
