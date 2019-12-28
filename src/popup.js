@@ -176,12 +176,8 @@ const updateSearchResult = (e) => {
       .filter(textItem => !textItem.classList.contains('filtered'))
       .forEach(textItem => {
         if (term.length >= 1) {
-          // exclude unnecessary elements and highlight the term
-          let endIndex = textItem.innerHTML.search(/<i class="material-icons checkbox">check<\/i>/i);
-          let textContent = textItem.innerHTML.substring(0, endIndex);
-          let cutoff = textItem.innerHTML.substring(endIndex, textItem.innerHTML.length)
-
-          textItem.innerHTML = addHighlight(textContent, termRegex) + cutoff;
+          let html = textItem.firstElementChild.innerHTML;
+          textItem.firstElementChild.innerHTML = addHighlight(html, termRegex);
         }
       });
 
@@ -233,7 +229,8 @@ const renderTextItem = (content, footnote, date = formatDate()) => {
     hashtag: hashtag
   } = footnote;
 
-  const template = `<div class="stackwrapper">${content}<i class="material-icons checkbox">check</i><div class="spacer"></div><div class="footnote"></div></div>`;
+  // const template = `<div class="stackwrapper">${content}<i class="material-icons checkbox">check</i><div class="spacer"></div><div class="footnote"></div></div>`;
+  const template = `<div class="stackwrapper"><div class='content'>${content}</div><i class="material-icons checkbox">check</i><div class="spacer"></div><div class="footnote"></div></div>`;
 
   stackDOM.innerHTML += template;
 
@@ -384,6 +381,7 @@ const initializeEventListeners = () => {
     let tags = e.target.value.match(/(^|\s)((#|＃)[^\s]+)(\s$|\n)/);
 
     if (tags !== null) {
+      console.log(tags);
       let regex = new RegExp(`(^|\\s)${escapeRegExp(tags[2])}(\\s$|\\n)`);
       let tagsAdded = tagarea.querySelectorAll('.hashtag').length;
 
@@ -399,10 +397,10 @@ const initializeEventListeners = () => {
           addNewTagItem(tags[2])
         }
       }
+      tagsHolder.push(tags[2]);
     }
 
     textHolder = e.target.value.trim();
-    tagsHolder.push(tags[2]);
 
     updateHeaderBoard();
   })
