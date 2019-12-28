@@ -243,6 +243,7 @@ const renderTextItem = (content, footnote, date = formatDate()) => {
   if (url) {
     lastTextItem.classList.add("clip");
     lastTextItem.querySelector('.footnote').innerHTML = `<a href="${url}" target="_blank">${pageTitle}</a>`;
+
   } else {
     lastTextItem.classList.add("note");
     lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#note</span>`;

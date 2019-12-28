@@ -65,18 +65,22 @@ function pushText(content, pageTitle = '', url = '') {
         }
     };
 
+
     stackStorage.get(raw => {
+
         if (typeof raw === 'undefined') {
             stackStorage.reset();
         } else {
             let stack = JSON.parse(raw);
+            console.log(stack);
             stack.push({
                 content: content,
                 date: formatDate(),
                 noteTitle: '',
                 footnote: {
                     pageTitle,
-                    url
+                    url,
+                    hashtag: []
                 }
             });
             stackStorage.set(JSON.stringify(stack));
