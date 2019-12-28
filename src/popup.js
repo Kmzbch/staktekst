@@ -6,7 +6,7 @@ import {
   extractTextInfo,
   containsJapanese,
   formatDate,
-  adjustDOMHeight
+  adjustDOMHeight as fitDOMHeightToContent
 } from './common_lib.js';
 
 const header = document.querySelector('header');
@@ -23,7 +23,7 @@ const sortBySwitcher = document.querySelector('.sort-by');
 const textarea = document.querySelector('.add-textitem');
 const stackDOM = document.querySelector('.textstack');
 const resetBtn = document.querySelector('.resetBtn');
-const tagArea = document.querySelector('#tagarea');
+const tagarea = document.querySelector('#tagarea');
 
 let stack = [];
 let tagStack = ['note'];
@@ -36,7 +36,7 @@ let timer = null;
 let background = chrome.extension.getBackgroundPage();
 
 /* switches */
-const switchStyles = () => {
+const switchViewStyles = () => {
   let defaultview = document.querySelector('#style_default');
   let listview = document.querySelector('#style_listview');
 
@@ -92,7 +92,6 @@ const switchTextAreaOpenerIcons = () => {
 }
 
 const openAddTextItemForm = () => {
-  updateHeaderBoard();
   toolBox.style.display = 'none';
   textareaOpener.style.display = 'none';
   sortBySwitcher.style.display = 'none';
@@ -102,20 +101,8 @@ const openAddTextItemForm = () => {
   textarea.focus();
 }
 
-textarea.addEventListener('focus', () => {
-  // add search query of hashtag 
-  if (searchbox.value !== '') {
-    while (tagArea.lastChild && tagArea.children.length > 1) {
-      tagArea.removeChild(tagArea.lastChild);
-    }
-    addNewTagItem(searchbox.value);
-  }
-})
-
 const closeAddTextItemForm = () => {
-  if (headerBoard.classList.contains('entering')) {
-    headerBoard.classList.remove('entering');
-  }
+  headerBoard.classList.remove('entering');
   headerBoard.textContent = '';
 
   toolBox.style.display = 'flex';
@@ -296,6 +283,15 @@ const removeTextItemFromStack = (index) => {
   stackStorage.set(JSON.stringify(stack));
 }
 
+const removeHashTags = () => {
+  let removedTags = [];
+  while (tagarea.lastChild && tagarea.children.length > 1) {
+    removedTags.push(tagarea.lastChild.innerText);
+    tagarea.removeChild(tagarea.lastChild);
+  }
+  return removedTags;
+}
+
 const addNewTagItem = (tagName) => {
   let tagItem = document.createElement('span');
   tagItem.classList.add('hashtag');
@@ -305,7 +301,8 @@ const addNewTagItem = (tagName) => {
     let index = tagsHolder.indexOf(tagName);
     tagsHolder.splice(index, 1);
   });
-  tagArea.appendChild(tagItem);
+  tagarea.appendChild(tagItem);
+  tagsHolder.push(tagName);
 }
 
 const initializeEventListeners = () => {
@@ -354,9 +351,7 @@ const initializeEventListeners = () => {
     textareaOpener.dispatchEvent(new Event('click'));
   });
 
-  viewSwitcher.addEventListener('click', switchStyles);
-
-  // to-do: download btn
+  viewSwitcher.addEventListener('click', switchViewStyles);
 
   /* add-sort container */
   textareaOpener.addEventListener('mouseover', switchTextAreaOpenerIcons);
@@ -368,38 +363,48 @@ const initializeEventListeners = () => {
   sortBySwitcher.addEventListener('click', switchSortOrder);
 
   /* textarea */
+  textarea.addEventListener('focus', () => {
+    updateHeaderBoard();
+
+    // add search query of hashtag 
+    if (searchbox.value !== '') {
+      removeHashTags();
+      addNewTagItem(searchbox.value);
+    }
+  })
+
   textarea.addEventListener('input', (e) => {
+    // reset if timeout remains
     if (timer) {
       clearTimeout(timer)
     }
 
-    adjustDOMHeight(textarea, 25);
+    const MIN_HEIGHT = 25;
 
-    let err = tagArea.querySelector('.error');
-    if (err !== null) {
-      err.parentElement.removeChild(err);
+    fitDOMHeightToContent(textarea, MIN_HEIGHT);
+
+    let errClass = tagarea.querySelector('.error');
+    if (errClass !== null) {
+      errClass.parentElement.removeChild(errClass);
     }
 
-    let tags = e.target.value.match(/(^|\s)((#|＃)[^\s]+)(\s$|\n)/);
+    let hashtags = e.target.value.match(/(^|\s)((#|＃)[^\s]+)(\s$|\n)/);
 
-    if (tags !== null) {
-      console.log(tags);
-      let regex = new RegExp(`(^|\\s)${escapeRegExp(tags[2])}(\\s$|\\n)`);
+    if (hashtags !== null) {
+      let regex = new RegExp(`(^|\\s)${escapeRegExp(hashtags[2])}(\\s$|\\n)`);
       let tagsAdded = tagarea.querySelectorAll('.hashtag').length;
 
       if (tagsAdded >= 5) {
-        const errorMessage = document.createElement('span');
-        errorMessage.className = 'error';
-        errorMessage.textContent = 'タグは最大5個まで';
-
-        tagarea.appendChild(errorMessage);
+        let errMessage = document.createElement('span');
+        errMessage.className = 'error';
+        errMessage.textContent = 'タグは最大5個まで';
+        tagarea.appendChild(errMessage);
       } else {
         e.target.value = e.target.value.replace(regex, '')
-        if (tags) {
-          addNewTagItem(tags[2])
+        if (hashtags) {
+          addNewTagItem(hashtags[2])
         }
       }
-      tagsHolder.push(tags[2]);
     }
 
     textHolder = e.target.value.trim();
@@ -409,34 +414,30 @@ const initializeEventListeners = () => {
 
   textarea.addEventListener('keyup', (e) => {
     if (e.keyCode === 13) {
-      let err = tagArea.querySelector('.error');
-      if (err === null) {
+      let errClass = tagarea.querySelector('.error');
+
+      if (errClass === null) {
         let text = textarea.value.trim();
         if (text === '' || text === '\n') {
           textarea.value = '';
           return false;
         }
 
-        let tagDOMs = tagArea.childNodes;
-        let tags = []
+        let hashtags = removeHashTags();
 
-        // exclude the first element
-        for (let i = 1; i < tagDOMs.length; i++) {
-          tags.push(tagDOMs[i].innerText);
-        }
+        // for (let i = 1; i < tagarea.childNodes.length; i++) {
+        //   hashtags.push(tagarea.childNodes[i].innerText);
+        // }
 
         let footnote = {
           pageTitle: "",
           url: "",
-          hashtag: tags
+          hashtag: hashtags
         };
 
         addTextItemToStack(text, footnote);
         renderTextItem(text, footnote);
 
-        while (tagArea.lastChild && tagArea.children.length > 1) {
-          tagArea.removeChild(tagArea.lastChild);
-        }
 
         headerBoard.classList.remove('entering');
         headerBoard.textContent = "Item Added!";
@@ -444,9 +445,11 @@ const initializeEventListeners = () => {
           headerBoard.textContent = '';
           toolBox.style.display = 'flex';
         }, 700);
+
         textarea.value = '';
         textHolder = '';
         tagsHolder = [];
+
         return false;
       }
     }
@@ -502,10 +505,12 @@ const restoreTextArea = () => {
   chrome.storage.local.get(['textarea', 'tags'], res => {
     textarea.textContent = res.textarea;
     textHolder = res.textarea;
-    tagsHolder = res.tags;
-    tagsHolder.forEach(tag => {
-      addNewTagItem(tag);
-    })
+    if (typeof res.tags !== 'undefined') {
+      res.tags.forEach(tag => {
+        addNewTagItem(tag);
+      })
+    }
+
     chrome.storage.local.set({
       textarea: '',
       tags: []
@@ -532,13 +537,15 @@ const stackStorage = {
   }
 };
 
+// initialize
 document.addEventListener('DOMContentLoaded', () => {
   renderStack();
   restoreTextArea();
   initializeEventListeners();
 
   // workaround to avoid displaying view switcher delay
-  switchStyles();
+  switchViewStyles();
 
+  // attach bubbleDOM
   document.addEventListener('mouseup', bubble_lib.renderBubble);
 });
