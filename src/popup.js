@@ -164,7 +164,8 @@ const updateSearchResult = (e) => {
 
     Array.from(stackDOM.children)
       .map(textItem => {
-        textItem.innerHTML = removeHighlight(textItem.innerHTML);
+        // remove text decoration and highlight
+        textItem.firstChild.innerHTML = textItem.firstChild.innerText;
         if (textItem.textContent.match(termRegex)) {
           textItem.classList.remove('filtered');
           hits++;
@@ -175,9 +176,10 @@ const updateSearchResult = (e) => {
       })
       .filter(textItem => !textItem.classList.contains('filtered'))
       .forEach(textItem => {
+        // add highlight when searching
         if (term.length >= 1) {
-          let html = textItem.firstElementChild.innerHTML;
-          textItem.firstElementChild.innerHTML = addHighlight(html, termRegex);
+          let contentDIV = textItem.firstElementChild;
+          contentDIV.innerHTML = contentDIV.innerHTML.replace(termRegex, "<span class='highlighted'>$1</span>$2");
         }
       });
 
@@ -529,15 +531,6 @@ const stackStorage = {
     });
   }
 };
-
-// DOM operation
-const removeHighlight = (html) => {
-  return html.replace(/<span class="highlighted">(.*?)<\/span>/g, '$1');
-}
-
-const addHighlight = (html, regex) => {
-  return html.replace(regex, "<span class='highlighted'>$1</span>$2");
-}
 
 document.addEventListener('DOMContentLoaded', () => {
   renderStack();
