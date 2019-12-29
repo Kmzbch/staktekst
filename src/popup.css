@@ -430,16 +430,22 @@ input:focus {
 
 
 .bookmark:hover {
-    background: oldlace !important;
-    border-right: solid 8px salmon;
-    margin-right: 8px;
+    border-left: 6px solid goldenrod !important;
+    border-right: 1px solid gray !important;
+    margin-left: 10px !important;
+    margin-right: 15px;
+    background-color: lemonchiffon !important;
 }
 
+.bookmark {
+    font-size: 14px !important;
+}
 
 .bookmark .footnote {
     color: rgba(0, 0, 0, 0.5);
     right: auto;
 }
+
 
 .bookmark a:hover {
     text-decoration: underline !important;
@@ -455,14 +461,12 @@ input:focus {
 
 /* clip styles */
 .clip:hover {
-    /* background: azure !important; */
+    background: azure !important;
     border-right: solid 8px teal;
     margin-right: 8px;
 }
 
 .clip a:hover {
-    background: azure !important;
-
     color: rgb(32, 123, 156) !important;
     text-decoration: underline !important;
 }
