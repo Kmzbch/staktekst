@@ -80,7 +80,8 @@ function pushText(content, pageTitle = '', url = '') {
                 footnote: {
                     pageTitle,
                     url,
-                    hashtag: ['clip']
+                    // hashtag: ['clip']
+                    hashtag: []
                 }
             });
             stackStorage.set(JSON.stringify(stack));

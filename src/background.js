@@ -61,6 +61,19 @@ const BUBBLE_MENUS = [{
 ];
 
 
+// chrome.contextMenus.update('your-id', {
+//   enabled: false
+// });
+// chrome.contextMenus.removeAll(() => {
+//   let parentId = chrome.contextMenus.create({
+//     "title": "samplemenu",
+//     "type": "normal",
+//     "contexts": ["all"],
+//     "onclick": () => {
+//       console.log('!!!');
+//     }
+//   });
+// })
 
 const executeCommand = (commandId, text) => {
   chrome.tabs.query({

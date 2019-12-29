@@ -12,6 +12,18 @@
 </head>
 
 <body>
+  <div class="modal hidden">
+    <div class='overlay'></div>
+    <div id='messagebox'>
+      <h4>スタックのクリア</h4>
+      過去に保存されたデータがすべて削除されます。<br>クリアしますか？
+      <div></div>
+      <div id='clearbutton-container'>
+        <button id='reset'>OK</button>
+        <button id='cancel'>キャンセル</button>
+      </div>
+    </div>
+  </div>
   <div id="container">
     <header class="sticky">
       <div id="search">
@@ -37,7 +49,6 @@
       <div class="textstack">
       </div>
     </div>
-
     <footer class="sticky">
       <div class="button-container">
         <button class="resetBtn button">スタックを空にする</button>

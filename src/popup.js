@@ -25,8 +25,14 @@ const stackDOM = document.querySelector('.textstack');
 const resetBtn = document.querySelector('.resetBtn');
 const tagarea = document.querySelector('#tagarea');
 
+const modal = document.querySelector('.modal');
+const messagebox = document.querySelector('#messagebox');
+const overlay = document.querySelector('.overlay');
+const reset = document.querySelector('#reset');
+const cancel = document.querySelector('#cancel')
+
 let stack = [];
-let tagStack = ['note'];
+let tagStack = ['note', 'clip'];
 let dateStack = [];
 
 let textHolder = '';
@@ -189,6 +195,10 @@ const resetAll = () => {
   while (stackDOM.firstChild) {
     stackDOM.removeChild(stackDOM.firstChild);
   }
+
+  removeHashTags();
+
+
   textarea.value = '';
   searchbox.value = '';
   stack = [];
@@ -196,6 +206,8 @@ const resetAll = () => {
   tagStack = ['note'];
   textHolder = '';
   tagsHolder = [];
+
+  closeAddTextItemForm();
 }
 
 // save text and hashtags in the textarea when closing
@@ -204,7 +216,11 @@ const saveAddItemForm = () => {
     textarea: textHolder,
     tags: tagsHolder
   });
+
+
+
 }
+
 
 /* stack operation*/
 const renderStack = () => {
@@ -242,6 +258,8 @@ const renderTextItem = (content, footnote, date = formatDate()) => {
   if (url) {
     lastTextItem.classList.add('clip');
     lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag hidden">#clip</span><a href="${url}" target="_blank">${pageTitle}</a>`;
+    // lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#clip</span><a class='source' href="${url}" target="_blank">${pageTitle}</a>`;
+
   } else {
     lastTextItem.classList.add('note');
     lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#note</span>`;
@@ -322,6 +340,10 @@ const initializeEventListeners = () => {
   window.onscroll = switchStickyVisibility;
 
   window.onunload = saveAddItemForm; // fired when popup.html closing
+
+
+
+
 
   /* search container */
   searchbox.addEventListener('input', updateSearchResult);
@@ -501,8 +523,25 @@ const initializeEventListeners = () => {
 
   });
 
+  overlay.addEventListener('click', () => {
+    modal.classList.add('hidden');
+  });
+
+  reset.addEventListener('click', (e) => {
+    resetAll();
+    overlay.click();
+  })
+
+  cancel.addEventListener('click', (e) => {
+    overlay.click();
+  })
+
   /* reset button */
-  resetBtn.addEventListener('click', resetAll);
+  // resetBtn.addEventListener('click', resetAll);
+  resetBtn.addEventListener('click', () => {
+    document.querySelector('.modal').classList.remove('hidden');
+  });
+
 
   /* inner functions */
   function fireSearchWithQuery(query) {
