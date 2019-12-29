@@ -179,17 +179,11 @@ const updateSearchResult = (e) => {
         // add highlight when searching
         if (term.length >= 1) {
           contentDIV.innerHTML = contentDIV.textContent.replace(termRegex, "<span class='highlighted'>$1</span>$2");
-
         }
-        // urls can be hit without highlight
-        // return string.match(/[\u30a0-\u30ff\u3040-\u309f\u3005-\u3006\u30e0-\u9fcf]+?/) ? true : false
 
-        // if (contentDIV.textContent.match(/(https?:\/\/[^\x01-\x7E]+)/g)) {
-        //   contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[^\x01-\x7E]+)/g, "<a class='emphasized' href='$1' target='_blank'>$1</a>");
-        // }
-
-        if (contentDIV.textContent.match(/(https?:\/\/[^\s]+)/g)) {
-          contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[^\s]+)/g, "<a class='emphasized' href='$1' target='_blank'>$1</a>");
+        // check if the urls are made up of ascii
+        if (contentDIV.textContent.match(/(https?:\/\/[\x01-\x7E]+)/g)) {
+          contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a class='emphasized' href='$1' target='_blank'>$1</a>");
         }
       });
     return hits;
@@ -209,7 +203,7 @@ const resetAll = () => {
   searchbox.value = '';
   stack = [];
   dateStack = [];
-  tagStack = ['note'];
+  tagStack = ['note', 'clip', 'bookmark'];
   textHolder = '';
   tagsHolder = [];
 
