@@ -32,7 +32,7 @@ const reset = document.querySelector('#reset');
 const cancel = document.querySelector('#cancel')
 
 let stack = [];
-let tagStack = ['note', 'clip'];
+let tagStack = ['note', 'clip', 'bookmark'];
 let dateStack = [];
 
 let textHolder = '';
@@ -259,21 +259,29 @@ const renderTextItem = (content, footnote, date = formatDate()) => {
     lastTextItem.classList.add('clip');
     lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag hidden">#clip</span><a href="${url}" target="_blank">${pageTitle}</a>`;
     // lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#clip</span><a class='source' href="${url}" target="_blank">${pageTitle}</a>`;
-
   } else {
-    lastTextItem.classList.add('note');
-    lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#note</span>`;
+    console.log(hashtag);
+    if (hashtag.indexOf('bookmark') !== -1) {
+      lastTextItem.classList.add('bookmark');
+      lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#bookmark</span>`;
+    } else {
+      lastTextItem.classList.add('note');
+      lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#note</span>`;
+    }
   }
+
   if (typeof hashtag !== 'undefined') {
     hashtag.forEach(t => {
-      let tag = document.createElement('span');
-      tag.className = 'tag';
-      tag.textContent = '#' + t;
-      lastTextItem.querySelector('.footnote').appendChild(tag);
-      // tag stack
-      let index = tagStack.indexOf(t);
-      if (index === -1) {
-        tagStack.push(t);
+      if (t !== 'note' && t !== 'clip' && t !== 'bookmark') {
+        let tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.textContent = '#' + t;
+        lastTextItem.querySelector('.footnote').appendChild(tag);
+        // tag stack
+        let index = tagStack.indexOf(t);
+        if (index === -1) {
+          tagStack.push(t);
+        }
       }
     })
   }

@@ -427,14 +427,42 @@ input:focus {
     margin: 8px;
 }
 
+
+
+.bookmark:hover {
+    background: oldlace !important;
+    border-right: solid 8px salmon;
+    margin-right: 8px;
+}
+
+
+.bookmark .footnote {
+    color: rgba(0, 0, 0, 0.5);
+    right: auto;
+}
+
+.bookmark a:hover {
+    text-decoration: underline !important;
+}
+
+.bookmark a {
+    color: rgb(32, 123, 156) !important;
+    text-decoration: none;
+}
+
+
+
+
 /* clip styles */
 .clip:hover {
-    background: azure !important;
+    /* background: azure !important; */
     border-right: solid 8px teal;
     margin-right: 8px;
 }
 
 .clip a:hover {
+    background: azure !important;
+
     color: rgb(32, 123, 156) !important;
     text-decoration: underline !important;
 }

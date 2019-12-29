@@ -61,21 +61,27 @@ const BUBBLE_MENUS = [{
 ];
 
 
-// chrome.contextMenus.update('your-id', {
-//   enabled: false
-// });
-// chrome.contextMenus.removeAll(() => {
-//   let parentId = chrome.contextMenus.create({
-//     "title": "samplemenu",
-//     "type": "normal",
-//     "contexts": ["all"],
-//     "onclick": () => {
-//       console.log('!!!');
-//     }
-//   });
-// })
 
-const executeCommand = (commandId, text) => {
+
+chrome.runtime.onInstalled.addListener(function () {
+
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      title: 'URLをスタックに保存',
+      id: 'bookmark', // you'll use this in the handler function to identify this context menu item
+      contexts: ['all'],
+    });
+
+  })
+});
+
+chrome.contextMenus.onClicked.addListener(function (info, tab) {
+  if (info.menuItemId === 'bookmark') { // here's where you'll need the ID
+    executeCommand(info.menuItemId);
+  }
+});
+
+const executeCommand = (commandId, text = '') => {
   chrome.tabs.query({
     active: true,
     currentWindow: true
@@ -84,6 +90,9 @@ const executeCommand = (commandId, text) => {
       copyTextWithTitleUrl(text, tabs[0].title, tabs[0].url);
     } else if (commandId === 'pushtext') {
       pushText(text, tabs[0].title, tabs[0].url);
+    } else if (commandId === 'bookmark') {
+      text = tabs[0].title + '\n' + tabs[0].url;
+      pushText(text, '', '', 'bookmark');
     } else {
       let command = BUBBLE_MENUS.find(item => item.id === commandId);
       let urlWithQuery = command.url.replace('%s', text);

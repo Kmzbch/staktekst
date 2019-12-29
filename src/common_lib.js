@@ -46,7 +46,7 @@ function formatDate(date = new Date()) {
     return `${yyyy}-${mm}-${dd}`;
 }
 
-function pushText(content, pageTitle = '', url = '') {
+function pushText(content, pageTitle = '', url = '', hashtag = '') {
     const stackStorage = {
         get: callback => {
             chrome.storage.local.get(['raw'], result => {
@@ -72,7 +72,6 @@ function pushText(content, pageTitle = '', url = '') {
             stackStorage.reset();
         } else {
             let stack = JSON.parse(raw);
-            console.log(stack);
             stack.push({
                 content: content,
                 date: formatDate(),
@@ -81,7 +80,7 @@ function pushText(content, pageTitle = '', url = '') {
                     pageTitle,
                     url,
                     // hashtag: ['clip']
-                    hashtag: []
+                    hashtag: [hashtag]
                 }
             });
             stackStorage.set(JSON.stringify(stack));
