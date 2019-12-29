@@ -358,27 +358,27 @@ const initializeEventListeners = () => {
 
   searchbox.addEventListener('keyup', (e) => {
     // rotate search query of hashtags
-    if (e.ctrlKey) {
-      let tagQuery = '';
-      if (e.keyCode === 38) {
-        tagQuery = tagStack.pop();
+    // if (e.ctrlKey) {
+    let tagQuery = '';
+    if (e.keyCode === 38) {
+      tagQuery = tagStack.pop();
 
-        if (searchbox.value === '#' + tagQuery) {
-          tagStack.unshift(tagQuery);
-          tagQuery = tagStack.pop();
-        }
+      if (searchbox.value === '#' + tagQuery) {
         tagStack.unshift(tagQuery);
-      } else if (e.keyCode === 40) {
-        tagQuery = tagStack.shift();
-
-        if (searchbox.value === '#' + tagQuery) {
-          tagStack.push(tagQuery);
-          tagQuery = tagStack.shift();
-        }
-        tagStack.push(tagQuery);
+        tagQuery = tagStack.pop();
       }
-      fireSearchWithQuery('#' + tagQuery);
+      tagStack.unshift(tagQuery);
+    } else if (e.keyCode === 40) {
+      tagQuery = tagStack.shift();
+
+      if (searchbox.value === '#' + tagQuery) {
+        tagStack.push(tagQuery);
+        tagQuery = tagStack.shift();
+      }
+      tagStack.push(tagQuery);
     }
+    fireSearchWithQuery('#' + tagQuery);
+    // }
   })
 
   searchbox.addEventListener('focus', closeAddTextItemForm);
