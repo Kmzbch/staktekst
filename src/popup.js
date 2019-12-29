@@ -182,6 +182,12 @@ const updateSearchResult = (e) => {
 
         }
         // urls can be hit without highlight
+        // return string.match(/[\u30a0-\u30ff\u3040-\u309f\u3005-\u3006\u30e0-\u9fcf]+?/) ? true : false
+
+        // if (contentDIV.textContent.match(/(https?:\/\/[^\x01-\x7E]+)/g)) {
+        //   contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[^\x01-\x7E]+)/g, "<a class='emphasized' href='$1' target='_blank'>$1</a>");
+        // }
+
         if (contentDIV.textContent.match(/(https?:\/\/[^\s]+)/g)) {
           contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[^\s]+)/g, "<a class='emphasized' href='$1' target='_blank'>$1</a>");
         }
@@ -358,7 +364,6 @@ const initializeEventListeners = () => {
 
   searchbox.addEventListener('keyup', (e) => {
     // rotate search query of hashtags
-    // if (e.ctrlKey) {
     let tagQuery = '';
     if (e.keyCode === 38) {
       tagQuery = tagStack.pop();
@@ -368,6 +373,9 @@ const initializeEventListeners = () => {
         tagQuery = tagStack.pop();
       }
       tagStack.unshift(tagQuery);
+      if (tagQuery) {
+        fireSearchWithQuery('#' + tagQuery);
+      }
     } else if (e.keyCode === 40) {
       tagQuery = tagStack.shift();
 
@@ -376,9 +384,10 @@ const initializeEventListeners = () => {
         tagQuery = tagStack.shift();
       }
       tagStack.push(tagQuery);
+      if (tagQuery) {
+        fireSearchWithQuery('#' + tagQuery);
+      }
     }
-    fireSearchWithQuery('#' + tagQuery);
-    // }
   })
 
   searchbox.addEventListener('focus', closeAddTextItemForm);
