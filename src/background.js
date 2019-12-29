@@ -60,27 +60,6 @@ const BUBBLE_MENUS = [{
   },
 ];
 
-
-
-
-chrome.runtime.onInstalled.addListener(function () {
-
-  chrome.contextMenus.removeAll(() => {
-    chrome.contextMenus.create({
-      title: 'URLをスタックに保存',
-      id: 'bookmark', // you'll use this in the handler function to identify this context menu item
-      contexts: ['all'],
-    });
-
-  })
-});
-
-chrome.contextMenus.onClicked.addListener(function (info, tab) {
-  if (info.menuItemId === 'bookmark') { // here's where you'll need the ID
-    executeCommand(info.menuItemId);
-  }
-});
-
 const executeCommand = (commandId, text = '') => {
   chrome.tabs.query({
     active: true,

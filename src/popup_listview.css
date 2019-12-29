@@ -332,9 +332,10 @@ input:focus {
     text-overflow: none;
 } */
 
-.clip {
-    display: block;
-    /* display: none; */
+.clip,
+.bookmark {
+    /* display: block; */
+    display: none;
     height: 40px;
     overflow: hidden;
     white-space: nowrap;

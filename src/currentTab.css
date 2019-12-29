@@ -13,6 +13,35 @@
 }
 
 /* bubble styles */
+#outside-container:hover {
+    opacity: 1 !important;
+}
+
+#outside-container {
+    cursor: pointer !important;
+    color: rgba(0, 0, 0, 0.8);
+    opacity: 0.2 !important;
+    position: absolute;
+    right: -30px;
+    display: flex;
+    justify-content: center;
+    align-self: center;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+
+#bookmark-icon:hover {
+    opacity: 1 !important;
+    font-size: 20px;
+}
+
+#bookmark-icon {
+    font-size: 20px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+
+
 #bubble {
     display: none;
     flex-wrap: nowrap;

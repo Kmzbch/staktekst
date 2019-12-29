@@ -52,6 +52,13 @@ const SYSTEM_COMMAND_ICONS = [{
     command: "pushtext",
 }]
 
+const EXTRA_COMMAND_ICONS = [{
+    className: "material-icons bookmark-icon",
+    title: "ページURLをスタックに追加",
+    innerText: "bookmarks",
+    command: "bookmark",
+}]
+
 /* DOM creation and manipulation */
 const createIconDOM = ({
     className,
@@ -94,6 +101,16 @@ const createBubbleDOM = () => {
 
     bubbleDOM.appendChild(leftContainer);
     bubbleDOM.appendChild(rightContainer);
+
+    // addbookmark
+    let outsideContainer = document.createElement('div');
+    outsideContainer.setAttribute('id', 'outside-container');
+    // outsideContainer.innerHTML = '<i class="material-icons bookmark-icon">bookmarks</i>';
+
+    EXTRA_COMMAND_ICONS.forEach(icon => {
+        outsideContainer.appendChild(createIconDOM(icon))
+    });
+    bubbleDOM.appendChild(outsideContainer);
 
     return bubbleDOM;
 }
