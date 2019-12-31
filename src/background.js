@@ -49,9 +49,9 @@ const BUBBLE_MENUS = [{
     url: "https://www.vocabulary.com/dictionary/%s",
   },
   {
-    id: "wordsketch",
-    title: "Word Sketch",
-    url: "https://skell.sketchengine.co.uk/run.cgi/wordsketch?lpos=&query=%s",
+    id: "urban",
+    title: "Urban Dictionary",
+    url: "https://www.urbandictionary.com/define.php?term=%s",
   },
   {
     id: "google",

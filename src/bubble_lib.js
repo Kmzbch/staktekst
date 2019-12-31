@@ -2,7 +2,7 @@
 const SEARCH_ENGINE_ICONS = [{
         className: "material-icons stackButton",
         title: "Google画像検索",
-        innerText: "search",
+        innerText: "image_search",
         command: "google",
     }, {
         className: "material-icons stackButton",
@@ -16,8 +16,8 @@ const SEARCH_ENGINE_ICONS = [{
     },
     {
         className: "fas fa-book fa-lg stackButton",
-        title: "SKELL",
-        command: "wordsketch",
+        title: "Urban Dictionary",
+        command: "urban",
     }, {
         className: "fab fa-twitter fa-lg stackButton",
         title: "Twitter検索",
