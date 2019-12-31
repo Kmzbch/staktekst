@@ -257,7 +257,7 @@ const renderTextItem = (content, footnote, date = formatDate()) => {
 
   // 
   let contentDIV = lastTextItem.firstElementChild;
-  contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[^\s]+)/g, "<a href='$1' target='_blank'>$1</a>");
+  contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a href='$1' target='_blank'>$1</a>");
 
   if (url) {
     lastTextItem.classList.add('clip');
