@@ -39,7 +39,9 @@
 }
 
 #messagebox {
-    border: 2px solid gray;
+    /* border: 2px solid gray; */
+    box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+
     font-size: 16px;
     align-self: center;
     /* justify-content: center; */
@@ -224,6 +226,36 @@ footer {
 }
 
 /* searchbox styles */
+#dropdown {
+    display: none;
+    position: absolute;
+    width: 250px;
+    top: 30px;
+    left: 40px;
+    background-color: white;
+    border-radius: 1px;
+    padding-left: 0px;
+    box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+}
+
+#dropdown .selected {
+    background: rgba(0, 0, 0, 0.1);
+    font-weight: bold;
+}
+
+#dropdown li {
+    font-size: 14px;
+    padding: 5px;
+    margin: 5px 0px;
+    list-style: none;
+    background-color: white;
+}
+
+#dropdown li::before {
+    content: '#'
+}
+
+
 textarea:focus,
 input:focus {
     outline: none;
