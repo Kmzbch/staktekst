@@ -185,6 +185,10 @@ const updateSearchResult = (e) => {
         if (contentDIV.textContent.match(/(https?:\/\/[\x01-\x7E]+)/g)) {
           contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a class='emphasized' href='$1' target='_blank'>$1</a>");
         }
+
+
+
+
       });
     return hits;
   };
@@ -416,6 +420,8 @@ const initializeEventListeners = () => {
       removeHashTags();
       addNewTagItem(searchbox.value);
     }
+
+    fitDOMHeightToContent(textarea);
   })
 
   textarea.addEventListener('input', (e) => {
@@ -424,10 +430,7 @@ const initializeEventListeners = () => {
       clearTimeout(timer)
     }
 
-
-    const MIN_HEIGHT = 25;
-
-    fitDOMHeightToContent(textarea, MIN_HEIGHT);
+    fitDOMHeightToContent(textarea);
 
     let errClass = tagarea.querySelector('.error');
     if (errClass !== null) {

@@ -89,7 +89,7 @@ function pushText(content, pageTitle = '', url = '', hashtag = '') {
     });
 }
 
-function adjustDOMHeight(ta, minHeight) {
+function adjustDOMHeight(ta, minHeight = 25) {
     const isOverflown = ({
         clientWidth,
         clientHeight,
