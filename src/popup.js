@@ -172,48 +172,48 @@ const updateSearchResult = (e) => {
     dropdownList.classList.add('hidden');
   }
 
-  function filterTextItems(term) {
-    let termRegex;
-    let hits = 0;
-
-    // Search in Japanese/English
-    if (containsJapanese(term)) {
-      termRegex = new RegExp(`(${escapeRegExp(term)})(.*?)`, 'ig');
-    } else {
-      termRegex = new RegExp(`\\b(${escapeRegExp(term)})(.*?)\\b`, 'ig');
-    }
-
-    Array.from(stackDOM.children)
-      .map(textItem => {
-        // remove text decoration and highlight
-        textItem.firstChild.innerHTML = textItem.firstChild.innerText;
-        if (textItem.textContent.match(termRegex)) {
-          textItem.classList.remove('filtered');
-          hits++;
-        } else {
-          textItem.classList.add('filtered');
-        }
-
-        return textItem;
-      })
-      .filter(textItem => !textItem.classList.contains('date'))
-      .filter(textItem => !textItem.classList.contains('filtered'))
-      .forEach(textItem => {
-        let contentDIV = textItem.firstElementChild;
-
-        // add highlight when searching
-        if (term.length >= 1) {
-          contentDIV.innerHTML = contentDIV.textContent.replace(termRegex, "<span class='highlighted'>$1</span>$2");
-        }
-
-        // check if the urls are made up of ascii
-        if (contentDIV.textContent.match(/(https?:\/\/[\x01-\x7E]+)/g)) {
-          contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a class='emphasized' href='$1' target='_blank'>$1</a>");
-        }
-      });
-    return hits;
-  };
 }
+
+function filterTextItems(term) {
+  let termRegex;
+  let hits = 0;
+
+  // Search in Japanese/English
+  if (containsJapanese(term)) {
+    termRegex = new RegExp(`(${escapeRegExp(term)})(.*?)`, 'ig');
+  } else {
+    termRegex = new RegExp(`\\b(${escapeRegExp(term)})(.*?)\\b`, 'ig');
+  }
+
+  Array.from(stackDOM.children)
+    .map(textItem => {
+      // remove text decoration and highlight
+      textItem.firstChild.innerHTML = textItem.firstChild.innerText;
+      if (textItem.textContent.match(termRegex)) {
+        textItem.classList.remove('filtered');
+        hits++;
+      } else {
+        textItem.classList.add('filtered');
+      }
+      return textItem;
+    })
+    .filter(textItem => !textItem.classList.contains('date'))
+    .filter(textItem => !textItem.classList.contains('filtered'))
+    .forEach(textItem => {
+      let contentDIV = textItem.firstElementChild;
+
+      // add highlight when searching
+      if (term.length >= 1) {
+        contentDIV.innerHTML = contentDIV.textContent.replace(termRegex, "<span class='highlighted'>$1</span>$2");
+      }
+
+      // check if the urls are made up of ascii
+      if (contentDIV.textContent.match(/(https?:\/\/[\x01-\x7E]+)/g)) {
+        contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a class='emphasized' href='$1' target='_blank'>$1</a>");
+      }
+    });
+  return hits;
+};
 
 const setHashtagSearch = () => {
   // remove hashtag from dropwdown
@@ -245,10 +245,6 @@ const setHashtagSearch = () => {
     }
   }
 }
-
-
-
-
 
 const handleDownload = () => {
   let content = '';
@@ -345,7 +341,8 @@ const renderTextItem = (content, footnote, date = formatDate()) => {
     hashtag: hashtag
   } = footnote;
 
-  const template = `<div class="stackwrapper"><div class='content' contenteditable="true">${content}</div><i class="material-icons checkbox">check</i><div class="spacer"></div><div class="footnote"></div></div>`;
+  //  const template = `<div class="stackwrapper"><div class='content' contenteditable="true">${content}</div><i class="material-icons checkbox">check</i><div class="spacer"></div><div class="footnote"></div></div>`;
+  const template = `<div class="stackwrapper"><div class='content'>${content}</div><i class="material-icons checkbox">check</i><div class="spacer"></div><div class="footnote"></div></div>`;
 
   stackDOM.innerHTML += template;
 
@@ -422,19 +419,20 @@ const addTextItemToStack = (content, footnote = {}) => {
   stackStorage.set(JSON.stringify(stack));
 };
 
-const addNewTagItem = (tagName) => {
-  let tagItem = document.createElement('span');
+const addNewHashtag = (tagName) => {
+  let tag = document.createElement('span');
 
-  tagItem.classList.add('hashtag');
-  tagItem.textContent = tagName.slice(1);
-  tagItem.addEventListener('click', (e) => {
+  tag.classList.add('hashtag');
+  tag.textContent = tagName.slice(1);
+  tag.addEventListener('click', (e) => {
     e.target.parentElement.removeChild(e.target);
     let index = tagsHolder.indexOf(tagName);
     tagsHolder.splice(index, 1);
   });
-  tagarea.appendChild(tagItem);
+  tagarea.appendChild(tag);
   tagsHolder.push(tagName);
 }
+
 
 const initializeEventListeners = () => {
   /* window */
@@ -442,26 +440,23 @@ const initializeEventListeners = () => {
 
   window.onunload = saveAddItemForm; // fired when popup.html closing
 
-  /* search container */
+  /* search  */
   searchBox.addEventListener('input', updateSearchResult);
 
   searchBox.addEventListener('keyup', (e) => {
-    // rotate search query of hashtags
-    let tagQuery = '';
+    let selected = dropdownList.querySelector('.selected');
+
     if (e.keyCode === 13) {
-      let selected = dropdownList.querySelector('.selected');
-      if (selected !== null) {
+      if (selected) {
         searchBox.value = '#' + selected.textContent;
         selected.classList.remove('selected');
         searchBox.dispatchEvent(new Event('input'));
       }
       dropdownList.classList.add('hidden');
-
     } else if (e.keyCode === 38) {
-      if (getComputedStyle(dropdownList).display !== 'none') {
-        let selected = dropdownList.querySelector('.selected');
-        if (selected !== null) {
-          if (selected.previousSibling !== null) {
+      if (!dropdownList.classList.contains('hidden')) {
+        if (selected) {
+          if (selected.previousSibling) {
             selected.classList.remove('selected');
             selected.previousSibling.classList.add('selected');
           } else {
@@ -469,23 +464,19 @@ const initializeEventListeners = () => {
           }
         }
       }
-
     } else if (e.keyCode === 40) {
-      if (getComputedStyle(dropdownList).display === 'none') {
+      if (dropdownList.classList.contains('hidden')) {
         dropdownList.classList.remove('hidden');
       } else {
-        let selected = dropdownList.querySelector('.selected');
-        if (selected === null) {
-          dropdownList.querySelector('li').classList.add('selected');
-        } else {
-          if (selected.nextSibling !== null) {
+        if (selected) {
+          if (selected.nextSibling) {
             selected.classList.remove('selected');
             selected.nextSibling.classList.add('selected');
           }
+        } else {
+          dropdownList.firstElementChild.classList.add('selected');
         }
       }
-    } else if (e.keyCode === 27) {
-      dropdownList.classList.add('hidden');
     }
   })
 
@@ -496,7 +487,7 @@ const initializeEventListeners = () => {
     searchBox.focus();
   })
 
-  /* toolbox container */
+  /* toolbox */
   topOpener.addEventListener('click', () => {
     textareaOpener.dispatchEvent(new Event('click'));
   });
@@ -521,7 +512,7 @@ const initializeEventListeners = () => {
     // add search query of hashtag 
     if (searchBox.value !== '') {
       removeHashtags();
-      addNewTagItem(searchBox.value);
+      addNewHashtag(searchBox.value);
     }
 
     fitDOMHeightToContent(textarea);
@@ -536,13 +527,14 @@ const initializeEventListeners = () => {
     fitDOMHeightToContent(textarea);
 
     let errClass = tagarea.querySelector('.error');
-    if (errClass !== null) {
+
+    if (errClass) {
       errClass.parentElement.removeChild(errClass);
     }
 
     let hashtags = e.target.value.match(/(^|\s)((#|＃)[^\s]+)(\s$|\n)/);
 
-    if (hashtags !== null) {
+    if (hashtags) {
       let regex = new RegExp(`(^|\\s)${escapeRegExp(hashtags[2])}(\\s$|\\n)`);
       let tagsAdded = tagarea.querySelectorAll('.hashtag').length;
 
@@ -554,7 +546,7 @@ const initializeEventListeners = () => {
       } else {
         e.target.value = e.target.value.replace(regex, '')
         if (hashtags) {
-          addNewTagItem(hashtags[2])
+          addNewHashtag(hashtags[2])
         }
       }
     }
@@ -575,25 +567,16 @@ const initializeEventListeners = () => {
           return false;
         }
 
-        let hashtags = removeHashtags();
-
         let footnote = {
-          pageTitle: "",
-          url: "",
-          hashtag: hashtags
+          pageTitle: '',
+          url: '',
+          hashtag: removeHashtags()
         };
 
         addTextItemToStack(text, footnote);
         renderTextItem(text, footnote);
 
-        // display message
-        headerBoard.classList.remove('entering');
-        headerBoard.textContent = "Item Added!";
-        timer = setTimeout(() => {
-          headerBoard.textContent = '';
-          toolbox.classList.remove('hidden');
-
-        }, 700);
+        displayItemAddedMessage();
 
         // clear form and holders
         textarea.value = '';
@@ -602,6 +585,15 @@ const initializeEventListeners = () => {
 
         return false;
       }
+    }
+
+    function displayItemAddedMessage() {
+      headerBoard.classList.remove('entering');
+      headerBoard.textContent = "Item Added!";
+      timer = setTimeout(() => {
+        headerBoard.textContent = '';
+        toolbox.classList.remove('hidden');
+      }, 700);
     }
   });
 
@@ -612,35 +604,33 @@ const initializeEventListeners = () => {
     // tag filter
     if (e.target.classList.contains('tag')) {
       fireSearchWithQuery(e.target.innerHTML);
-    } else {
-      if (e.target.classList.contains('checkbox')) {
-        const parent = e.target.parentElement;
-
-        // apply visual effects for removing text items
-        e.target.style = 'color: white !important;';
-        parent.style.color = 'black !important'
-        parent.style.opacity = '0.5';
-        parent.style.textDecoration = 'line-through';
-        toolbox.classList.add('hidden');
-
-        headerBoard.textContent = "Item Removed!";
-
-        // remove
-        setTimeout(() => {
-          let lists = Array.from(stackDOM.querySelectorAll('.stackwrapper'));
-          let index = lists.indexOf(e.target.parentElement);
-
-          removeTextItemFromStack(index);
-          parent.remove();
-          setTimeout(() => {
-            headerBoard.textContent = '';
-            toolbox.classList.remove('hidden');
-
-          }, 700);
-        }, 450);
-      }
+    } else if (e.target.classList.contains('checkbox')) {
+      removeTextItemDOM(e);
     }
 
+    function removeTextItemDOM(e) {
+      let parent = e.target.parentElement;
+
+      // apply visual effects and display Message
+      e.target.style = 'color: white !important;';
+      parent.style.color = 'black !important'
+      parent.style.opacity = '0.5';
+      parent.style.textDecoration = 'line-through';
+      toolbox.classList.add('hidden');
+      headerBoard.textContent = "Item Removed!";
+
+      // remove
+      setTimeout(() => {
+        let lists = Array.from(stackDOM.querySelectorAll('.stackwrapper'));
+        let index = lists.indexOf(e.target.parentElement);
+
+        removeTextItemFromStack(index);
+
+        parent.remove();
+        headerBoard.textContent = '';
+        toolbox.classList.remove('hidden');
+      }, 450);
+    }
   });
 
   /* clear stack button */
@@ -655,11 +645,11 @@ const initializeEventListeners = () => {
 
   confirmButton.addEventListener('click', () => {
     clearAllItems();
-    overlay.click();
+    clearStackWindow.classList.add('hidden');
   })
 
   cancelButton.addEventListener('click', () => {
-    overlay.click();
+    clearStackWindow.classList.add('hidden');
   })
 
   /* inner functions */
@@ -675,7 +665,7 @@ const restoreTextArea = () => {
     textHolder = res.textarea;
     if (typeof res.tags !== 'undefined') {
       res.tags.forEach(tag => {
-        addNewTagItem(tag);
+        addNewHashtag(tag);
       })
     }
     chrome.storage.local.set({
@@ -718,8 +708,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // attach bubbleDOM
   document.addEventListener('mouseup', bubble_lib.renderBubble);
-
-
 
   // setTimeout(() => {
   //   let wrapperItems = document.querySelectorAll('.stackwrapper');
