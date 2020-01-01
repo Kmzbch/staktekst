@@ -175,7 +175,6 @@ const updateSearchResult = (e) => {
     }
 
     Array.from(stackDOM.children)
-      .filter(textItem => !textItem.classList.contains('date'))
       .map(textItem => {
         // remove text decoration and highlight
         textItem.firstChild.innerHTML = textItem.firstChild.innerText;
@@ -187,6 +186,7 @@ const updateSearchResult = (e) => {
         }
         return textItem;
       })
+      .filter(textItem => !textItem.classList.contains('date'))
       .filter(textItem => !textItem.classList.contains('filtered'))
       .forEach(textItem => {
         let contentDIV = textItem.firstElementChild;
@@ -698,7 +698,6 @@ function handleDownload() {
       content += stack[i].footnote.url + "\n\n";
     }
   }
-  console.log(stack);
 
 
   const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);

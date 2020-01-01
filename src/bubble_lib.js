@@ -79,6 +79,7 @@ const createIconDOM = ({
         renderBubble();
     });
 
+
     return iconDOM;
 }
 
