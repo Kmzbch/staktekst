@@ -262,12 +262,18 @@ const renderTextItem = (content, footnote, date = formatDate()) => {
     hashtag: hashtag
   } = footnote;
 
-  const template = `<div class="stackwrapper"><div class='content'>${content}</div><i class="material-icons checkbox">check</i><div class="spacer"></div><div class="footnote"></div></div>`;
+  const template = `<div class="stackwrapper"><div class='content' contenteditable="true">${content}</div><i class="material-icons checkbox">check</i><div class="spacer"></div><div class="footnote"></div></div>`;
 
   stackDOM.innerHTML += template;
 
   // consider text item without url as a note
   let lastTextItem = stackDOM.lastElementChild;
+
+  // event
+  lastTextItem.addEventListener('change', (e) => {
+    console.log(e.target.HTML);
+  });
+
 
   // 
   let contentDIV = lastTextItem.firstElementChild;
@@ -278,7 +284,6 @@ const renderTextItem = (content, footnote, date = formatDate()) => {
     lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag hidden">#clip</span><a href="${url}" target="_blank">${pageTitle}</a>`;
     // lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#clip</span><a class='source' href="${url}" target="_blank">${pageTitle}</a>`;
   } else {
-    console.log(hashtag);
     if (hashtag.indexOf('bookmark') !== -1) {
       lastTextItem.classList.add('bookmark');
       lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#bookmark</span>`;
@@ -368,6 +373,7 @@ const initializeEventListeners = () => {
   window.onunload = saveAddItemForm; // fired when popup.html closing
 
 
+  fileExporter.addEventListener('click', handleDownload);
 
 
 
@@ -497,7 +503,7 @@ const initializeEventListeners = () => {
   })
 
   textarea.addEventListener('keyup', (e) => {
-    if (e.keyCode === 13) {
+    if (e.keyCode === 13 && e.ctrlKey) {
       let errClass = tagarea.querySelector('.error');
 
       if (errClass === null) {
@@ -682,9 +688,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // attach bubbleDOM
   document.addEventListener('mouseup', bubble_lib.renderBubble);
+
+
+
+  // setTimeout(() => {
+  //   let wrapperItems = document.querySelectorAll('.stackwrapper');
+
+  //   for (let i = 0; i < wrapperItems.length; i++) {
+  //     let wrapper = wrapperItems[i];
+  //     let oldHTML = wrapper.innerHTML;
+  //     wrapper.addEventListener('blur', fireChange);
+  //     wrapper.addEventListener('keyup', fireChange);
+  //     wrapper.addEventListener('paste', fireChange);
+  //     wrapper.addEventListener('copy', fireChange);
+  //     wrapper.addEventListener('cut', fireChange);
+  //     wrapper.addEventListener('mouseup', fireChange);
+
+  //     function fireChange() {
+  //       let newHTML = wrapper.innerHTML;
+  //       if (oldHTML !== newHTML) {
+  //         wrapper.dispatchEvent(new Event('change'));
+  //         oldHTML = newHTML;
+  //       }
+  //     }
+
+  //   }
+
+  // }, 300)
+
+
+
 });
 
-fileExporter.addEventListener('click', handleDownload);
+
 
 function handleDownload() {
 
