@@ -688,24 +688,32 @@ fileExporter.addEventListener('click', handleDownload);
 
 function handleDownload() {
 
+  let content = "";
+  for (let i = 0; i < stack.length; i++) {
+    content += `${stack[i].content}\n`;
+    if (stack[i].footnote.pageTitle !== '') {
+      content += stack[i].footnote.pageTitle + '\n';
+    }
+    if (stack[i].footnote.url !== '') {
+      content += stack[i].footnote.url + "\n\n";
+    }
+  }
+  console.log(stack);
 
-
-  const content = 'あいうえお,かきくけこ,さしすせそ\nたちつてと,なにぬねの,はひふへほ';
 
   const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-  // const content = 'あいうえお,かきくけこ,さしすせそ\nたちつてと,なにぬねの,はひふへほ';
 
   window.URL = window.URL || window.webkitURL;
 
   var blob = new Blob([bom, content], {
-    type: 'data:text/csv'
+    type: 'data:text/plain'
   });
 
   const url = window.URL.createObjectURL(blob);
 
   chrome.downloads.download({
     url: url,
-    filename: 'test.csv', // Optional
+    filename: 'test.txt', // Optional
     saveAs: true
   });
 }
