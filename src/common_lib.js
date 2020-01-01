@@ -66,7 +66,6 @@ function pushText(content, pageTitle = '', url = '', hashtag = '') {
         }
     };
 
-
     stackStorage.get(raw => {
 
         if (typeof raw === 'undefined') {

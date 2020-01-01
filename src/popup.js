@@ -50,8 +50,10 @@ const cancelButton = document.querySelector('.cancel')
 let stack = [];
 let tagStack = ['note', 'clip', 'bookmark'];
 let dateStack = [];
+
 let textHolder = '';
 let tagsHolder = [];
+
 let timer = null;
 let background = chrome.extension.getBackgroundPage();
 
@@ -285,8 +287,10 @@ const saveAddItemForm = () => {
 }
 
 const clearAllItems = () => {
+  // clear storage
   stackStorage.reset();
 
+  // remove DOMs
   while (stackDOM.firstChild) {
     stackDOM.removeChild(stackDOM.firstChild);
   }
@@ -294,18 +298,13 @@ const clearAllItems = () => {
 
   textarea.value = '';
   searchBox.value = '';
+
+  // reset holder variables
   stack = [];
   dateStack = [];
   tagStack = ['note', 'clip', 'bookmark'];
   textHolder = '';
   tagsHolder = [];
-
-  closeAddTextItemForm();
-}
-
-const removeTextItemFromStack = (index) => {
-  stack.splice(index, 1);
-  stackStorage.set(JSON.stringify(stack));
 }
 
 const removeHashtags = () => {
@@ -508,8 +507,6 @@ const initializeEventListeners = () => {
 
   /* textarea */
   textarea.addEventListener('focus', () => {
-    updateHeaderBoard();
-
     // add search query of hashtag 
     if (searchBox.value !== '') {
       removeHashtags();
@@ -517,15 +514,13 @@ const initializeEventListeners = () => {
     }
 
     fitDOMHeightToContent(textarea);
+    updateHeaderBoard();
   })
 
   textarea.addEventListener('input', (e) => {
-    // reset if timeout remains
     if (timer) {
       clearTimeout(timer)
     }
-
-    fitDOMHeightToContent(textarea);
 
     let errClass = tagarea.querySelector('.error');
 
@@ -554,6 +549,7 @@ const initializeEventListeners = () => {
 
     textHolder = e.target.value.trim();
 
+    fitDOMHeightToContent(textarea);
     updateHeaderBoard();
   })
 
@@ -607,11 +603,11 @@ const initializeEventListeners = () => {
     if (e.target.classList.contains('tag')) {
       fireSearchWithQuery(e.target.innerHTML);
     } else if (e.target.classList.contains('checkbox')) {
-      removeTextItemDOM(e);
+      removeTextItem(e);
     }
 
     /* inner functions */
-    function removeTextItemDOM(e) {
+    function removeTextItem(e) {
       let parent = e.target.parentElement;
 
       // apply visual effects and display Message
@@ -627,7 +623,9 @@ const initializeEventListeners = () => {
         let lists = Array.from(stackDOM.querySelectorAll('.stackwrapper'));
         let index = lists.indexOf(e.target.parentElement);
 
-        removeTextItemFromStack(index);
+        // remove textitem from stack
+        stack.splice(index, 1);
+        stackStorage.set(JSON.stringify(stack));
 
         parent.remove();
         headerBoard.textContent = '';
