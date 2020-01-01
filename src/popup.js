@@ -46,7 +46,7 @@ const overlay = document.querySelector('.overlay');
 const confirmButton = document.querySelector('.ok');
 const cancelButton = document.querySelector('.cancel')
 
-// 
+// holder variables
 let stack = [];
 let tagStack = ['note', 'clip', 'bookmark'];
 let dateStack = [];
@@ -310,7 +310,6 @@ const removeTextItemFromStack = (index) => {
 
 const removeHashtags = () => {
   let removedTags = [];
-
   while (tagarea.lastChild && tagarea.children.length > 1) {
     removedTags.push(tagarea.lastChild.innerText);
     tagarea.removeChild(tagarea.lastChild);
@@ -341,28 +340,15 @@ const renderTextItem = (content, footnote, date = formatDate()) => {
     hashtag: hashtag
   } = footnote;
 
-  //  const template = `<div class="stackwrapper"><div class='content' contenteditable="true">${content}</div><i class="material-icons checkbox">check</i><div class="spacer"></div><div class="footnote"></div></div>`;
   const template = `<div class="stackwrapper"><div class='content'>${content}</div><i class="material-icons checkbox">check</i><div class="spacer"></div><div class="footnote"></div></div>`;
-
   stackDOM.innerHTML += template;
 
-  // consider text item without url as a note
   let lastTextItem = stackDOM.lastElementChild;
 
-  // // event
-  // lastTextItem.addEventListener('change', (e) => {
-  //   console.log(e.target.HTML);
-  // });
-
-
-  // 
-  let contentDIV = lastTextItem.firstElementChild;
-  contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a href='$1' target='_blank'>$1</a>");
-
+  // consider text item without url as a note
   if (url) {
     lastTextItem.classList.add('clip');
     lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag hidden">#clip</span><a href="${url}" target="_blank">${pageTitle}</a>`;
-    // lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#clip</span><a class='source' href="${url}" target="_blank">${pageTitle}</a>`;
   } else {
     if (hashtag.indexOf('bookmark') !== -1) {
       lastTextItem.classList.add('bookmark');
@@ -373,34 +359,49 @@ const renderTextItem = (content, footnote, date = formatDate()) => {
     }
   }
 
-  if (typeof hashtag !== 'undefined') {
-    hashtag.forEach(t => {
-      if (t !== 'note' && t !== 'clip' && t !== 'bookmark') {
-        let tag = document.createElement('span');
-        tag.className = 'tag';
-        tag.textContent = '#' + t;
-        lastTextItem.querySelector('.footnote').appendChild(tag);
-        // tag stack
-        let index = tagStack.indexOf(t);
-        if (index === -1) {
-          tagStack.push(t);
-        }
-      }
-    })
+  enableURLInText(lastTextItem);
+
+  appendHashTags(hashtag);
+
+  insertDateDIV();
+
+  /* inner functions */
+  function enableURLInText(dom) {
+    let contentDIV = dom.firstElementChild;
+    contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a href='$1' target='_blank'>$1</a>");
   }
 
-  // date
-  let dateDiv = document.createElement('div');
-  dateDiv.className = 'date';
-  dateDiv.textContent = date;
+  function appendHashTags() {
+    if (typeof hashtag !== 'undefined') {
+      hashtag.forEach(item => {
+        if (item !== 'note' && item !== 'clip' && item !== 'bookmark') {
+          let tagItem = document.createElement('span');
+          tagItem.className = 'tag';
+          tagItem.textContent = '#' + item;
+          lastTextItem.querySelector('.footnote').appendChild(tagItem);
+          // tag stack
+          let index = tagStack.indexOf(item);
+          if (index === -1) {
+            tagStack.push(item);
+          }
+        }
+      })
+    }
+  }
 
-  if (dateStack.length == 0) {
-    stackDOM.insertBefore(dateDiv, lastTextItem);
-    dateStack.push(date);
-  } else {
-    if (dateStack[dateStack.length - 1] !== date) {
+  function insertDateDIV() {
+    let dateDiv = document.createElement('div');
+    dateDiv.className = 'date';
+    dateDiv.textContent = date;
+
+    if (dateStack.length == 0) {
       stackDOM.insertBefore(dateDiv, lastTextItem);
       dateStack.push(date);
+    } else {
+      if (dateStack[dateStack.length - 1] !== date) {
+        stackDOM.insertBefore(dateDiv, lastTextItem);
+        dateStack.push(date);
+      }
     }
   }
 }
@@ -587,6 +588,7 @@ const initializeEventListeners = () => {
       }
     }
 
+    /* inner functions */
     function displayItemAddedMessage() {
       headerBoard.classList.remove('entering');
       headerBoard.textContent = "Item Added!";
@@ -608,6 +610,7 @@ const initializeEventListeners = () => {
       removeTextItemDOM(e);
     }
 
+    /* inner functions */
     function removeTextItemDOM(e) {
       let parent = e.target.parentElement;
 
