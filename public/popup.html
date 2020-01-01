@@ -12,48 +12,45 @@
 </head>
 
 <body>
-  <div class="modal hidden">
+  <div id="clear-window" class="modal hidden">
     <div class='overlay'></div>
-    <div id='messagebox'>
+    <div class='messagebox'>
       <h4>スタックのクリア</h4>
       過去の保存データがすべて削除されます。<br>クリアしますか？
-      <div></div>
-      <div id='clearbutton-container'>
-        <button id='reset'>OK</button>
-        <button id='cancel'>キャンセル</button>
+      <div class='button-container'>
+        <button class='ok'>OK</button>
+        <button class='cancel'>キャンセル</button>
       </div>
     </div>
   </div>
   <div id="container">
     <header class="sticky">
       <div id="search">
-        <i class="material-icons search-icon">search</i>
+        <label class="search-label material-icons">search</label>
         <input class="searchbox" type="search" autofocus="true" spellcheck="false" placeholder="テキストを検索..." />
-        <span class="material-icons search-cancel">cancel</span>
-        <ul id="dropdown">
+        <i class="searchcancel-button material-icons hidden">cancel</i>
+        <ul id="dropdownlist" class="hidden">
         </ul>
       </div>
       <div id="toolbox">
-        <i class="material-icons opener-top">post_add</i>
-        <i class="material-icons switchview">reorder</i>
-        <i class="material-icons fileexport">get_app</i>
+        <i class="opener-top material-icons">post_add</i>
+        <i class="switchview material-icons">reorder</i>
+        <i class="fileexport material-icons">get_app</i>
       </div>
       <div class="header-board"></div>
     </header>
     <div id="main">
       <div id="add-sort">
-        <textarea class="add-textitem" placeholder="テキストを追加"></textarea>
-        <div id="tagarea"><span class="hashtag default">note</span></div>
-        <i class="material-icons opener">add</i>
+        <textarea class="add-textitem hidden" placeholder="テキストを追加"></textarea>
+        <div class="tagarea hidden"><span class="hashtag default">note</span></div>
+        <i class="opener material-icons">add</i>
         <div class="sort-by">New <i class="material-icons">arrow_upward</i></div>
       </div>
-      <div class="textstack">
+      <div id="textstack">
       </div>
     </div>
     <footer class="sticky">
-      <div class="button-container">
-        <button class="resetBtn button">スタックを空にする</button>
-      </div>
+      <button class="clear-button">スタックを空にする</button>
     </footer>
   </div>
   <script src="popup.js"></script>

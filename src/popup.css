@@ -4,6 +4,9 @@
     z-index: 999999;
 }
 
+
+
+
 .modal {
     position: fixed;
     display: flex;
@@ -19,26 +22,28 @@
     height: 100%;
     z-index: 9999999;
     background: rgba(0, 0, 0, 0.5);
-
 }
 
-#reset {
+#clear-window button {
     min-width: 100px;
+    z-index: 9999999;
+}
+
+.ok {
     padding: 4px;
     background-color: bisque;
-    z-index: 9999999;
 }
 
-#cancel {
+.cancel {
     min-width: 100px;
     z-index: 9999999;
 }
 
-#messagebox h4 {
+.messagebox h4 {
     color: tomato;
 }
 
-#messagebox {
+.messagebox {
     /* border: 2px solid gray; */
     box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
 
@@ -63,19 +68,17 @@
     -moz-user-select: none;
 }
 
-#clearbutton-container {
+.button-container {
     margin-top: 30px;
-    /* margin: 5px; */
     align-self: flex-end;
     justify-content: center;
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
-#tagarea {
-    display: none;
+.tagarea {
     position: relative;
     width: 375px;
     height: 20px;
@@ -216,6 +219,7 @@ footer:hover {
 }
 
 footer {
+    display: block;
     opacity: 1;
     width: 450px;
     height: 50px;
@@ -226,10 +230,10 @@ footer {
 }
 
 /* searchbox styles */
-#dropdown {
-    display: none;
+#dropdownlist {
+    display: block;
     position: absolute;
-    width: 250px;
+    width: 255px;
     top: 30px;
     left: 40px;
     background-color: white;
@@ -238,12 +242,12 @@ footer {
     box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
 }
 
-#dropdown .selected {
+#dropdownlist .selected {
     background: rgba(0, 0, 0, 0.1);
     font-weight: bold;
 }
 
-#dropdown li {
+#dropdownlist li {
     font-size: 14px;
     padding: 5px;
     margin: 5px 0px;
@@ -251,10 +255,9 @@ footer {
     background-color: white;
 }
 
-#dropdown li::before {
+#dropdownlist li::before {
     content: '#'
 }
-
 
 textarea:focus,
 input:focus {
@@ -277,7 +280,7 @@ input:focus {
     background: rgba(255, 255, 255, 0.2);
 }
 
-.search-icon {
+.search-label {
     position: absolute;
     top: 15px;
     left: 16px;
@@ -288,8 +291,7 @@ input:focus {
     -moz-user-select: none;
 }
 
-.search-cancel {
-    display: none !important;
+.searchcancel-button {
     position: absolute;
     top: 14px;
     left: 278px;
@@ -311,11 +313,10 @@ input:focus {
 }
 
 #toolbox {
+    display: flex;
     position: absolute;
     width: 130px;
-    /* right: 18px; */
     left: 310px;
-
     top: 13px;
     justify-content: space-around;
     display: flex;
@@ -387,6 +388,7 @@ input:focus {
 }
 
 .opener {
+    display: block;
     position: absolute;
     left: 215px;
     margin: auto;
@@ -401,6 +403,7 @@ input:focus {
 }
 
 .sort-by {
+    display: block;
     padding: 5px;
     float: right;
     margin-right: 12px;
@@ -418,7 +421,8 @@ input:focus {
 
 /* add container styles*/
 .add-textitem {
-    display: none;
+    /* display: none; */
+    display: flex;
     width: 375px;
     height: 25px;
     padding: 9px;
@@ -437,7 +441,7 @@ input:focus {
 }
 
 /* test */
-.textstack {
+#textstack {
     clear: right;
     display: flex;
     flex-direction: column-reverse;
@@ -588,7 +592,7 @@ input:focus {
 
 
 /* remove */
-.textstack .stackwrapper:hover .checkbox {
+#textstack .stackwrapper:hover .checkbox {
     right: 5px !important;
 }
 
@@ -615,7 +619,7 @@ input:focus {
 }
 
 /* button styles*/
-.resetBtn {
+.clear-button {
     width: 350px;
     padding-bottom: 5px;
     border-radius: 4px;

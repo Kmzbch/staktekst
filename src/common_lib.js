@@ -28,7 +28,7 @@ function extractTextInfo(string) {
 }
 
 function containsJapanese(string) {
-    // return string.match(/[\u30a0-\u30ff\u3040-\u309f\u3005-\u3006\u30e0-\u9fcf]+?/) ? true : false
+    // check if multibyte characters are found
     return string.match(/[^\x01-\x7E]+?/) ? true : false
 }
 

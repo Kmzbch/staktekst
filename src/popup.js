@@ -2,80 +2,60 @@ import './popup.css';
 import * as bubble_lib from './bubble_lib.js';
 import {
   escapeRegExp,
-  copyTextWithTitleUrl,
   extractTextInfo,
   containsJapanese,
   formatDate,
   adjustDOMHeight as fitDOMHeightToContent
 } from './common_lib.js';
 
+/* header */
 const header = document.querySelector('header');
-const footer = document.querySelector('footer');
-const searchbox = document.querySelector('.searchbox');
-const searchCancelBtn = document.querySelector('.search-cancel');
-const dropdownList = document.querySelector('#dropdown');
-const headerBoard = document.querySelector('.header-board');
-const toolBox = document.querySelector('#toolbox');
+
+// seachbox
+const searchBox = document.querySelector('.searchbox');
+const searchCancelButton = document.querySelector('.searchcancel-button');
+const dropdownList = document.querySelector('#dropdownlist');
+
+// toolbox
+const toolbox = document.querySelector('#toolbox');
 const topOpener = document.querySelector('.opener-top');
 const viewSwitcher = document.querySelector('.switchview');
 const fileExporter = document.querySelector('.fileexport');
 
+// headerboard
+const headerBoard = document.querySelector('.header-board');
+
+/* main */
+// textarea
 const textareaOpener = document.querySelector('.opener');
 const sortBySwitcher = document.querySelector('.sort-by');
 const textarea = document.querySelector('.add-textitem');
-const stackDOM = document.querySelector('.textstack');
-const resetBtn = document.querySelector('.resetBtn');
-const tagarea = document.querySelector('#tagarea');
+const tagarea = document.querySelector('.tagarea');
 
-const modal = document.querySelector('.modal');
-const messagebox = document.querySelector('#messagebox');
+// items
+const stackDOM = document.querySelector('#textstack');
+
+/* footer */
+const footer = document.querySelector('footer');
+const clearStackButton = document.querySelector('.clear-button');
+
+/* stack clear modal */
+const clearStackWindow = document.querySelector('#clear-window');
+const messageBox = document.querySelector('.messagebox');
 const overlay = document.querySelector('.overlay');
-const reset = document.querySelector('#reset');
-const cancel = document.querySelector('#cancel')
+const confirmButton = document.querySelector('.ok');
+const cancelButton = document.querySelector('.cancel')
 
+// 
 let stack = [];
 let tagStack = ['note', 'clip', 'bookmark'];
 let dateStack = [];
-
 let textHolder = '';
 let tagsHolder = [];
 let timer = null;
-
 let background = chrome.extension.getBackgroundPage();
 
 /* switches */
-const switchViewStyles = () => {
-  let defaultview = document.querySelector('#style_default');
-  let listview = document.querySelector('#style_listview');
-
-  if (defaultview.disabled) {
-    defaultview.disabled = false;
-    listview.disabled = true;
-    viewSwitcher.textContent = 'reorder';
-    switchSortOrder({
-      byNew: true
-    });
-  } else {
-    defaultview.disabled = true;
-    listview.disabled = false;
-    viewSwitcher.textContent = 'format_list_bulleted';
-    switchSortOrder({
-      byNew: false
-    });
-  }
-}
-
-const switchSortOrder = ({
-  byNew = !sortBySwitcher.innerHTML.includes('New')
-}) => {
-  if (byNew) {
-    sortBySwitcher.innerHTML = 'New <i class="material-icons">arrow_upward</i>';
-    stackDOM.style.flexDirection = 'column-reverse';
-  } else {
-    sortBySwitcher.innerHTML = 'Old <i class="material-icons">arrow_downward</i>';
-    stackDOM.style.flexDirection = 'column';
-  }
-}
 
 const switchStickyVisibility = () => {
   // show header and footer when scroll to the top/bottom
@@ -91,7 +71,42 @@ const switchStickyVisibility = () => {
   }
 }
 
-const switchTextAreaOpenerIcons = () => {
+const switchViewStyles = () => {
+  let defaultview = document.querySelector('#style_default');
+  let listview = document.querySelector('#style_listview');
+
+  if (defaultview.disabled) {
+    switchSortOrder({
+      byNew: true
+    });
+
+    defaultview.disabled = false;
+    listview.disabled = true;
+    viewSwitcher.textContent = 'reorder';
+  } else {
+    switchSortOrder({
+      byNew: false
+    });
+
+    defaultview.disabled = true;
+    listview.disabled = false;
+    viewSwitcher.textContent = 'format_list_bulleted';
+  }
+}
+
+const switchSortOrder = ({
+  byNew = !sortBySwitcher.innerHTML.includes('New')
+}) => {
+  if (byNew) {
+    sortBySwitcher.innerHTML = 'New <i class="material-icons">arrow_upward</i>';
+    stackDOM.style.flexDirection = 'column-reverse';
+  } else {
+    sortBySwitcher.innerHTML = 'Old <i class="material-icons">arrow_downward</i>';
+    stackDOM.style.flexDirection = 'column';
+  }
+}
+
+const switchTextareaOpenerIcons = () => {
   if (textareaOpener.textContent === 'post_add') {
     textareaOpener.textContent = 'add';
   } else if (textareaOpener.textContent === 'add') {
@@ -100,38 +115,39 @@ const switchTextAreaOpenerIcons = () => {
 }
 
 const openAddTextItemForm = () => {
-  toolBox.style.display = 'none';
-  textareaOpener.style.display = 'none';
-  sortBySwitcher.style.display = 'none';
-  // open textarea
-  textarea.style.display = 'flex';
-  tagarea.style.display = 'flex';
+  toolbox.classList.add('hidden');
+  textareaOpener.classList.add('hidden');
+  sortBySwitcher.classList.add('hidden');
+
+  textarea.classList.remove('hidden');
+  tagarea.classList.remove('hidden');
+
   textarea.focus();
 }
 
 const closeAddTextItemForm = () => {
+  textarea.classList.add('hidden');
+  tagarea.classList.add('hidden');
+
+  toolbox.classList.remove('hidden');
+  textareaOpener.classList.remove('hidden');
+  sortBySwitcher.classList.remove('hidden');
+
   headerBoard.classList.remove('entering');
   headerBoard.textContent = '';
 
-  toolBox.style.display = 'flex';
-  textareaOpener.style.display = 'block';
-  sortBySwitcher.style.display = 'inline-block';
-  // hide form
-  textarea.style.display = 'none';
-  tagarea.style.display = 'none';
-
-  setIncrementalSearch();
+  setHashtagSearch();
 }
 
 const updateHeaderBoard = () => {
-  toolBox.style.display = 'none';
+  let info = extractTextInfo(textarea.value);
+  headerBoard.innerHTML = `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`;
 
   if (!headerBoard.classList.contains('entering')) {
     headerBoard.classList.add('entering');
   }
 
-  let info = extractTextInfo(textarea.value);
-  headerBoard.innerHTML = `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`;
+  toolbox.classList.add('hidden');
 }
 
 const updateSearchResult = (e) => {
@@ -141,37 +157,30 @@ const updateSearchResult = (e) => {
 
   // change styles on search
   if (term) {
-    searchCancelBtn.style = 'display: block !important';
-    footer.style.display = 'none';
-    toolBox.style.display = 'none';
     headerBoard.textContent = hits === 0 ? 'No Results' : `${hits} of ${stack.length}`;
 
-    // if (term.slice(0, 1) === '#') {
-    //   dropdownList.style.display = 'block';
-
-    // }
+    searchCancelButton.classList.remove('hidden');
+    footer.classList.add('hidden');
+    toolbox.classList.add('hidden');
   } else {
-    searchCancelBtn.style = 'display: none !important';
-    footer.style.display = 'block';
-    toolBox.style.display = 'flex';
     headerBoard.textContent = '';
 
+    searchCancelButton.classList.add('hidden');
+    footer.classList.remove('hidden');
+    toolbox.classList.remove('hidden');
 
-
-    dropdownList.style.display = 'none';
+    dropdownList.classList.add('hidden');
   }
 
   function filterTextItems(term) {
     let termRegex;
     let hits = 0;
 
-
     // Search in Japanese/English
     if (containsJapanese(term)) {
       termRegex = new RegExp(`(${escapeRegExp(term)})(.*?)`, 'ig');
     } else {
       termRegex = new RegExp(`\\b(${escapeRegExp(term)})(.*?)\\b`, 'ig');
-
     }
 
     Array.from(stackDOM.children)
@@ -184,12 +193,14 @@ const updateSearchResult = (e) => {
         } else {
           textItem.classList.add('filtered');
         }
+
         return textItem;
       })
       .filter(textItem => !textItem.classList.contains('date'))
       .filter(textItem => !textItem.classList.contains('filtered'))
       .forEach(textItem => {
         let contentDIV = textItem.firstElementChild;
+
         // add highlight when searching
         if (term.length >= 1) {
           contentDIV.innerHTML = contentDIV.textContent.replace(termRegex, "<span class='highlighted'>$1</span>$2");
@@ -199,26 +210,94 @@ const updateSearchResult = (e) => {
         if (contentDIV.textContent.match(/(https?:\/\/[\x01-\x7E]+)/g)) {
           contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a class='emphasized' href='$1' target='_blank'>$1</a>");
         }
-
-
-
-
       });
     return hits;
   };
 }
 
-const resetAll = () => {
+const setHashtagSearch = () => {
+  // remove hashtag from dropwdown
+  while (dropdownList.firstChild) {
+    dropdownList.removeChild(dropdownList.firstChild);
+  }
+
+  for (let i = 0; i < tagStack.length; i++) {
+    if (tagStack[i] !== '') {
+      let li = document.createElement('li');
+      li.textContent = tagStack[i];
+
+      li.addEventListener('mouseover', (e) => {
+        // work as hover
+        let liSelected = dropdownList.querySelector('.selected');
+        if (liSelected !== null) {
+          liSelected.classList.remove('selected');
+        }
+        e.target.classList.add('selected');
+      });
+      li.addEventListener('click', (e) => {
+        searchBox.value = '#' + e.target.textContent;
+        searchBox.dispatchEvent(new Event('input'));
+
+        dropdownList.classList.add('hidden');
+      });
+
+      dropdownList.appendChild(li);
+    }
+  }
+}
+
+
+
+
+
+const handleDownload = () => {
+  let content = '';
+
+  for (let i = 0; i < stack.length; i++) {
+    content += `${stack[i].content}\n`;
+    if (stack[i].footnote.pageTitle !== '') {
+      content += stack[i].footnote.pageTitle + '\n';
+    }
+    if (stack[i].footnote.url !== '') {
+      content += stack[i].footnote.url + "\n\n";
+    }
+  }
+
+  const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+
+  window.URL = window.URL || window.webkitURL;
+
+  var blob = new Blob([bom, content], {
+    type: 'data:text/plain'
+  });
+
+  const url = window.URL.createObjectURL(blob);
+
+  chrome.downloads.download({
+    url: url,
+    filename: 'test.txt', // Optional
+    saveAs: true
+  });
+}
+
+// save text and hashtags in the textarea when closing
+const saveAddItemForm = () => {
+  background.chrome.storage.local.set({
+    textarea: textHolder,
+    tags: tagsHolder
+  });
+}
+
+const clearAllItems = () => {
   stackStorage.reset();
+
   while (stackDOM.firstChild) {
     stackDOM.removeChild(stackDOM.firstChild);
   }
-
-  removeHashTags();
-
+  removeHashtags();
 
   textarea.value = '';
-  searchbox.value = '';
+  searchBox.value = '';
   stack = [];
   dateStack = [];
   tagStack = ['note', 'clip', 'bookmark'];
@@ -228,17 +307,21 @@ const resetAll = () => {
   closeAddTextItemForm();
 }
 
-// save text and hashtags in the textarea when closing
-const saveAddItemForm = () => {
-  background.chrome.storage.local.set({
-    textarea: textHolder,
-    tags: tagsHolder
-  });
-
-
-
+const removeTextItemFromStack = (index) => {
+  stack.splice(index, 1);
+  stackStorage.set(JSON.stringify(stack));
 }
 
+const removeHashtags = () => {
+  let removedTags = [];
+
+  while (tagarea.lastChild && tagarea.children.length > 1) {
+    removedTags.push(tagarea.lastChild.innerText);
+    tagarea.removeChild(tagarea.lastChild);
+  }
+
+  return removedTags;
+}
 
 /* stack operation*/
 const renderStack = () => {
@@ -269,10 +352,10 @@ const renderTextItem = (content, footnote, date = formatDate()) => {
   // consider text item without url as a note
   let lastTextItem = stackDOM.lastElementChild;
 
-  // event
-  lastTextItem.addEventListener('change', (e) => {
-    console.log(e.target.HTML);
-  });
+  // // event
+  // lastTextItem.addEventListener('change', (e) => {
+  //   console.log(e.target.HTML);
+  // });
 
 
   // 
@@ -339,22 +422,9 @@ const addTextItemToStack = (content, footnote = {}) => {
   stackStorage.set(JSON.stringify(stack));
 };
 
-const removeTextItemFromStack = (index) => {
-  stack.splice(index, 1);
-  stackStorage.set(JSON.stringify(stack));
-}
-
-const removeHashTags = () => {
-  let removedTags = [];
-  while (tagarea.lastChild && tagarea.children.length > 1) {
-    removedTags.push(tagarea.lastChild.innerText);
-    tagarea.removeChild(tagarea.lastChild);
-  }
-  return removedTags;
-}
-
 const addNewTagItem = (tagName) => {
   let tagItem = document.createElement('span');
+
   tagItem.classList.add('hashtag');
   tagItem.textContent = tagName.slice(1);
   tagItem.addEventListener('click', (e) => {
@@ -372,25 +442,20 @@ const initializeEventListeners = () => {
 
   window.onunload = saveAddItemForm; // fired when popup.html closing
 
-
-  fileExporter.addEventListener('click', handleDownload);
-
-
-
   /* search container */
-  searchbox.addEventListener('input', updateSearchResult);
+  searchBox.addEventListener('input', updateSearchResult);
 
-  searchbox.addEventListener('keyup', (e) => {
+  searchBox.addEventListener('keyup', (e) => {
     // rotate search query of hashtags
     let tagQuery = '';
     if (e.keyCode === 13) {
       let selected = dropdownList.querySelector('.selected');
       if (selected !== null) {
-        searchbox.value = '#' + selected.textContent;
+        searchBox.value = '#' + selected.textContent;
         selected.classList.remove('selected');
-        searchbox.dispatchEvent(new Event('input'));
+        searchBox.dispatchEvent(new Event('input'));
       }
-      dropdownList.style.display = 'none';
+      dropdownList.classList.add('hidden');
 
     } else if (e.keyCode === 38) {
       if (getComputedStyle(dropdownList).display !== 'none') {
@@ -400,15 +465,14 @@ const initializeEventListeners = () => {
             selected.classList.remove('selected');
             selected.previousSibling.classList.add('selected');
           } else {
-
-            dropdownList.style.display = 'none';
+            dropdownList.classList.add('hidden');
           }
         }
       }
 
     } else if (e.keyCode === 40) {
       if (getComputedStyle(dropdownList).display === 'none') {
-        dropdownList.style.display = 'block';
+        dropdownList.classList.remove('hidden');
       } else {
         let selected = dropdownList.querySelector('.selected');
         if (selected === null) {
@@ -421,17 +485,15 @@ const initializeEventListeners = () => {
         }
       }
     } else if (e.keyCode === 27) {
-      dropdownList.style.display = 'none';
-
+      dropdownList.classList.add('hidden');
     }
   })
 
-  searchbox.addEventListener('focus', closeAddTextItemForm);
+  searchBox.addEventListener('focus', closeAddTextItemForm);
 
-
-  searchCancelBtn.addEventListener('click', () => {
+  searchCancelButton.addEventListener('click', () => {
     fireSearchWithQuery('');
-    searchbox.focus();
+    searchBox.focus();
   })
 
   /* toolbox container */
@@ -441,10 +503,12 @@ const initializeEventListeners = () => {
 
   viewSwitcher.addEventListener('click', switchViewStyles);
 
-  /* add-sort container */
-  textareaOpener.addEventListener('mouseover', switchTextAreaOpenerIcons);
+  fileExporter.addEventListener('click', handleDownload);
 
-  textareaOpener.addEventListener('mouseout', switchTextAreaOpenerIcons);
+  /* add-sort container */
+  textareaOpener.addEventListener('mouseover', switchTextareaOpenerIcons);
+
+  textareaOpener.addEventListener('mouseout', switchTextareaOpenerIcons);
 
   textareaOpener.addEventListener('click', openAddTextItemForm);
 
@@ -455,14 +519,12 @@ const initializeEventListeners = () => {
     updateHeaderBoard();
 
     // add search query of hashtag 
-    if (searchbox.value !== '') {
-      removeHashTags();
-      addNewTagItem(searchbox.value);
+    if (searchBox.value !== '') {
+      removeHashtags();
+      addNewTagItem(searchBox.value);
     }
 
     fitDOMHeightToContent(textarea);
-
-    // display dropdown
   })
 
   textarea.addEventListener('input', (e) => {
@@ -513,7 +575,7 @@ const initializeEventListeners = () => {
           return false;
         }
 
-        let hashtags = removeHashTags();
+        let hashtags = removeHashtags();
 
         let footnote = {
           pageTitle: "",
@@ -529,7 +591,8 @@ const initializeEventListeners = () => {
         headerBoard.textContent = "Item Added!";
         timer = setTimeout(() => {
           headerBoard.textContent = '';
-          toolBox.style.display = 'flex';
+          toolbox.classList.remove('hidden');
+
         }, 700);
 
         // clear form and holders
@@ -558,7 +621,8 @@ const initializeEventListeners = () => {
         parent.style.color = 'black !important'
         parent.style.opacity = '0.5';
         parent.style.textDecoration = 'line-through';
-        toolBox.style.display = 'none';
+        toolbox.classList.add('hidden');
+
         headerBoard.textContent = "Item Removed!";
 
         // remove
@@ -570,7 +634,8 @@ const initializeEventListeners = () => {
           parent.remove();
           setTimeout(() => {
             headerBoard.textContent = '';
-            toolBox.style.display = 'flex';
+            toolbox.classList.remove('hidden');
+
           }, 700);
         }, 450);
       }
@@ -578,30 +643,29 @@ const initializeEventListeners = () => {
 
   });
 
+  /* clear stack button */
+  clearStackButton.addEventListener('click', () => {
+    clearStackWindow.classList.remove('hidden');
+  });
+
+  /* modal window */
   overlay.addEventListener('click', () => {
-    modal.classList.add('hidden');
+    clearStackWindow.classList.add('hidden');
   });
 
-  reset.addEventListener('click', (e) => {
-    resetAll();
+  confirmButton.addEventListener('click', () => {
+    clearAllItems();
     overlay.click();
   })
 
-  cancel.addEventListener('click', (e) => {
+  cancelButton.addEventListener('click', () => {
     overlay.click();
   })
-
-  /* reset button */
-  // resetBtn.addEventListener('click', resetAll);
-  resetBtn.addEventListener('click', () => {
-    document.querySelector('.modal').classList.remove('hidden');
-  });
-
 
   /* inner functions */
   function fireSearchWithQuery(query) {
-    searchbox.value = query;
-    searchbox.dispatchEvent(new Event('input'));
+    searchBox.value = query;
+    searchBox.dispatchEvent(new Event('input'));
   };
 }
 
@@ -640,40 +704,6 @@ const stackStorage = {
   }
 };
 
-const setIncrementalSearch = () => {
-  // reset
-  while (dropdownList.firstChild) {
-    dropdownList.removeChild(dropdownList.firstChild);
-  }
-
-
-  for (let i = 0; i < tagStack.length; i++) {
-    if (tagStack[i] !== "") {
-      let listItem = document.createElement('li');
-      listItem.className = 'listitem';
-      listItem.textContent = tagStack[i];
-      listItem.addEventListener('mouseover', (e) => {
-        let x = dropdownList.querySelector('.selected');
-        if (x !== null) {
-          x.classList.remove('selected');
-        }
-        e.target.classList.add('selected');
-
-      });
-      listItem.addEventListener('click', (e) => {
-        searchbox.value = '#' + e.target.textContent;
-        searchbox.dispatchEvent(new Event('input'));
-        dropdownList.style.display = 'none';
-
-      });
-
-      dropdownList.appendChild(listItem);
-
-    }
-  }
-
-}
-
 // initialize
 document.addEventListener('DOMContentLoaded', () => {
   renderStack();
@@ -684,7 +714,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // workaround to avoid displaying view switcher delay
   switchViewStyles();
 
-  setIncrementalSearch();
+  setHashtagSearch();
 
   // attach bubbleDOM
   document.addEventListener('mouseup', bubble_lib.renderBubble);
@@ -719,36 +749,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 });
-
-
-
-function handleDownload() {
-
-  let content = "";
-  for (let i = 0; i < stack.length; i++) {
-    content += `${stack[i].content}\n`;
-    if (stack[i].footnote.pageTitle !== '') {
-      content += stack[i].footnote.pageTitle + '\n';
-    }
-    if (stack[i].footnote.url !== '') {
-      content += stack[i].footnote.url + "\n\n";
-    }
-  }
-
-
-  const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-
-  window.URL = window.URL || window.webkitURL;
-
-  var blob = new Blob([bom, content], {
-    type: 'data:text/plain'
-  });
-
-  const url = window.URL.createObjectURL(blob);
-
-  chrome.downloads.download({
-    url: url,
-    filename: 'test.txt', // Optional
-    saveAs: true
-  });
-}
