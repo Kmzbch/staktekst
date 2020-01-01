@@ -18,6 +18,7 @@ const headerBoard = document.querySelector('.header-board');
 const toolBox = document.querySelector('#toolbox');
 const topOpener = document.querySelector('.opener-top');
 const viewSwitcher = document.querySelector('.switchview');
+const fileExporter = document.querySelector('.fileexport');
 
 const textareaOpener = document.querySelector('.opener');
 const sortBySwitcher = document.querySelector('.sort-by');
@@ -145,10 +146,10 @@ const updateSearchResult = (e) => {
     toolBox.style.display = 'none';
     headerBoard.textContent = hits === 0 ? 'No Results' : `${hits} of ${stack.length}`;
 
-    if (term.slice(0, 1) === '#') {
-      dropdownList.style.display = 'block';
+    // if (term.slice(0, 1) === '#') {
+    //   dropdownList.style.display = 'block';
 
-    }
+    // }
   } else {
     searchCancelBtn.style = 'display: none !important';
     footer.style.display = 'block';
@@ -378,10 +379,11 @@ const initializeEventListeners = () => {
     let tagQuery = '';
     if (e.keyCode === 13) {
       let selected = dropdownList.querySelector('.selected');
-      searchbox.value = '#' + selected.textContent;
-      selected.classList.remove('selected');
-      dropdownList.style.display = 'none';
-      searchbox.dispatchEvent(new Event('input'));
+      if (selected !== null) {
+        searchbox.value = '#' + selected.textContent;
+        selected.classList.remove('selected');
+        searchbox.dispatchEvent(new Event('input'));
+      }
       dropdownList.style.display = 'none';
 
     } else if (e.keyCode === 38) {
@@ -681,3 +683,29 @@ document.addEventListener('DOMContentLoaded', () => {
   // attach bubbleDOM
   document.addEventListener('mouseup', bubble_lib.renderBubble);
 });
+
+fileExporter.addEventListener('click', handleDownload);
+
+function handleDownload() {
+
+
+
+  const content = 'あいうえお,かきくけこ,さしすせそ\nたちつてと,なにぬねの,はひふへほ';
+
+  const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+  // const content = 'あいうえお,かきくけこ,さしすせそ\nたちつてと,なにぬねの,はひふへほ';
+
+  window.URL = window.URL || window.webkitURL;
+
+  var blob = new Blob([bom, content], {
+    type: 'data:text/csv'
+  });
+
+  const url = window.URL.createObjectURL(blob);
+
+  chrome.downloads.download({
+    url: url,
+    filename: 'test.csv', // Optional
+    saveAs: true
+  });
+}
