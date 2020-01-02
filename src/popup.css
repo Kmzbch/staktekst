@@ -5,7 +5,28 @@
 }
 
 
+.content {
+    display: inline-block;
+}
 
+.edit:hover {
+    color: black;
+    transform: scale(1.1);
+}
+
+.edit {
+    font-size: 15px !important;
+    color: rgba(0, 0, 0, 0.1);
+    padding-left: 2px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    cursor: pointer;
+    vertical-align: baseline;
+}
+
+[contenteditable]:focus {
+    outline: 0px solid transparent;
+}
 
 .modal {
     position: fixed;
@@ -451,6 +472,7 @@ input:focus {
 
 .stackwrapper {
     position: relative;
+
     display: inline;
     padding: 15px;
     border: 1px solid gray;

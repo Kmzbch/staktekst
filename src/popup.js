@@ -175,7 +175,6 @@ const updateSearchResult = (e) => {
 
     dropdownList.classList.add('hidden');
   }
-
 }
 
 function filterTextItems(term) {
@@ -239,9 +238,7 @@ const setHashtagSearch = () => {
         e.target.classList.add('selected');
       });
       li.addEventListener('click', (e) => {
-        searchBox.value = '#' + e.target.textContent;
-        searchBox.dispatchEvent(new Event('input'));
-
+        fireSearchWithQuery('#' + e.target.textContent);
         dropdownList.classList.add('hidden');
       });
 
@@ -329,6 +326,19 @@ const renderStack = () => {
       stack.forEach(res => {
         let type = res.hasOwnProperty('type') ? res.type : 'note';
         renderTextItem(res.id, type, res.content, res.footnote, res.date);
+
+        let editIcons = document.querySelectorAll('.edit');
+        for (let i = 0; i < editIcons.length; i++) {
+          editIcons[i].addEventListener('click', (event) => {
+            console.log('!!!');
+            let contentDIV = event.target.parentElement.querySelector('.content')
+            contentDIV.contentEditable = true;
+            editIcons[i].classList.add('hidden');
+            contentDIV.focus();
+          })
+
+        }
+
       });
       tagStack = tagStack.sort();
     }
@@ -336,7 +346,6 @@ const renderStack = () => {
 };
 
 const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
-  console.log(content);
   // const template = `<div class="stackwrapper"><div class='content' contenteditable="true">${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><div class="spacer"></div><div class="footnote"></div></div>`;
   const template = `<div class="stackwrapper"><div class='content'>${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><div class="spacer"></div><div class="footnote"></div></div>`;
 
@@ -352,9 +361,19 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   } else {
     lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#${type}</span>`;
     if (type === 'note') {
-      lastTextItem.querySelector('.content').contentEditable = true;
+      let editIcon = document.createElement('i');
+      editIcon.classList.add('material-icons');
+      editIcon.classList.add('edit');
+      editIcon.innerText = 'edit';
+      console.log(editIcon.innerText);
+
+      // lastTextItem.querySelector('i')
+      lastTextItem.insertBefore(editIcon, lastTextItem.querySelector('i'));
+
+
     }
   }
+
 
   enableURLInText(lastTextItem);
   appendHashTags(footnote.tags);
@@ -436,6 +455,98 @@ const addNewHashtag = (tagName) => {
   tagsHolder.push(tagName);
 }
 
+const selectOnDropdownList = (e) => {
+  let selected = dropdownList.querySelector('.selected');
+
+  if (e.keyCode === 13) {
+    if (selected) {
+      selected.classList.remove('selected');
+      fireSearchWithQuery('#' + selected.textContent);
+    }
+    dropdownList.classList.add('hidden');
+  } else if (e.keyCode === 38) {
+    if (!dropdownList.classList.contains('hidden')) {
+      if (selected) {
+        if (selected.previousSibling) {
+          selected.classList.remove('selected');
+          selected.previousSibling.classList.add('selected');
+        } else {
+          dropdownList.classList.add('hidden');
+        }
+      }
+    }
+  } else if (e.keyCode === 40) {
+    if (dropdownList.classList.contains('hidden')) {
+      dropdownList.classList.remove('hidden');
+    } else {
+      if (selected) {
+        if (selected.nextSibling) {
+          selected.classList.remove('selected');
+          selected.nextSibling.classList.add('selected');
+        }
+      } else {
+        dropdownList.firstElementChild.classList.add('selected');
+      }
+    }
+  }
+}
+
+/* inner functions */
+function fireSearchWithQuery(query) {
+  searchBox.value = query;
+  searchBox.dispatchEvent(new Event('input'));
+};
+
+const submitText = (e) => {
+  if (e.keyCode === 13 && e.ctrlKey) {
+    let errClass = tagarea.querySelector('.error');
+
+    if (errClass === null) {
+      let text = textarea.value.trim();
+      if (text === '' || text === '\n') {
+        textarea.value = '';
+        return false;
+      }
+
+      let footnote = {
+        tags: removeHashtags()
+      };
+      let id = uuidv4();
+      let type = 'note';
+      addTextItemToStack(id, type, text, footnote);
+      renderTextItem(id, type, text, footnote);
+
+      let editIcons = document.querySelectorAll('.edit');
+      for (let i = 0; i < editIcons.length; i++) {
+        editIcons[i].addEventListener('click', (event) => {
+          console.log('!!!');
+          let contentDIV = event.target.parentElement.querySelector('.content')
+          contentDIV.contentEditable = true;
+          editIcons.classList.add('hidden');
+          contentDIV.focus();
+        })
+
+      }
+
+
+
+      headerBoard.classList.remove('entering');
+      headerBoard.textContent = "Item Added!";
+      timer = setTimeout(() => {
+        headerBoard.textContent = '';
+        toolbox.classList.remove('hidden');
+      }, 700);
+
+      // clear form and holders
+      textarea.value = '';
+      textHolder = '';
+      tagsHolder = [];
+
+      return false;
+    }
+  }
+
+};
 
 const initializeEventListeners = () => {
 
@@ -447,42 +558,7 @@ const initializeEventListeners = () => {
   /* search  */
   searchBox.addEventListener('input', updateSearchResult);
 
-  searchBox.addEventListener('keyup', (e) => {
-    let selected = dropdownList.querySelector('.selected');
-
-    if (e.keyCode === 13) {
-      if (selected) {
-        searchBox.value = '#' + selected.textContent;
-        selected.classList.remove('selected');
-        searchBox.dispatchEvent(new Event('input'));
-      }
-      dropdownList.classList.add('hidden');
-    } else if (e.keyCode === 38) {
-      if (!dropdownList.classList.contains('hidden')) {
-        if (selected) {
-          if (selected.previousSibling) {
-            selected.classList.remove('selected');
-            selected.previousSibling.classList.add('selected');
-          } else {
-            dropdownList.classList.add('hidden');
-          }
-        }
-      }
-    } else if (e.keyCode === 40) {
-      if (dropdownList.classList.contains('hidden')) {
-        dropdownList.classList.remove('hidden');
-      } else {
-        if (selected) {
-          if (selected.nextSibling) {
-            selected.classList.remove('selected');
-            selected.nextSibling.classList.add('selected');
-          }
-        } else {
-          dropdownList.firstElementChild.classList.add('selected');
-        }
-      }
-    }
-  })
+  searchBox.addEventListener('keyup', selectOnDropdownList)
 
   searchBox.addEventListener('focus', closeAddTextItemForm);
 
@@ -511,12 +587,6 @@ const initializeEventListeners = () => {
 
   /* textarea */
   textarea.addEventListener('focus', () => {
-    // add search query of hashtag 
-    if (searchBox.value !== '') {
-      removeHashtags();
-      addNewHashtag(searchBox.value);
-    }
-
     fitDOMHeightToContent(textarea);
     updateHeaderBoard();
   })
@@ -557,46 +627,7 @@ const initializeEventListeners = () => {
     updateHeaderBoard();
   })
 
-  textarea.addEventListener('keyup', (e) => {
-    if (e.keyCode === 13 && e.ctrlKey) {
-      let errClass = tagarea.querySelector('.error');
-
-      if (errClass === null) {
-        let text = textarea.value.trim();
-        if (text === '' || text === '\n') {
-          textarea.value = '';
-          return false;
-        }
-
-        let footnote = {
-          tags: removeHashtags()
-        };
-        let id = uuidv4();
-        let type = 'note';
-        addTextItemToStack(id, type, text, footnote);
-        renderTextItem(id, type, text, footnote);
-
-        displayItemAddedMessage();
-
-        // clear form and holders
-        textarea.value = '';
-        textHolder = '';
-        tagsHolder = [];
-
-        return false;
-      }
-    }
-
-    /* inner functions */
-    function displayItemAddedMessage() {
-      headerBoard.classList.remove('entering');
-      headerBoard.textContent = "Item Added!";
-      timer = setTimeout(() => {
-        headerBoard.textContent = '';
-        toolbox.classList.remove('hidden');
-      }, 700);
-    }
-  });
+  textarea.addEventListener('keyup', submitText);
 
   /* checkboxes for text stack */
   stackDOM.addEventListener('mouseover', closeAddTextItemForm)
@@ -654,12 +685,6 @@ const initializeEventListeners = () => {
   cancelButton.addEventListener('click', () => {
     clearStackWindow.classList.add('hidden');
   })
-
-  /* inner functions */
-  function fireSearchWithQuery(query) {
-    searchBox.value = query;
-    searchBox.dispatchEvent(new Event('input'));
-  };
 }
 
 const restoreTextArea = () => {
@@ -678,14 +703,10 @@ const restoreTextArea = () => {
   })
 }
 
-
-
-
 // initialize
 document.addEventListener('DOMContentLoaded', () => {
   renderStack();
   restoreTextArea();
-
   initializeEventListeners();
 
   // workaround to avoid displaying view switcher delay
@@ -713,9 +734,19 @@ document.addEventListener('DOMContentLoaded', () => {
         let id = e.target.querySelector('input').value;
         let newHTML = e.target.querySelector('.content').innerHTML;
         updateTextItem(id, newHTML);
+
+
       })
 
-      function fireChange() {
+      wrapper.querySelector('.content').addEventListener('blur', (e) => {
+        let editIcon = e.target.parentElement.querySelector('.edit');
+        editIcon.classList.remove('hidden');
+        e.target.contentEditable = false;
+
+      });
+
+      function fireChange(e) {
+
         let newHTML = wrapper.innerHTML;
         if (oldHTML !== newHTML) {
           wrapper.dispatchEvent(new Event('change'));
