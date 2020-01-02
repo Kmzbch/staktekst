@@ -143,8 +143,14 @@ const closeAddTextItemForm = () => {
   setHashtagSearch();
 }
 
-const updateHeaderBoard = () => {
-  let info = extractTextInfo(textarea.value);
+const updateHeaderBoard = (dom = null) => {
+  let info = null;
+  if (dom) {
+    info = extractTextInfo(dom.textContent);
+
+  } else {
+    info = extractTextInfo(textarea.value);
+  }
   headerBoard.innerHTML = `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`;
 
   if (!headerBoard.classList.contains('entering')) {
@@ -191,13 +197,16 @@ function filterTextItems(term) {
   Array.from(stackDOM.children)
     .map(textItem => {
       // remove text decoration and highlight
-      textItem.firstChild.innerHTML = textItem.firstChild.innerText;
+      // textItem.firstChild.innerHTML = textItem.firstChild.innerText;
+      textItem.firstChild.innerHTML = textItem.firstChild.innerHTML;
+
       if (textItem.textContent.match(termRegex)) {
         textItem.classList.remove('filtered');
         hits++;
       } else {
         textItem.classList.add('filtered');
       }
+
       return textItem;
     })
     .filter(textItem => !textItem.classList.contains('date'))
@@ -208,9 +217,14 @@ function filterTextItems(term) {
       // add highlight when searching
       if (term.length >= 1) {
         contentDIV.innerHTML = contentDIV.textContent.replace(termRegex, "<span class='highlighted'>$1</span>$2");
+        // let x = contentDIV.textContent.match(termRegex);
+        // console.log(x);
+
+      } else {
+        contentDIV.innerHTML = contentDIV.textContent;
       }
 
-      // check if the urls are made up of ascii
+      // // check if the urls are made up of ascii
       if (contentDIV.textContent.match(/(https?:\/\/[\x01-\x7E]+)/g)) {
         contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a class='emphasized' href='$1' target='_blank'>$1</a>");
       }
@@ -548,6 +562,7 @@ function attachEditIconsEvent() {
     wrapper.addEventListener('change', (e) => {
       let id = e.target.querySelector('input').value;
       let newHTML = e.target.querySelector('.content').innerHTML.replace(/<br>$/, '');
+      updateHeaderBoard(e.target.querySelector('.content'));
 
       updateTextItem(id, newHTML);
     })
@@ -561,8 +576,24 @@ function attachEditIconsEvent() {
       e.target.innerHTML = e.target.innerHTML.replace(/<br>$/, '');
 
     });
+    wrapper.addEventListener('dblclick', (e) => {
+      if (wrapper.classList.contains('note')) {
+        if (!e.target.classList.contains('content')) {
+          setTimeout(bubble_lib.hideBubble, 30);
+
+          setTimeout(() => {
+            let contentDIV = e.target.querySelector('.content');
+            contentDIV.contentEditable = true;
+            wrapper.querySelector('i').classList.add('hidden');
+            contentDIV.focus();
+          }, 100)
+        }
+
+      }
+    });
 
     wrapper.querySelector('.content').addEventListener('focus', (e) => {
+      updateHeaderBoard(e.target);
       wrapper.classList.add('editing');
       var selection = window.getSelection();
       var range = document.createRange();

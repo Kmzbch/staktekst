@@ -116,6 +116,7 @@ const createBubbleDOM = () => {
     return bubbleDOM;
 }
 
+// let timer;
 const renderBubble = () => {
     setTimeout(() => {
         let selection = document.getSelection();
@@ -130,6 +131,13 @@ const renderBubble = () => {
             bubble.style.left = Math.floor((boundingCR.left + boundingCR.right) / 2) - 50 + window.scrollX + 'px';
         }
     }, 30)
+}
+const hideBubble = () => {
+
+    if (getComputedStyle(bubble).display !== 'none') {
+        bubble.style.display = 'none';
+
+    }
 }
 
 const bubble = (() => {
@@ -172,6 +180,7 @@ export {
     createIconDOM,
     createBubbleDOM,
     renderBubble,
+    hideBubble,
     bubble,
     sendCommandMessage
 }
