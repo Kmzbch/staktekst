@@ -68,10 +68,12 @@ const executeCommand = (commandId, text = '') => {
     if (commandId === 'extendedcopy') {
       copyTextWithTitleUrl(text, tabs[0].title, tabs[0].url);
     } else if (commandId === 'pushtext') {
-      pushText(text, tabs[0].title, tabs[0].url);
+      let type = 'clip';
+      pushText(text, type, tabs[0].title, tabs[0].url);
     } else if (commandId === 'bookmark') {
       text = tabs[0].title + '\n' + tabs[0].url;
-      pushText(text, '', '', 'bookmark');
+      let type = 'bookmark';
+      pushText(text, type, '', '');
     } else {
       let command = BUBBLE_MENUS.find(item => item.id === commandId);
       let urlWithQuery = command.url.replace('%s', text);

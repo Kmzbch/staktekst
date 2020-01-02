@@ -47,40 +47,44 @@ function formatDate(date = new Date()) {
     return `${yyyy}-${mm}-${dd}`;
 }
 
-function pushText(content, pageTitle = '', url = '', hashtag = '') {
-    const stackStorage = {
-        get: callback => {
-            chrome.storage.local.get(['raw'], result => {
-                callback(result.raw);
-            });
-        },
-        set: (value) => {
-            chrome.storage.local.set({
-                raw: value,
-            });
-        },
-        reset: () => {
-            chrome.storage.local.set({
-                raw: '[]'
-            });
-        }
-    };
+function uuidv4() {
+    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    )
+}
 
+const stackStorage = {
+    get: callback => {
+        chrome.storage.local.get(['raw'], result => {
+            callback(result.raw);
+        });
+    },
+    set: (value) => {
+        chrome.storage.local.set({
+            raw: value,
+        });
+    },
+    reset: () => {
+        chrome.storage.local.set({
+            raw: '[]'
+        });
+    }
+};
+
+function pushText(content, type, pageTitle = '', pageURL = '') {
     stackStorage.get(raw => {
-
         if (typeof raw === 'undefined') {
             stackStorage.reset();
         } else {
             let stack = JSON.parse(raw);
             stack.push({
-                content: content,
+                id: uuidv4(),
+                type: type,
                 date: formatDate(),
-                noteTitle: '',
+                content: content,
                 footnote: {
                     pageTitle,
-                    url,
-                    // hashtag: ['clip']
-                    hashtag: [hashtag]
+                    pageURL
                 }
             });
             stackStorage.set(JSON.stringify(stack));
@@ -117,7 +121,6 @@ function adjustDOMHeight(ta, minHeight = 25) {
 
 }
 
-
 export {
     copyTextWithTitleUrl,
     pushText,
@@ -125,5 +128,7 @@ export {
     extractTextInfo,
     containsJapanese,
     formatDate,
-    adjustDOMHeight
+    adjustDOMHeight,
+    uuidv4,
+    stackStorage
 }

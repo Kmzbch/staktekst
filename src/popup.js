@@ -5,7 +5,9 @@ import {
   extractTextInfo,
   containsJapanese,
   formatDate,
-  adjustDOMHeight as fitDOMHeightToContent
+  adjustDOMHeight as fitDOMHeightToContent,
+  uuidv4,
+  stackStorage
 } from './common_lib.js';
 
 /* header */
@@ -325,54 +327,50 @@ const renderStack = () => {
     } else {
       stack = JSON.parse(raw);
       stack.forEach(res => {
-        renderTextItem(res.content, res.footnote, res.date);
+        let type = res.hasOwnProperty('type') ? res.type : 'note';
+        renderTextItem(res.id, type, res.content, res.footnote, res.date);
       });
       tagStack = tagStack.sort();
     }
   });
 };
 
-const renderTextItem = (content, footnote, date = formatDate()) => {
-  const {
-    pageTitle: pageTitle,
-    url,
-    hashtag: hashtag
-  } = footnote;
+const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
+  console.log(content);
+  // const template = `<div class="stackwrapper"><div class='content' contenteditable="true">${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><div class="spacer"></div><div class="footnote"></div></div>`;
+  const template = `<div class="stackwrapper"><div class='content'>${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><div class="spacer"></div><div class="footnote"></div></div>`;
 
-  const template = `<div class="stackwrapper"><div class='content'>${content}</div><i class="material-icons checkbox">check</i><div class="spacer"></div><div class="footnote"></div></div>`;
   stackDOM.innerHTML += template;
 
   let lastTextItem = stackDOM.lastElementChild;
 
   // consider text item without url as a note
-  if (url) {
-    lastTextItem.classList.add('clip');
-    lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag hidden">#clip</span><a href="${url}" target="_blank">${pageTitle}</a>`;
+  lastTextItem.classList.add(type);
+
+  if (type === 'clip') {
+    lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag hidden">#clip</span><a href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</a>`;
   } else {
-    if (hashtag.indexOf('bookmark') !== -1) {
-      lastTextItem.classList.add('bookmark');
-      lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#bookmark</span>`;
-    } else {
-      lastTextItem.classList.add('note');
-      lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#note</span>`;
+    lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#${type}</span>`;
+    if (type === 'note') {
+      lastTextItem.querySelector('.content').contentEditable = true;
     }
   }
 
   enableURLInText(lastTextItem);
-
-  appendHashTags(hashtag);
+  appendHashTags(footnote.tags);
 
   insertDateDIV();
 
   /* inner functions */
   function enableURLInText(dom) {
     let contentDIV = dom.firstElementChild;
-    contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a href='$1' target='_blank'>$1</a>");
+    //    contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a href='$1' target='_blank'>$1</a>");
+    contentDIV.innerHTML = contentDIV.innerHTML.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a href='$1' target='_blank'>$1</a>");
   }
 
   function appendHashTags() {
-    if (typeof hashtag !== 'undefined') {
-      hashtag.forEach(item => {
+    if (typeof footnote.tags !== 'undefined') {
+      footnote.tags.forEach(item => {
         if (item !== 'note' && item !== 'clip' && item !== 'bookmark') {
           let tagItem = document.createElement('span');
           tagItem.className = 'tag';
@@ -405,15 +403,20 @@ const renderTextItem = (content, footnote, date = formatDate()) => {
   }
 }
 
-const addTextItemToStack = (content, footnote = {}) => {
+const updateTextItem = (id, html) => {
+  let index = stack.findIndex(item => item.id === id);
+  stack[index].content = html;
+  stackStorage.set(JSON.stringify(stack));
+};
+
+const addTextItemToStack = (id, type, content, footnote = {}) => {
   stack.push({
+    id: id,
+    type: type,
     content: content,
     date: formatDate(),
-    noteTitle: '',
     footnote: {
-      pageTitle: '',
-      url: '',
-      hashtag: footnote.hashtag
+      tags: footnote.tags
     },
   });
   stackStorage.set(JSON.stringify(stack));
@@ -435,6 +438,7 @@ const addNewHashtag = (tagName) => {
 
 
 const initializeEventListeners = () => {
+
   /* window */
   window.onscroll = switchStickyVisibility;
 
@@ -565,13 +569,12 @@ const initializeEventListeners = () => {
         }
 
         let footnote = {
-          pageTitle: '',
-          url: '',
-          hashtag: removeHashtags()
+          tags: removeHashtags()
         };
-
-        addTextItemToStack(text, footnote);
-        renderTextItem(text, footnote);
+        let id = uuidv4();
+        let type = 'note';
+        addTextItemToStack(id, type, text, footnote);
+        renderTextItem(id, type, text, footnote);
 
         displayItemAddedMessage();
 
@@ -621,10 +624,9 @@ const initializeEventListeners = () => {
       // remove
       setTimeout(() => {
         let lists = Array.from(stackDOM.querySelectorAll('.stackwrapper'));
-        let index = lists.indexOf(e.target.parentElement);
+        let id = parent.querySelector('input').value;
 
-        // remove textitem from stack
-        stack.splice(index, 1);
+        stack = stack.filter(item => item.id !== id);
         stackStorage.set(JSON.stringify(stack));
 
         parent.remove();
@@ -676,24 +678,8 @@ const restoreTextArea = () => {
   })
 }
 
-/* local storage */
-const stackStorage = {
-  get: callback => {
-    chrome.storage.local.get(['raw'], result => {
-      callback(result.raw);
-    });
-  },
-  set: (value) => {
-    chrome.storage.local.set({
-      raw: value,
-    });
-  },
-  reset: () => {
-    chrome.storage.local.set({
-      raw: '[]'
-    });
-  }
-};
+
+
 
 // initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -710,30 +696,37 @@ document.addEventListener('DOMContentLoaded', () => {
   // attach bubbleDOM
   document.addEventListener('mouseup', bubble_lib.renderBubble);
 
-  // setTimeout(() => {
-  //   let wrapperItems = document.querySelectorAll('.stackwrapper');
+  setTimeout(() => {
+    let wrapperItems = document.querySelectorAll('.stackwrapper');
 
-  //   for (let i = 0; i < wrapperItems.length; i++) {
-  //     let wrapper = wrapperItems[i];
-  //     let oldHTML = wrapper.innerHTML;
-  //     wrapper.addEventListener('blur', fireChange);
-  //     wrapper.addEventListener('keyup', fireChange);
-  //     wrapper.addEventListener('paste', fireChange);
-  //     wrapper.addEventListener('copy', fireChange);
-  //     wrapper.addEventListener('cut', fireChange);
-  //     wrapper.addEventListener('mouseup', fireChange);
+    for (let i = 0; i < wrapperItems.length; i++) {
+      let wrapper = wrapperItems[i];
+      let oldHTML = wrapper.innerHTML;
+      wrapper.addEventListener('blur', fireChange);
+      wrapper.addEventListener('keyup', fireChange);
+      wrapper.addEventListener('paste', fireChange);
+      wrapper.addEventListener('copy', fireChange);
+      wrapper.addEventListener('cut', fireChange);
+      wrapper.addEventListener('mouseup', fireChange);
 
-  //     function fireChange() {
-  //       let newHTML = wrapper.innerHTML;
-  //       if (oldHTML !== newHTML) {
-  //         wrapper.dispatchEvent(new Event('change'));
-  //         oldHTML = newHTML;
-  //       }
-  //     }
+      wrapper.addEventListener('change', (e) => {
+        let id = e.target.querySelector('input').value;
+        let newHTML = e.target.querySelector('.content').innerHTML;
+        updateTextItem(id, newHTML);
+      })
 
-  //   }
+      function fireChange() {
+        let newHTML = wrapper.innerHTML;
+        if (oldHTML !== newHTML) {
+          wrapper.dispatchEvent(new Event('change'));
+          oldHTML = newHTML;
+        }
+      }
 
-  // }, 300)
+    }
+
+
+  }, 300)
 
 
 
