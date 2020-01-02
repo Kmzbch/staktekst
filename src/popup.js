@@ -546,9 +546,8 @@ function attachEditIconsEvent() {
     wrapper.addEventListener('mouseup', fireChange);
 
     wrapper.addEventListener('change', (e) => {
-
       let id = e.target.querySelector('input').value;
-      let newHTML = e.target.querySelector('.content').innerHTML;
+      let newHTML = e.target.querySelector('.content').innerHTML.replace(/<br>$/, '');
 
       updateTextItem(id, newHTML);
     })
@@ -559,10 +558,11 @@ function attachEditIconsEvent() {
       let editIcon = e.target.parentElement.querySelector('.edit');
       editIcon.classList.remove('hidden');
       e.target.contentEditable = false;
+      e.target.innerHTML = e.target.innerHTML.replace(/<br>$/, '');
+
     });
 
     wrapper.querySelector('.content').addEventListener('focus', (e) => {
-      console.log(wrapper);
       wrapper.classList.add('editing');
       var selection = window.getSelection();
       var range = document.createRange();
