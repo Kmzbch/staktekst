@@ -326,21 +326,10 @@ const renderStack = () => {
       stack.forEach(res => {
         let type = res.hasOwnProperty('type') ? res.type : 'note';
         renderTextItem(res.id, type, res.content, res.footnote, res.date);
-
-        let editIcons = document.querySelectorAll('.edit');
-        for (let i = 0; i < editIcons.length; i++) {
-          editIcons[i].addEventListener('click', (event) => {
-            console.log('!!!');
-            let contentDIV = event.target.parentElement.querySelector('.content')
-            contentDIV.contentEditable = true;
-            editIcons[i].classList.add('hidden');
-            contentDIV.focus();
-          })
-
-        }
-
       });
       tagStack = tagStack.sort();
+
+      attachEditIconsEvent();
     }
   });
 };
@@ -513,22 +502,9 @@ const submitText = (e) => {
       };
       let id = uuidv4();
       let type = 'note';
+
       addTextItemToStack(id, type, text, footnote);
-      renderTextItem(id, type, text, footnote);
-
-      let editIcons = document.querySelectorAll('.edit');
-      for (let i = 0; i < editIcons.length; i++) {
-        editIcons[i].addEventListener('click', (event) => {
-          console.log('!!!');
-          let contentDIV = event.target.parentElement.querySelector('.content')
-          contentDIV.contentEditable = true;
-          editIcons.classList.add('hidden');
-          contentDIV.focus();
-        })
-
-      }
-
-
+      renderStack();
 
       headerBoard.classList.remove('entering');
       headerBoard.textContent = "Item Added!";
@@ -547,6 +523,69 @@ const submitText = (e) => {
   }
 
 };
+
+function attachEditIconsEvent() {
+  let editIcons = document.querySelectorAll('.edit');
+  for (let i = 0; i < editIcons.length; i++) {
+    editIcons[i].addEventListener('click', (event) => {
+      let contentDIV = event.target.parentElement.querySelector('.content')
+      contentDIV.contentEditable = true;
+      editIcons[i].classList.add('hidden');
+      contentDIV.focus();
+    })
+  }
+  let wrapperItems = document.querySelectorAll('.stackwrapper');
+  for (let i = 0; i < wrapperItems.length; i++) {
+    let wrapper = wrapperItems[i];
+    let oldHTML = wrapper.innerHTML;
+    wrapper.addEventListener('blur', fireChange);
+    wrapper.addEventListener('keyup', fireChange);
+    wrapper.addEventListener('paste', fireChange);
+    wrapper.addEventListener('copy', fireChange);
+    wrapper.addEventListener('cut', fireChange);
+    wrapper.addEventListener('mouseup', fireChange);
+
+    wrapper.addEventListener('change', (e) => {
+
+      let id = e.target.querySelector('input').value;
+      let newHTML = e.target.querySelector('.content').innerHTML;
+
+      updateTextItem(id, newHTML);
+    })
+
+    wrapper.querySelector('.content').addEventListener('blur', (e) => {
+      wrapper.classList.remove('editing');
+
+      let editIcon = e.target.parentElement.querySelector('.edit');
+      editIcon.classList.remove('hidden');
+      e.target.contentEditable = false;
+    });
+
+    wrapper.querySelector('.content').addEventListener('focus', (e) => {
+      console.log(wrapper);
+      wrapper.classList.add('editing');
+      var selection = window.getSelection();
+      var range = document.createRange();
+      const p = e.target.lastChild;
+      range.setStart(e.target.lastChild, e.target.lastChild.textContent.length);
+      range.setEnd(e.target.lastChild, e.target.lastChild.textContent.length);
+
+      console.log(range.collapsed);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    })
+
+
+    function fireChange(e) {
+      let newHTML = wrapper.innerHTML;
+      if (oldHTML !== newHTML) {
+        wrapper.dispatchEvent(new Event('change'));
+        oldHTML = newHTML;
+      }
+    }
+  }
+
+}
 
 const initializeEventListeners = () => {
 
@@ -716,48 +755,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // attach bubbleDOM
   document.addEventListener('mouseup', bubble_lib.renderBubble);
-
-  setTimeout(() => {
-    let wrapperItems = document.querySelectorAll('.stackwrapper');
-
-    for (let i = 0; i < wrapperItems.length; i++) {
-      let wrapper = wrapperItems[i];
-      let oldHTML = wrapper.innerHTML;
-      wrapper.addEventListener('blur', fireChange);
-      wrapper.addEventListener('keyup', fireChange);
-      wrapper.addEventListener('paste', fireChange);
-      wrapper.addEventListener('copy', fireChange);
-      wrapper.addEventListener('cut', fireChange);
-      wrapper.addEventListener('mouseup', fireChange);
-
-      wrapper.addEventListener('change', (e) => {
-        let id = e.target.querySelector('input').value;
-        let newHTML = e.target.querySelector('.content').innerHTML;
-        updateTextItem(id, newHTML);
-
-
-      })
-
-      wrapper.querySelector('.content').addEventListener('blur', (e) => {
-        let editIcon = e.target.parentElement.querySelector('.edit');
-        editIcon.classList.remove('hidden');
-        e.target.contentEditable = false;
-
-      });
-
-      function fireChange(e) {
-
-        let newHTML = wrapper.innerHTML;
-        if (oldHTML !== newHTML) {
-          wrapper.dispatchEvent(new Event('change'));
-          oldHTML = newHTML;
-        }
-      }
-
-    }
-
-
-  }, 300)
 
 
 
