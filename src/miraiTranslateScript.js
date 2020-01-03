@@ -1,3 +1,5 @@
+'use strict';
+
 chrome.runtime.sendMessage({}, response => {
 	let text = document.querySelector('#translateSourceInput');
 	let translateFrom = document.querySelector('#sourceButtonUrlTranslation');

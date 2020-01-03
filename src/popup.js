@@ -147,7 +147,6 @@ const updateHeaderBoard = (dom = null) => {
   let info = null;
   if (dom) {
     info = extractTextInfo(dom.textContent);
-
   } else {
     info = extractTextInfo(textarea.value);
   }
@@ -217,14 +216,11 @@ function filterTextItems(term) {
       // add highlight when searching
       if (term.length >= 1) {
         contentDIV.innerHTML = contentDIV.textContent.replace(termRegex, "<span class='highlighted'>$1</span>$2");
-        // let x = contentDIV.textContent.match(termRegex);
-        // console.log(x);
-
       } else {
         contentDIV.innerHTML = contentDIV.textContent;
       }
 
-      // // check if the urls are made up of ascii
+      // check if the urls are made up of ascii
       if (contentDIV.textContent.match(/(https?:\/\/[\x01-\x7E]+)/g)) {
         contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a class='emphasized' href='$1' target='_blank'>$1</a>");
       }
@@ -251,6 +247,7 @@ const setHashtagSearch = () => {
         }
         e.target.classList.add('selected');
       });
+
       li.addEventListener('click', (e) => {
         fireSearchWithQuery('#' + e.target.textContent);
         dropdownList.classList.add('hidden');
@@ -368,12 +365,8 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
       editIcon.classList.add('material-icons');
       editIcon.classList.add('edit');
       editIcon.innerText = 'edit';
-      console.log(editIcon.innerText);
 
-      // lastTextItem.querySelector('i')
       lastTextItem.insertBefore(editIcon, lastTextItem.querySelector('i'));
-
-
     }
   }
 
@@ -561,8 +554,6 @@ function attachEditIconsEvent() {
     wrapper.addEventListener('mouseup', fireChange);
 
     wrapper.addEventListener('change', (e) => {
-
-
       let id = e.target.querySelector('input').value;
       let newHTML = e.target.querySelector('.content').innerHTML.replace(/<br>$/, '');
 
@@ -788,12 +779,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // workaround to avoid displaying view switcher delay
   switchViewStyles();
-
   setHashtagSearch();
-
-  // attach bubbleDOM
-  document.addEventListener('mouseup', bubble_lib.renderBubble);
-
-
-
 });

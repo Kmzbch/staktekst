@@ -1,3 +1,7 @@
+'use strict';
+
+const WAIT = 4000;
+
 chrome.runtime.sendMessage({}, response => {
   // get the input form of the page
   let sourceInput = document.querySelector('#flash-speck-area');
@@ -14,8 +18,8 @@ chrome.runtime.sendMessage({}, response => {
   sourceEffect.setAttribute('data-val', 'T');
   sourceLevel.setAttribute('data-val', '2');
 
-  // fire the click event
+  // fire click event after a while
   setTimeout(() => {
     document.querySelector('#play-speaking').click();
-  }, 4000);
+  }, WAIT);
 });

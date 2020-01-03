@@ -778,11 +778,11 @@ dialog {
 /* bubble styles */
 
 /* bubble styles */
-#outside-container:hover {
+#float-container:hover {
     opacity: 1 !important;
 }
 
-#outside-container {
+#float-container {
     display: none !important;
     cursor: pointer !important;
     color: rgba(0, 0, 0, 0.8);

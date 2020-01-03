@@ -1,4 +1,7 @@
-// import IconPreset from './IconPreset.js';
+'use strict';
+
+import './currentTab.css';
+
 const SEARCH_ENGINE_ICONS = [{
         className: "material-icons stackButton",
         title: "Google画像検索",
@@ -6,21 +9,21 @@ const SEARCH_ENGINE_ICONS = [{
         command: "google",
     }, {
         className: "material-icons stackButton",
-        title: "Vocabulary.com単語検索",
+        title: "Vocabulary.comで単語検索",
         innerText: "check",
         command: "vocabulary",
     }, {
         className: "fas fa-user-friends stackButton",
-        title: "Do People Say It",
+        title: "Do People Say Itでフレーズ検索",
         command: "dopeoplesayit",
     },
     {
         className: "fas fa-book fa-lg stackButton",
-        title: "Urban Dictionary",
+        title: "Urban Dictionaryで単語検索",
         command: "urban",
     }, {
         className: "fab fa-twitter fa-lg stackButton",
-        title: "Twitter検索",
+        title: "Twitterでツイート検索",
         command: "twitter",
     },
     {
@@ -34,37 +37,32 @@ const SEARCH_ENGINE_ICONS = [{
         command: "mirai",
     }, {
         className: "material-icons stackButton",
-        title: "テキストを読み上げ",
+        title: "Oddcastでテキストを読み上げ",
         innerText: "message",
-        command: "odd",
+        command: "oddcast",
     }
 ]
 
 const SYSTEM_COMMAND_ICONS = [{
     className: "material-icons stackButton",
-    title: "URL付きコピー",
+    title: "URLとタイトル付きでコピー",
     innerText: "assignment",
     command: "extendedcopy",
 }, {
     className: "material-icons stackButton",
-    title: "テキストをプッシュ",
+    title: "テキストをスタックにプッシュ",
     innerText: "input",
     command: "pushtext",
-}, {
-    className: "material-icons stackButton",
-    title: "単語をハイライト",
-    innerText: "edit",
-    command: "marker",
 }]
 
-const EXTRA_COMMAND_ICONS = [{
+const FLOAT_COMMAND_ICONS = [{
     className: "material-icons bookmark-icon",
-    title: "ページURLをスタックに追加",
+    title: "ページをスタックにブックマーク",
     innerText: "bookmarks",
     command: "bookmark",
 }, {
     className: "material-icons zoom-icon",
-    title: "倍率を切り替え",
+    title: "ページを拡大",
     innerText: "zoom_in",
     command: "zoomtofit",
 
@@ -74,7 +72,7 @@ const EXTRA_COMMAND_ICONS = [{
 const createIconDOM = ({
     className,
     title,
-    innerText = "",
+    innerText = '',
     command
 }) => {
     let iconDOM = document.createElement('i');
@@ -90,133 +88,120 @@ const createIconDOM = ({
         renderBubble();
     });
 
-
     return iconDOM;
 }
 
 const createBubbleDOM = () => {
 
     let bubbleDOM = document.createElement('div');
+    bubbleDOM.setAttribute('id', 'bubble');
+    bubbleDOM.classList.add('hidden');
+
     let leftContainer = document.createElement('div');
     let rightContainer = document.createElement('div');
 
-    bubbleDOM.setAttribute('id', 'bubble');
     leftContainer.setAttribute('id', 'leftContainer');
     rightContainer.setAttribute('id', 'rightContainer');
 
+    // append icons on the bubble left
     SEARCH_ENGINE_ICONS.forEach(icon => {
         leftContainer.appendChild(createIconDOM(icon));
     });
+
+    // append icons on the bubble right
     SYSTEM_COMMAND_ICONS.forEach(icon => {
-        if (icon.command === 'marker') {
-            // if (document.URL.includes('chrome-extension://')) {
-            //     rightContainer.appendChild(createIconDOM(icon));
-            // }
-        } else {
-            if (icon.command === 'pushtext') {
-                if (!document.URL.includes('chrome-extension://')) {
-                    rightContainer.appendChild(createIconDOM(icon));
-                }
-            } else {
+        if (icon.command === 'pushtext') {
+            // remove pushtext icon when on popup.html
+            if (!document.URL.includes('chrome-extension://')) {
                 rightContainer.appendChild(createIconDOM(icon));
             }
+        } else {
+            rightContainer.appendChild(createIconDOM(icon));
         }
-
     });
 
     bubbleDOM.appendChild(leftContainer);
     bubbleDOM.appendChild(rightContainer);
 
-    // addbookmark
-    let outsideContainer = document.createElement('div');
-    outsideContainer.setAttribute('id', 'outside-container');
-    // outsideContainer.innerHTML = '<i class="material-icons bookmark-icon">bookmarks</i>';
+    // append icons on the float container
+    let floatContainer = document.createElement('div');
+    floatContainer.setAttribute('id', 'float-container');
 
-    EXTRA_COMMAND_ICONS.forEach(icon => {
-        outsideContainer.appendChild(createIconDOM(icon))
+    FLOAT_COMMAND_ICONS.forEach(icon => {
+        floatContainer.appendChild(createIconDOM(icon))
     });
-    bubbleDOM.appendChild(outsideContainer);
+
+    bubbleDOM.appendChild(floatContainer);
 
     return bubbleDOM;
 }
 
-// let timer;
 const renderBubble = () => {
     setTimeout(() => {
         let selection = document.getSelection();
 
         if (selection.toString() === '') {
-            bubble.style.display = 'none';
+            bubble.classList.add('hidden');
         } else {
-            bubble.style.display = 'flex';
+            bubble.classList.remove('hidden');
 
+            // switch zoom icon
             chrome.runtime.sendMessage({
                 command: 'GET_ZOOMFACTOR'
             }, response => {
-                console.log(response.zoomFactor);
                 if (response.zoomFactor === 1) {
                     bubble.querySelector('.zoom-icon').innerText = 'zoom_in'
+                    bubble.querySelector('.zoom-icon').title = 'ページを拡大'
+
                 } else {
                     bubble.querySelector('.zoom-icon').innerText = 'zoom_out'
+                    bubble.querySelector('.zoom-icon').title = 'ページ倍率をリセット'
                 }
             });
 
-
+            // set the bubble position based on selection
             let boundingCR = selection.getRangeAt(0).getBoundingClientRect();
             bubble.style.top = (boundingCR.top - 80) + window.scrollY + 'px';
             bubble.style.left = Math.floor((boundingCR.left + boundingCR.right) / 2) - 50 + window.scrollX + 'px';
         }
     }, 30)
 }
+
 const hideBubble = () => {
-
     if (getComputedStyle(bubble).display !== 'none') {
-        bubble.style.display = 'none';
-
+        bubble.classList.add('hidden');
     }
 }
 
 const bubble = (() => {
     let elem = document.querySelector('#bubble');
-    if (elem == null) {
+    if (!elem) {
         elem = createBubbleDOM();
         document.body.appendChild(elem);
     }
     return elem;
 })();
 
-// should have separate sendMessage on each of currentTab.js and popup.js
-// workaround for now
-function sendCommandMessage(command) {
+const sendCommandMessage = (command) => {
     let text = document.getSelection().toString();
 
+    // only for popup.html
     if (document.URL.includes('chrome-extension://')) {
-        text = text.replace(/check\s$/, "");
+        text = text.replace(/check\s$/, '');
 
         // get url and title from footnote
         let textitem = window.getSelection().getRangeAt(0).commonAncestorContainer.parentElement;
-        let aTag, url, title;
+        // let aTag = textitem.classList.contains('clip') ? textitem.querySelector('a') : null;
+        // let url = aTag ? aTag.href : '';
+        // let title = aTag ? aTag.innerText : '';
 
-        if (textitem.classList.contains('clip')) {
-            aTag = textitem.querySelector('a');
-            url = aTag.href;
-            title = aTag.innerText || null;
-        } else {
-            url = "";
-            title = "";
-        }
     }
+
     chrome.runtime.sendMessage({
         command: command,
         selection: text
     });
 }
 
-export {
-    createIconDOM,
-    createBubbleDOM,
-    renderBubble,
-    hideBubble,
-    bubble,
-    sendCommandMessage
-}
+// attach bubble to the loaded page
+document.addEventListener('mouseup', renderBubble)

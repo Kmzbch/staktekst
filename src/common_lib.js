@@ -56,16 +56,15 @@ function uuidv4() {
 function zoomToFit(tab) {
     chrome.tabs.getZoom(tab.id, (zoomFactor) => {
         if (zoomFactor !== 1) {
+            // reset zoom rate
             chrome.tabs.setZoom(tab.id, 1, (zoomFactor) => {});
         } else {
-            let max = 1.5;
-            chrome.tabs.setZoom(tab.id, max, function (zoomFactor) {
+            let rate = 1.5;
+            chrome.tabs.setZoom(tab.id, rate, function (zoomFactor) {
                 console.log(zoomFactor);
             })
         }
     })
-
-
 }
 
 const stackStorage = {
@@ -133,7 +132,6 @@ function adjustDOMHeight(ta, minHeight = 25) {
         }
         ta.style.height = adjustedHeight + "px";
     }
-
 }
 
 export {

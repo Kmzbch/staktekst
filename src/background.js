@@ -8,55 +8,44 @@ import {
 
 const BUBBLE_MENUS = [{
     id: "mirai",
-    title: "みらい翻訳（英→日）",
     url: "https://miraitranslate.com/en/trial/",
   },
   {
-    id: "odd",
-    title: "A Jump to the Sky Turns to a Riderkick",
+    id: "oddcast",
     url: "http://www.oddcast.com/ttsdemo/index.php",
   },
   {
     id: "extendedcopy",
-    title: "URL付きでコピー",
   },
   {
     id: "pushtext",
-    title: "テキストをプッシュ",
   },
   {
     id: "youglish",
-    title: "Youglish",
     url: "https://youglish.com/search/%s",
   },
   {
     id: "dopeoplesayit",
-    title: "Do People Say It",
     url: "https://dopeoplesay.com/q/%s",
   },
   {
     id: "skell",
-    title: "SKELL",
     url: "https://skell.sketchengine.co.uk/run.cgi/concordance?lpos=&query=%s",
   },
   {
     id: "twitter",
-    title: "Twitter",
     url: "https://twitter.com/search?q=%s",
   },
   {
     id: "vocabulary",
-    title: "Vocabulary.com",
     url: "https://www.vocabulary.com/dictionary/%s",
   },
   {
     id: "urban",
-    title: "Urban Dictionary",
     url: "https://www.urbandictionary.com/define.php?term=%s",
   },
   {
     id: "google",
-    title: "Google画像検索",
     url: "https://encrypted.google.com/search?hl=en&gl=en&tbm=isch&q=%s",
   },
 ];
@@ -102,7 +91,6 @@ const getMessage = (request, sender, sendResponse) => {
       active: true
     }, function (tabs) {
       chrome.tabs.getZoom(tabs[0].id, (zoomFactor) => {
-        console.log(zoomFactor);
         sendResponse({
           zoomFactor: zoomFactor
         });
@@ -117,7 +105,6 @@ const getMessage = (request, sender, sendResponse) => {
       // only used for mirai translate and oddcast
       text: selectedTextHolder
     });
-    // https://qiita.com/Tachibana446/items/ab15021099d54d1209c2
   }
   return true;
 }

@@ -1,3 +1,8 @@
+/* utilities */
+.hidden {
+    display: none !important;
+}
+
 /* button styles */
 .stackButton {
     transform: scale(0.95);
@@ -13,29 +18,8 @@
 }
 
 /* bubble styles */
-#outside-container:hover {
-    /* opacity: 1; */
-}
-
-#outside-container {
-    display: flex;
-    flex-direction: column;
-
-    cursor: pointer !important;
-    color: rgba(0, 0, 0, 0.2);
-    /* opacity: 0.2; */
-    position: absolute;
-    right: -30px;
-    display: flex;
-    justify-content: center;
-    align-self: center;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-}
-
 .bookmark-icon:hover {
     opacity: 1 !important;
-    /* font-size: 20px; */
     color: black !important;
 }
 
@@ -48,7 +32,6 @@
 
 .zoom-icon:hover {
     opacity: 1 !important;
-    /* font-size: 20px; */
     color: black;
 }
 
@@ -61,7 +44,7 @@
 
 
 #bubble {
-    display: none;
+    display: flex;
     flex-wrap: nowrap;
     position: absolute;
     z-index: 999999;
@@ -110,6 +93,22 @@
     height: 100%;
     padding-left: 5px;
     border-left: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+#float-container {
+    display: flex;
+    flex-direction: column;
+
+    cursor: pointer !important;
+    color: rgba(0, 0, 0, 0.2);
+    /* opacity: 0.2; */
+    position: absolute;
+    right: -30px;
+    display: flex;
+    justify-content: center;
+    align-self: center;
+    -webkit-user-select: none;
+    -moz-user-select: none;
 }
 
 /* modification on font awesome */
