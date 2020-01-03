@@ -14,13 +14,16 @@
 
 /* bubble styles */
 #outside-container:hover {
-    opacity: 1 !important;
+    /* opacity: 1; */
 }
 
 #outside-container {
+    display: flex;
+    flex-direction: column;
+
     cursor: pointer !important;
-    color: rgba(0, 0, 0, 0.8);
-    opacity: 0.2 !important;
+    color: rgba(0, 0, 0, 0.2);
+    /* opacity: 0.2; */
     position: absolute;
     right: -30px;
     display: flex;
@@ -30,12 +33,27 @@
     -moz-user-select: none;
 }
 
-#bookmark-icon:hover {
+.bookmark-icon:hover {
     opacity: 1 !important;
-    font-size: 20px;
+    /* font-size: 20px; */
+    color: black !important;
 }
 
-#bookmark-icon {
+.bookmark-icon {
+    margin: 3px;
+    font-size: 20px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+
+.zoom-icon:hover {
+    opacity: 1 !important;
+    /* font-size: 20px; */
+    color: black;
+}
+
+.zoom-icon {
+    margin: 3px;
     font-size: 20px;
     -webkit-user-select: none;
     -moz-user-select: none;

@@ -50,6 +50,11 @@ const SYSTEM_COMMAND_ICONS = [{
     title: "テキストをプッシュ",
     innerText: "input",
     command: "pushtext",
+}, {
+    className: "material-icons stackButton",
+    title: "単語をハイライト",
+    innerText: "edit",
+    command: "marker",
 }]
 
 const EXTRA_COMMAND_ICONS = [{
@@ -57,6 +62,12 @@ const EXTRA_COMMAND_ICONS = [{
     title: "ページURLをスタックに追加",
     innerText: "bookmarks",
     command: "bookmark",
+}, {
+    className: "material-icons zoom-icon",
+    title: "倍率を切り替え",
+    innerText: "zoom_in",
+    command: "zoomtofit",
+
 }]
 
 /* DOM creation and manipulation */
@@ -97,7 +108,20 @@ const createBubbleDOM = () => {
         leftContainer.appendChild(createIconDOM(icon));
     });
     SYSTEM_COMMAND_ICONS.forEach(icon => {
-        rightContainer.appendChild(createIconDOM(icon));
+        if (icon.command === 'marker') {
+            // if (document.URL.includes('chrome-extension://')) {
+            //     rightContainer.appendChild(createIconDOM(icon));
+            // }
+        } else {
+            if (icon.command === 'pushtext') {
+                if (!document.URL.includes('chrome-extension://')) {
+                    rightContainer.appendChild(createIconDOM(icon));
+                }
+            } else {
+                rightContainer.appendChild(createIconDOM(icon));
+            }
+        }
+
     });
 
     bubbleDOM.appendChild(leftContainer);
@@ -125,6 +149,18 @@ const renderBubble = () => {
             bubble.style.display = 'none';
         } else {
             bubble.style.display = 'flex';
+
+            chrome.runtime.sendMessage({
+                command: 'GET_ZOOMFACTOR'
+            }, response => {
+                console.log(response.zoomFactor);
+                if (response.zoomFactor === 1) {
+                    bubble.querySelector('.zoom-icon').innerText = 'zoom_in'
+                } else {
+                    bubble.querySelector('.zoom-icon').innerText = 'zoom_out'
+                }
+            });
+
 
             let boundingCR = selection.getRangeAt(0).getBoundingClientRect();
             bubble.style.top = (boundingCR.top - 80) + window.scrollY + 'px';

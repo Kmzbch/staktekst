@@ -554,14 +554,18 @@ function attachEditIconsEvent() {
     let oldHTML = wrapper.innerHTML;
     wrapper.addEventListener('blur', fireChange);
     wrapper.addEventListener('keyup', fireChange);
+
     wrapper.addEventListener('paste', fireChange);
     wrapper.addEventListener('copy', fireChange);
     wrapper.addEventListener('cut', fireChange);
     wrapper.addEventListener('mouseup', fireChange);
 
     wrapper.addEventListener('change', (e) => {
+
+
       let id = e.target.querySelector('input').value;
       let newHTML = e.target.querySelector('.content').innerHTML.replace(/<br>$/, '');
+
       updateHeaderBoard(e.target.querySelector('.content'));
 
       updateTextItem(id, newHTML);
@@ -626,6 +630,9 @@ const initializeEventListeners = () => {
   window.onunload = saveAddItemForm; // fired when popup.html closing
 
   /* search  */
+  searchBox.addEventListener('dblclick', () => {
+    dropdownList.classList.remove('hidden');
+  });
   searchBox.addEventListener('input', updateSearchResult);
 
   searchBox.addEventListener('keyup', selectOnDropdownList)
