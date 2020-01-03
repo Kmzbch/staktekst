@@ -60,8 +60,15 @@ let timer = null;
 let background = chrome.extension.getBackgroundPage();
 
 /* switches */
+const switchToolboxVisibility = (forseVisible = false) => {
+  if (forseVisible) {
+    toolbox.classList.remove('hidden');
+  } else {
+    toolbox.classList.add('hidden');
+  }
+}
 
-const switchStickyVisibility = () => {
+const changeStickyOpacityAutomatically = () => {
   // show header and footer when scroll to the top/bottom
   if (window.pageYOffset == 0) {
     header.style.opacity = '1';
@@ -75,33 +82,27 @@ const switchStickyVisibility = () => {
   }
 }
 
-const switchViewStyles = () => {
+const switchViewStyles = (forceDefault = false) => {
   let defaultview = document.querySelector('#style_default');
   let listview = document.querySelector('#style_listview');
 
-  if (defaultview.disabled) {
-    switchSortOrder({
-      byNew: true
-    });
+  let switchingToListView = defaultview.disabled || !forceDefault;
 
+  if (switchingToListView) {
     defaultview.disabled = false;
     listview.disabled = true;
     viewSwitcher.textContent = 'reorder';
   } else {
-    switchSortOrder({
-      byNew: false
-    });
-
     defaultview.disabled = true;
     listview.disabled = false;
     viewSwitcher.textContent = 'format_list_bulleted';
   }
 }
 
-const switchSortOrder = ({
-  byNew = !sortBySwitcher.innerHTML.includes('New')
-}) => {
-  if (byNew) {
+const switchSortOrder = (forceByNew = false) => {
+  let sortingByNew = !sortBySwitcher.innerHTML.includes('New') || !forceByNew;
+
+  if (sortingByNew) {
     sortBySwitcher.innerHTML = 'New <i class="material-icons">arrow_upward</i>';
     stackDOM.style.flexDirection = 'column-reverse';
   } else {
@@ -119,7 +120,8 @@ const switchTextareaOpenerIcons = () => {
 }
 
 const openAddTextItemForm = () => {
-  toolbox.classList.add('hidden');
+  switchToolboxVisibility(false);
+
   textareaOpener.classList.add('hidden');
   sortBySwitcher.classList.add('hidden');
 
@@ -133,7 +135,7 @@ const closeAddTextItemForm = () => {
   textarea.classList.add('hidden');
   tagarea.classList.add('hidden');
 
-  toolbox.classList.remove('hidden');
+
   textareaOpener.classList.remove('hidden');
   sortBySwitcher.classList.remove('hidden');
 
@@ -141,22 +143,20 @@ const closeAddTextItemForm = () => {
   headerBoard.textContent = '';
 
   setHashtagSearch();
+
+  switchToolboxVisibility(true);
 }
 
 const updateHeaderBoard = (dom = null) => {
-  let info = null;
-  if (dom) {
-    info = extractTextInfo(dom.textContent);
-  } else {
-    info = extractTextInfo(textarea.value);
-  }
+  switchToolboxVisibility(false);
+
+  let info = dom ? extractTextInfo(dom.textContent) : extractTextInfo(textarea.value);
+
   headerBoard.innerHTML = `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`;
 
   if (!headerBoard.classList.contains('entering')) {
     headerBoard.classList.add('entering');
   }
-
-  toolbox.classList.add('hidden');
 }
 
 const updateSearchResult = (e) => {
@@ -170,13 +170,14 @@ const updateSearchResult = (e) => {
 
     searchCancelButton.classList.remove('hidden');
     footer.classList.add('hidden');
-    toolbox.classList.add('hidden');
+    switchToolboxVisibility(false);
+
   } else {
     headerBoard.textContent = '';
 
     searchCancelButton.classList.add('hidden');
     footer.classList.remove('hidden');
-    toolbox.classList.remove('hidden');
+    switchToolboxVisibility(true);
 
     dropdownList.classList.add('hidden');
   }
@@ -329,6 +330,7 @@ const removeHashtags = () => {
 
 /* stack operation*/
 const renderStack = () => {
+
   stackStorage.get(raw => {
     if (typeof raw === 'undefined') {
       stackStorage.reset();
@@ -424,12 +426,12 @@ const updateTextItem = (id, html) => {
   stackStorage.set(JSON.stringify(stack));
 };
 
-const addTextItemToStack = (id, type, content, footnote = {}) => {
+const addTextItemToStack = (id, type, content, footnote = {}, date = formatDate()) => {
   stack.push({
     id: id,
     type: type,
     content: content,
-    date: formatDate(),
+    date: date,
     footnote: {
       tags: footnote.tags
     },
@@ -509,15 +511,17 @@ const submitText = (e) => {
       };
       let id = uuidv4();
       let type = 'note';
+      let date = formatDate();
 
-      addTextItemToStack(id, type, text, footnote);
-      renderStack();
+      addTextItemToStack(id, type, text, footnote, date);
+      renderTextItem(id, type, text, footnote, date);
 
       headerBoard.classList.remove('entering');
       headerBoard.textContent = "Item Added!";
       timer = setTimeout(() => {
         headerBoard.textContent = '';
-        toolbox.classList.remove('hidden');
+        switchToolboxVisibility(false);
+
       }, 700);
 
       // clear form and holders
@@ -539,6 +543,7 @@ function attachEditIconsEvent() {
       contentDIV.contentEditable = true;
       editIcons[i].classList.add('hidden');
       contentDIV.focus();
+
     })
   }
   let wrapperItems = document.querySelectorAll('.stackwrapper');
@@ -596,7 +601,6 @@ function attachEditIconsEvent() {
       range.setStart(e.target.lastChild, e.target.lastChild.textContent.length);
       range.setEnd(e.target.lastChild, e.target.lastChild.textContent.length);
 
-      console.log(range.collapsed);
       selection.removeAllRanges();
       selection.addRange(range);
     })
@@ -616,7 +620,7 @@ function attachEditIconsEvent() {
 const initializeEventListeners = () => {
 
   /* window */
-  window.onscroll = switchStickyVisibility;
+  window.onscroll = changeStickyOpacityAutomatically;
 
   window.onunload = saveAddItemForm; // fired when popup.html closing
 
@@ -637,7 +641,11 @@ const initializeEventListeners = () => {
 
   /* toolbox */
   topOpener.addEventListener('click', () => {
-    textareaOpener.dispatchEvent(new Event('click'));
+    if (topOpener.innerText === 'post_add') {
+      textareaOpener.dispatchEvent(new Event('click'));
+    } else {
+      closeAddTextItemForm();
+    }
   });
 
   viewSwitcher.addEventListener('click', switchViewStyles);
@@ -717,20 +725,20 @@ const initializeEventListeners = () => {
       parent.style.color = 'black !important'
       parent.style.opacity = '0.5';
       parent.style.textDecoration = 'line-through';
-      toolbox.classList.add('hidden');
+
       headerBoard.textContent = "Item Removed!";
+      switchToolboxVisibility(false);
 
       // remove
       setTimeout(() => {
-        let lists = Array.from(stackDOM.querySelectorAll('.stackwrapper'));
         let id = parent.querySelector('input').value;
-
         stack = stack.filter(item => item.id !== id);
         stackStorage.set(JSON.stringify(stack));
 
         parent.remove();
         headerBoard.textContent = '';
-        toolbox.classList.remove('hidden');
+
+        switchToolboxVisibility(true);
       }, 450);
     }
   });

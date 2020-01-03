@@ -330,14 +330,21 @@ input:focus {
     -moz-user-select: none;
 }
 
+.left {
+    align-self: space-between !important;
+}
+
 #toolbox {
     display: flex;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+
     position: absolute;
     width: 130px;
     left: 310px;
     top: 13px;
-    justify-content: space-around;
-    display: flex;
+    /* justify-content: flex-start; */
+
     flex-direction: row;
 }
 
@@ -352,10 +359,9 @@ input:focus {
 }
 
 .opener-top {
-
     color: white;
     /* left: 315px; */
-    margin: auto;
+    margin: 0px 9px;
     opacity: 0.3;
     font-size: 14px;
 }
@@ -374,7 +380,8 @@ input:focus {
     /* z-index: 1; */
     /* left: 345px; */
     top: 13px;
-    margin: auto;
+    margin: 0px 9px;
+
     font-size: 14px;
 }
 
@@ -393,7 +400,8 @@ input:focus {
     /* z-index: 1; */
     /* left: 345px; */
     top: 13px;
-    margin: auto;
+    margin: 0px 9px;
+
     font-size: 14px;
 }
 
