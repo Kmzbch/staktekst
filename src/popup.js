@@ -259,32 +259,44 @@ const setHashtagSearch = () => {
   }
 }
 
-const handleDownload = () => {
+const exportTextItems = () => {
+  // get text items to export
   let content = '';
 
-  for (let i = 0; i < stack.length; i++) {
-    content += `${stack[i].content}\n`;
-    if (stack[i].footnote.pageTitle !== '') {
-      content += stack[i].footnote.pageTitle + '\n';
+  let textitemIDs = Array.from(stackDOM.children)
+    .filter(textItem => !textItem.classList.contains('date'))
+    .filter(textItem => !textItem.classList.contains('filtered'))
+    .map(textItem => {
+      return textItem.querySelector('input').value;
+    });
+
+  let filteredItems = stack.filter(item => textitemIDs.includes(item.id));
+
+  for (let i = 0; i < filteredItems.length; i++) {
+    content += `${filteredItems[i].content}\n`;
+    if (typeof filteredItems[i].footnote.pageTitle !== 'undefined') {
+      content += filteredItems[i].footnote.pageTitle + '\n';
     }
-    if (stack[i].footnote.url !== '') {
-      content += stack[i].footnote.url + "\n\n";
+    if (typeof filteredItems[i].footnote.url !== 'undefined') {
+      content += filteredItems[i].footnote.url + "\n";
     }
+    content += '\n';
   }
 
+  // create url to download
   const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
 
-  window.URL = window.URL || window.webkitURL;
-
-  var blob = new Blob([bom, content], {
+  let blob = new Blob([bom, content], {
     type: 'data:text/plain'
   });
+
+  window.URL = window.URL || window.webkitURL;
 
   const url = window.URL.createObjectURL(blob);
 
   chrome.downloads.download({
     url: url,
-    filename: 'test.txt', // Optional
+    filename: formatDate() + '.txt',
     saveAs: true
   });
 }
@@ -305,7 +317,11 @@ const clearAllItems = () => {
   while (stackDOM.firstChild) {
     stackDOM.removeChild(stackDOM.firstChild);
   }
-  removeHashtags();
+
+  // remove hashtags
+  while (tagarea.lastChild && tagarea.children.length > 1) {
+    tagarea.removeChild(tagarea.lastChild);
+  }
 
   textarea.value = '';
   searchBox.value = '';
@@ -318,15 +334,6 @@ const clearAllItems = () => {
   tagsHolder = [];
 }
 
-const removeHashtags = () => {
-  let removedTags = [];
-  while (tagarea.lastChild && tagarea.children.length > 1) {
-    removedTags.push(tagarea.lastChild.innerText);
-    tagarea.removeChild(tagarea.lastChild);
-  }
-
-  return removedTags;
-}
 
 /* stack operation*/
 const renderStack = () => {
@@ -506,8 +513,13 @@ const submitText = (e) => {
         return false;
       }
 
+      let addingTags = [];
+      for (let i = 1; i < tagarea.children.length; i++) {
+        addingTags.push(tagarea.children[i].innerText);
+      }
+
       let footnote = {
-        tags: removeHashtags()
+        tags: addingTags
       };
       let id = uuidv4();
       let type = 'note';
@@ -650,7 +662,7 @@ const initializeEventListeners = () => {
 
   viewSwitcher.addEventListener('click', switchViewStyles);
 
-  fileExporter.addEventListener('click', handleDownload);
+  fileExporter.addEventListener('click', exportTextItems);
 
   /* add-sort container */
   textareaOpener.addEventListener('mouseover', switchTextareaOpenerIcons);
