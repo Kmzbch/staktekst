@@ -8,7 +8,7 @@ import {
   fitHeightToContent,
   uuidv4,
   stackStorage,
-  enableURLEmbededInText
+  enableURLEmbededInText as enableLinkEmbededInText
 } from './common_lib.js';
 
 /* header */
@@ -376,91 +376,6 @@ const clearAllItems = () => {
   draftHashtagsHolder = [];
 }
 
-
-/* stack operation*/
-const renderStack = () => {
-
-  stackStorage.get(raw => {
-    if (typeof raw === 'undefined') {
-      stackStorage.reset();
-    } else {
-      stack = JSON.parse(raw);
-      stack.forEach(res => {
-        let type = res.hasOwnProperty('type') ? res.type : 'note';
-        renderTextItem(res.id, type, res.content, res.footnote, res.date);
-      });
-      tagStack = tagStack.sort();
-
-      attachEditIconsEvent();
-    }
-  });
-};
-
-const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
-  // const template = `<div class="stackwrapper"><div class='content' contenteditable="true">${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><div class="spacer"></div><div class="footnote"></div></div>`;
-  const template = `<div class="stackwrapper"><div class='content'>${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><div class="spacer"></div><div class="footnote"></div></div>`;
-
-  stackDOM.innerHTML += template;
-
-  let lastTextItem = stackDOM.lastElementChild;
-  lastTextItem.classList.add(type);
-
-  if (type === 'clip') {
-    lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag hidden">#clip</span><a href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</a>`;
-  } else {
-    lastTextItem.querySelector('.footnote').innerHTML = `<span class="tag">#${type}</span>`;
-    if (type === 'note') {
-      let editIcon = document.createElement('i');
-      editIcon.classList.add('material-icons');
-      editIcon.classList.add('edit');
-      editIcon.innerText = 'edit';
-
-      lastTextItem.insertBefore(editIcon, lastTextItem.querySelector('i'));
-    }
-  }
-
-  let contentDIV = lastTextItem.firstElementChild;
-  contentDIV.innerHTML = enableURLEmbededInText(contentDIV.textContent);
-
-  appendHashTags(footnote.tags);
-
-  insertDateDIV();
-
-  function appendHashTags() {
-    if (typeof footnote.tags !== 'undefined') {
-      footnote.tags.forEach(item => {
-        if (item !== 'note' && item !== 'clip' && item !== 'bookmark') {
-          let tagItem = document.createElement('span');
-          tagItem.className = 'tag';
-          tagItem.textContent = '#' + item;
-          lastTextItem.querySelector('.footnote').appendChild(tagItem);
-          // tag stack
-          let index = tagStack.indexOf(item);
-          if (index === -1) {
-            tagStack.push(item);
-          }
-        }
-      })
-    }
-  }
-
-  function insertDateDIV() {
-    let dateDiv = document.createElement('div');
-    dateDiv.className = 'date';
-    dateDiv.textContent = date;
-
-    if (dateStack.length == 0) {
-      stackDOM.insertBefore(dateDiv, lastTextItem);
-      dateStack.push(date);
-    } else {
-      if (dateStack[dateStack.length - 1] !== date) {
-        stackDOM.insertBefore(dateDiv, lastTextItem);
-        dateStack.push(date);
-      }
-    }
-  }
-}
-
 const updateTextItem = (id, html) => {
   let index = stack.findIndex(item => item.id === id);
   stack[index].content = html;
@@ -563,88 +478,6 @@ const submitForm = (e) => {
   }
 };
 
-function attachEditIconsEvent() {
-  let editIcons = document.querySelectorAll('.edit');
-  for (let i = 0; i < editIcons.length; i++) {
-    editIcons[i].addEventListener('click', (event) => {
-      let contentDIV = event.target.parentElement.querySelector('.content')
-      contentDIV.contentEditable = true;
-      editIcons[i].classList.add('hidden');
-      contentDIV.focus();
-
-    })
-  }
-  let wrapperItems = document.querySelectorAll('.stackwrapper');
-  for (let i = 0; i < wrapperItems.length; i++) {
-    let wrapper = wrapperItems[i];
-    let oldHTML = wrapper.innerHTML;
-    wrapper.addEventListener('blur', fireChange);
-    wrapper.addEventListener('keyup', fireChange);
-
-    wrapper.addEventListener('paste', fireChange);
-    wrapper.addEventListener('copy', fireChange);
-    wrapper.addEventListener('cut', fireChange);
-    wrapper.addEventListener('mouseup', fireChange);
-
-    wrapper.addEventListener('change', (e) => {
-      let id = e.target.querySelector('input').value;
-      let newHTML = e.target.querySelector('.content').innerHTML.replace(/<br>$/, '');
-
-      updateTextInfoOnTopboard(e.target.querySelector('.content').textContent);
-
-      updateTextItem(id, newHTML);
-    })
-
-    wrapper.querySelector('.content').addEventListener('blur', (e) => {
-
-      wrapper.classList.remove('editing');
-
-      let editIcon = e.target.parentElement.querySelector('.edit');
-      editIcon.classList.remove('hidden');
-      e.target.contentEditable = false;
-      e.target.innerHTML = e.target.innerHTML.replace(/<br>$/, '');
-
-    });
-    wrapper.addEventListener('dblclick', (e) => {
-
-      if (wrapper.classList.contains('note')) {
-        if (!e.target.classList.contains('content')) {
-          setTimeout(bubble_lib.hideBubble, 30);
-          setTimeout(() => {
-            let contentDIV = e.target.querySelector('.content');
-            contentDIV.contentEditable = true;
-            wrapper.querySelector('i').classList.add('hidden');
-            contentDIV.focus();
-          }, 100)
-        }
-
-      }
-    });
-
-    wrapper.querySelector('.content').addEventListener('focus', (e) => {
-      updateTextInfoOnTopboard(e.target.textContent);
-      wrapper.classList.add('editing');
-      var selection = window.getSelection();
-      var range = document.createRange();
-      const p = e.target.lastChild;
-      range.setStart(e.target.lastChild, e.target.lastChild.textContent.length);
-      range.setEnd(e.target.lastChild, e.target.lastChild.textContent.length);
-
-      selection.removeAllRanges();
-      selection.addRange(range);
-    })
-
-
-    function fireChange(e) {
-      let newHTML = wrapper.innerHTML;
-      if (oldHTML !== newHTML) {
-        wrapper.dispatchEvent(new Event('change'));
-        oldHTML = newHTML;
-      }
-    }
-  }
-
-}
 
 /* search */
 function fireSearchWithQuery(query) {
@@ -675,8 +508,7 @@ function hideClearStackWindow() {
   clearStackWindow.classList.add('hidden');
 }
 
-
-function inputForm(e) {
+function updateInputForm(e) {
   if (timer) {
     clearTimeout(timer)
   }
@@ -701,7 +533,7 @@ function inputForm(e) {
     } else {
       e.target.value = e.target.value.replace(regex, '')
       if (hashtags) {
-        addNewHashtag(hashtags[2].slice(1))
+        addHashtagToDraft(hashtags[2].slice(1))
       }
     }
   }
@@ -710,6 +542,220 @@ function inputForm(e) {
 
   fitHeightToContent(textarea);
   updateTextInfoOnTopboard(textarea.value);
+}
+
+function displayMessageOnTopboard(message) {
+  if (topboard.classList.contains('entering')) {
+    topboard.classList.remove('entering');
+  }
+
+  topboard.textContent = message;
+  switchToolboxVisibility(false);
+}
+
+function removeTextItem(textitemDOM) {
+  // apply visual effects and display Message
+  textitemDOM.classList.add('removed')
+
+  displayMessageOnTopboard("Item Removed!");
+
+  setTimeout(() => {
+    // remove the item
+    let id = textitemDOM.querySelector('input').value;
+    stack = stack.filter(item => item.id !== id);
+
+    stackStorage.set(JSON.stringify(stack));
+
+    // remove DOM
+    textitemDOM.remove();
+
+    switchToolboxVisibility(true);
+  }, 450);
+}
+
+function attachContentEditableEvents(wrapper) {
+  // create and insert
+  let editIcon = document.createElement('i');
+  editIcon.classList.add('material-icons');
+  editIcon.classList.add('edit');
+  editIcon.innerText = 'edit';
+  wrapper.insertBefore(editIcon, wrapper.querySelector('i'));
+
+  let contentDIV = wrapper.querySelector('.content');
+
+  // add click event
+  editIcon.addEventListener('click', function enableEditing() {
+    setTimeout(() => {
+      contentDIV.contentEditable = true;
+      editIcon.classList.add('hidden');
+      contentDIV.focus();
+    }, 100);
+  })
+
+  // add to content DIV
+  contentDIV.addEventListener('focus', (e) => {
+
+    wrapper.classList.add('editing');
+
+    // move caret to the text tail
+    let selection = window.getSelection();
+    let range = document.createRange();
+
+    const p = e.target.lastChild;
+
+    range.setStart(e.target.lastChild, e.target.lastChild.textContent.length);
+    range.setEnd(e.target.lastChild, e.target.lastChild.textContent.length);
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+  })
+
+  contentDIV.addEventListener('blur', (e) => {
+    contentDIV.contentEditable = false;
+    contentDIV.innerHTML = contentDIV.innerHTML.replace(/<br>$/, '');
+
+    wrapper.classList.remove('editing');
+    editIcon.classList.remove('hidden');
+  });
+
+  // add to wrapper
+  wrapper.addEventListener('dblclick', (e) => {
+    if (wrapper.classList.contains('note')) {
+      if (!e.target.classList.contains('content')) {
+        setTimeout(bubble_lib.hideBubble, 30);
+        setTimeout(() => {
+          contentDIV.contentEditable = true;
+          editIcon.classList.add('hidden');
+          contentDIV.focus();
+        }, 100)
+      }
+    }
+  });
+
+  let oldHTML = wrapper.innerHTML;
+
+  // detect changes on content editable
+  wrapper.addEventListener('blur', fireChange);
+  wrapper.addEventListener('keyup', fireChange);
+  wrapper.addEventListener('paste', fireChange);
+  wrapper.addEventListener('copy', fireChange);
+  wrapper.addEventListener('cut', fireChange);
+  wrapper.addEventListener('mouseup', fireChange);
+  wrapper.addEventListener('change', (e) => {
+    let id = e.target.querySelector('input').value;
+    let newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
+    updateTextInfoOnTopboard(contentDIV.textContent);
+    updateTextItem(id, newHTML);
+  })
+
+  function fireChange(e) {
+    let newHTML = wrapper.innerHTML;
+    if (oldHTML !== newHTML) {
+      wrapper.dispatchEvent(new Event('change'));
+      oldHTML = newHTML;
+    }
+  }
+}
+
+const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
+  let stackWrapper = document.createElement('div');
+  stackWrapper.className = 'stackwrapper';
+  stackWrapper.classList.add(type);
+  stackWrapper.innerHTML = `<div class='content'>${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><div class="spacer"></div><div class="footnote"></div>`;
+
+  stackDOM.appendChild(stackWrapper);
+
+  // enable URL link
+  let contentDIV = stackWrapper.firstElementChild;
+  contentDIV.innerHTML = enableLinkEmbededInText(contentDIV.textContent);
+
+  if (type === 'clip') {
+    stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag hidden">#clip</span><a href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</a>`;
+  } else {
+    stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag">#${type}</span>`;
+    if (type === 'note') {
+      attachContentEditableEvents(stackWrapper);
+    }
+  }
+
+  // add hashtags
+  if (typeof footnote.tags !== 'undefined') {
+    footnote.tags.forEach(item => {
+      if (!['note', 'clip', 'bookmark'].includes(item)) {
+        let tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.textContent = '#' + item;
+        stackWrapper.querySelector('.footnote').appendChild(tag);
+        if (!tagStack.includes(item)) {
+          tagStack.push(item);
+        }
+      }
+    })
+  }
+
+  // create date separator
+  let dateSeparator = document.createElement('div');
+  dateSeparator.className = 'date';
+  dateSeparator.textContent = date;
+
+  if (dateStack.length == 0) {
+    // insert at the bottom
+    stackDOM.insertBefore(dateSeparator, stackWrapper);
+    dateStack.push(date);
+  } else {
+    // insert if the text item has the date after the one before
+    if (dateStack[dateStack.length - 1] !== date) {
+      stackDOM.insertBefore(dateSeparator, stackWrapper);
+      dateStack.push(date);
+    }
+  }
+}
+
+const renderStack = () => {
+  stackStorage.get(raw => {
+    if (typeof raw === 'undefined') {
+      stackStorage.reset();
+    } else {
+      stack = JSON.parse(raw);
+      stack.forEach(res => {
+        let type = res.hasOwnProperty('type') ? res.type : 'note';
+        renderTextItem(res.id, type, res.content, res.footnote, res.date);
+      });
+    }
+  });
+};
+
+const addHashtagToDraft = (tagName) => {
+  // create tag
+  let hashtag = document.createElement('span');
+  hashtag.classList.add('hashtag');
+  hashtag.textContent = tagName;
+  tagarea.appendChild(hashtag);
+
+  // attach remove event
+  hashtag.addEventListener('click', function removeHashTag(e) {
+    e.target.parentElement.removeChild(e.target);
+    // to be removed from storage
+    let index = draftHashtagsHolder.indexOf(tagName);
+    draftHashtagsHolder.splice(index, 1);
+  });
+
+  // save draft hashtags
+  draftHashtagsHolder.push(tagName);
+}
+
+const restorDraftForm = () => {
+  chrome.storage.local.get(['textarea', 'tags'], result => {
+    // restore textarea
+    draftTextHolder = result.textarea;
+    textarea.textContent = result.textarea;
+    // restore tagarea
+    if (typeof result.tags !== 'undefined') {
+      result.tags.forEach(tag => {
+        addHashtagToDraft(tag);
+      })
+    }
+  })
 }
 
 const initializeEventListeners = () => {
@@ -773,13 +819,12 @@ const initializeEventListeners = () => {
 
   textarea.addEventListener('keyup', submitForm);
 
-  textarea.addEventListener('input', inputForm)
+  textarea.addEventListener('input', updateInputForm)
 
   /* checkboxes for text stack */
   stackDOM.addEventListener('mouseover', closeAddTextItemForm)
 
   stackDOM.addEventListener('click', e => {
-    // tag filter
     if (e.target.classList.contains('tag')) {
       fireSearchWithQuery(e.target.innerHTML);
     } else if (e.target.classList.contains('checkbox')) {
@@ -803,72 +848,14 @@ const initializeEventListeners = () => {
   cancelButton.addEventListener('click', hideClearStackWindow)
 }
 
-function displayMessageOnTopboard(message) {
-  if (topboard.classList.contains('entering')) {
-    topboard.classList.remove('entering');
-  }
-
-  topboard.textContent = message;
-  switchToolboxVisibility(false);
-}
-
-function removeTextItem(textitemDOM) {
-  // apply visual effects and display Message
-  textitemDOM.classList.add('removed')
-
-  displayMessageOnTopboard("Item Removed!");
-
-  setTimeout(() => {
-    // remove the item
-    let id = textitemDOM.querySelector('input').value;
-    stack = stack.filter(item => item.id !== id);
-    stackStorage.set(JSON.stringify(stack));
-
-    textitemDOM.remove();
-
-    switchToolboxVisibility(true);
-  }, 450);
-}
-
-const addNewHashtag = (tagName) => {
-  // create tag
-  let hashtag = document.createElement('span');
-  hashtag.classList.add('hashtag');
-  hashtag.textContent = tagName;
-  tagarea.appendChild(hashtag);
-
-  // attach remove event
-  hashtag.addEventListener('click', function removeTag(e) {
-    e.target.parentElement.removeChild(e.target);
-    let index = draftHashtagsHolder.indexOf(tagName);
-    draftHashtagsHolder.splice(index, 1);
-  });
-
-  // save draft hashtags
-  draftHashtagsHolder.push(tagName);
-}
-
-const restoreTextArea = () => {
-  chrome.storage.local.get(['textarea', 'tags'], result => {
-    // restore textarea
-    draftTextHolder = result.textarea;
-    textarea.textContent = result.textarea;
-    // restore tagarea
-    if (typeof result.tags !== 'undefined') {
-      result.tags.forEach(tag => {
-        addNewHashtag(tag);
-      })
-    }
-  })
-}
-
 // initialize
 document.addEventListener('DOMContentLoaded', () => {
-  renderStack();
-  restoreTextArea();
   initializeEventListeners();
+  restorDraftForm();
+  renderStack();
 
-  // workaround to avoid displaying view switcher delay
+  tagStack = tagStack.sort();
+
+  // workaround to avoid view switcher delay
   switchViewStyles();
-  setDropdownListItems();
 });
