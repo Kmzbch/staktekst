@@ -33,8 +33,10 @@ const BUBBLE_MENUS = [{
     url: "https://skell.sketchengine.co.uk/run.cgi/concordance?lpos=&query=%s",
   },
   {
-    id: "twitter",
-    url: "https://twitter.com/search?q=%s",
+    // id: "twitter",
+    // url: "https://twitter.com/search?q=%s",
+    id: 'netspeak',
+    url: 'https://netspeak.org/#q=%s&corpus=web-en'
   },
   {
     id: "vocabulary",

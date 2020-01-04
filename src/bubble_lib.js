@@ -13,8 +13,10 @@ const SEARCH_ENGINE_ICONS = [{
         innerText: "check",
         command: "vocabulary",
     }, {
-        className: "fas fa-user-friends stackButton",
+        // className: "fas fa-user-friends stackButton",
+        className: "material-icons stackButton",
         title: "Do People Say Itでフレーズ検索",
+        innerText: "people",
         command: "dopeoplesayit",
     },
     {
@@ -22,9 +24,14 @@ const SEARCH_ENGINE_ICONS = [{
         title: "Urban Dictionaryで単語検索",
         command: "urban",
     }, {
+        // className: "fab fa-twitter fa-lg stackButton",
+        // title: "Twitterでツイート検索",
+        // command: "twitter",
+
+        // className: "material-icons stackButton",
         className: "fab fa-twitter fa-lg stackButton",
-        title: "Twitterでツイート検索",
-        command: "twitter",
+        title: 'Netspeakでフレーズ検索',
+        command: 'netspeak'
     },
     {
         className: "fab fa-youtube fa-lg stackButton",
@@ -205,3 +212,7 @@ const sendCommandMessage = (command) => {
 
 // attach bubble to the loaded page
 document.addEventListener('mouseup', renderBubble)
+
+export {
+    hideBubble
+}

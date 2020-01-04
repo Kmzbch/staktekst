@@ -388,8 +388,7 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   /* inner functions */
   function enableURLInText(dom) {
     let contentDIV = dom.firstElementChild;
-    //    contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a href='$1' target='_blank'>$1</a>");
-    contentDIV.innerHTML = contentDIV.innerHTML.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a href='$1' target='_blank'>$1</a>");
+    contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a href='$1' target='_blank'>$1</a>");
   }
 
   function appendHashTags() {
@@ -580,6 +579,7 @@ function attachEditIconsEvent() {
     })
 
     wrapper.querySelector('.content').addEventListener('blur', (e) => {
+
       wrapper.classList.remove('editing');
 
       let editIcon = e.target.parentElement.querySelector('.edit');
@@ -589,10 +589,10 @@ function attachEditIconsEvent() {
 
     });
     wrapper.addEventListener('dblclick', (e) => {
+
       if (wrapper.classList.contains('note')) {
         if (!e.target.classList.contains('content')) {
           setTimeout(bubble_lib.hideBubble, 30);
-
           setTimeout(() => {
             let contentDIV = e.target.querySelector('.content');
             contentDIV.contentEditable = true;
