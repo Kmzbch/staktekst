@@ -206,7 +206,7 @@ const sendCommandMessage = (command) => {
 
     chrome.runtime.sendMessage({
         command: command,
-        selection: text
+        selection: text.trim()
     });
 }
 

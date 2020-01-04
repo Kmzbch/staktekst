@@ -106,7 +106,7 @@ function pushText(content, type, pageTitle = '', pageURL = '') {
     });
 }
 
-function adjustDOMHeight(ta, minHeight = 25) {
+function fitHeightToContent(textarea, minHeight = 25) {
     const isOverflown = ({
         clientWidth,
         clientHeight,
@@ -117,20 +117,20 @@ function adjustDOMHeight(ta, minHeight = 25) {
     }
 
     // variable height
-    while (!isOverflown(ta)) {
-        let initialHeight = parseFloat(getComputedStyle(ta).height);
+    while (!isOverflown(textarea)) {
+        let initialHeight = parseFloat(getComputedStyle(textarea).height);
         if (initialHeight < minHeight) {} else {
-            ta.style.height = (initialHeight - 10) + "px";
+            textarea.style.height = (initialHeight - 10) + "px";
         }
     }
 
-    while (isOverflown(ta)) {
-        let initialHeight = parseFloat(getComputedStyle(ta).height);
+    while (isOverflown(textarea)) {
+        let initialHeight = parseFloat(getComputedStyle(textarea).height);
         let adjustedHeight = (initialHeight + 10);
         if (adjustedHeight < minHeight) {
             adjustedHeight = minHeight;
         }
-        ta.style.height = adjustedHeight + "px";
+        textarea.style.height = adjustedHeight + "px";
     }
 }
 
@@ -141,7 +141,7 @@ export {
     extractTextInfo,
     containsJapanese,
     formatDate,
-    adjustDOMHeight,
+    fitHeightToContent,
     uuidv4,
     stackStorage,
     zoomToFit

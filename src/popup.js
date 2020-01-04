@@ -5,7 +5,7 @@ import {
   extractTextInfo,
   containsJapanese,
   formatDate,
-  adjustDOMHeight as fitDOMHeightToContent,
+  fitHeightToContent,
   uuidv4,
   stackStorage
 } from './common_lib.js';
@@ -25,7 +25,7 @@ const viewSwitcher = document.querySelector('.switchview');
 const fileExporter = document.querySelector('.fileexport');
 
 // headerboard
-const headerBoard = document.querySelector('.header-board');
+const topboard = document.querySelector('.header-board');
 
 /* main */
 // textarea
@@ -53,8 +53,8 @@ let stack = [];
 let tagStack = ['note', 'clip', 'bookmark'];
 let dateStack = [];
 
-let textHolder = '';
-let tagsHolder = [];
+let draftTextHolder = ''; // to save draft text when unloading
+let draftHashtagsHolder = [];
 
 let timer = null;
 let background = chrome.extension.getBackgroundPage();
@@ -65,20 +65,6 @@ const switchToolboxVisibility = (forseVisible = false) => {
     toolbox.classList.remove('hidden');
   } else {
     toolbox.classList.add('hidden');
-  }
-}
-
-const changeStickyOpacityAutomatically = () => {
-  // show header and footer when scroll to the top/bottom
-  if (window.pageYOffset == 0) {
-    header.style.opacity = '1';
-    footer.style.opacity = '1';
-  } else if (document.body.offsetHeight + window.scrollY >= document.body.scrollHeight) {
-    header.style.opacity = '1';
-    footer.style.opacity = '1';
-  } else {
-    header.style.opacity = '0';
-    footer.style.opacity = '0';
   }
 }
 
@@ -111,14 +97,6 @@ const switchSortOrder = (forceByNew = false) => {
   }
 }
 
-const switchTextareaOpenerIcons = () => {
-  if (textareaOpener.textContent === 'post_add') {
-    textareaOpener.textContent = 'add';
-  } else if (textareaOpener.textContent === 'add') {
-    textareaOpener.textContent = 'post_add';
-  }
-}
-
 const openAddTextItemForm = () => {
   switchToolboxVisibility(false);
 
@@ -135,27 +113,21 @@ const closeAddTextItemForm = () => {
   textarea.classList.add('hidden');
   tagarea.classList.add('hidden');
 
-
   textareaOpener.classList.remove('hidden');
   sortBySwitcher.classList.remove('hidden');
-
-  headerBoard.classList.remove('entering');
-  headerBoard.textContent = '';
-
-  setHashtagSearch();
 
   switchToolboxVisibility(true);
 }
 
-const updateHeaderBoard = (dom = null) => {
+const updateTextInfoOnTopboard = (dom = null) => {
   switchToolboxVisibility(false);
 
   let info = dom ? extractTextInfo(dom.textContent) : extractTextInfo(textarea.value);
 
-  headerBoard.innerHTML = `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`;
+  topboard.innerHTML = `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`;
 
-  if (!headerBoard.classList.contains('entering')) {
-    headerBoard.classList.add('entering');
+  if (!topboard.classList.contains('entering')) {
+    topboard.classList.add('entering');
   }
 }
 
@@ -166,20 +138,20 @@ const updateSearchResult = (e) => {
 
   // change styles on search
   if (term) {
-    headerBoard.textContent = hits === 0 ? 'No Results' : `${hits} of ${stack.length}`;
-
-    searchCancelButton.classList.remove('hidden');
-    footer.classList.add('hidden');
     switchToolboxVisibility(false);
 
-  } else {
-    headerBoard.textContent = '';
+    topboard.textContent = hits === 0 ? 'No Results' : `${hits} of ${stack.length}`;
+    searchCancelButton.classList.remove('hidden');
+    footer.classList.add('hidden');
 
-    searchCancelButton.classList.add('hidden');
-    footer.classList.remove('hidden');
+  } else {
     switchToolboxVisibility(true);
 
-    dropdownList.classList.add('hidden');
+    topboard.textContent = '';
+    searchCancelButton.classList.add('hidden');
+    footer.classList.remove('hidden');
+
+    hideDropdownList();
   }
 }
 
@@ -221,29 +193,105 @@ function filterTextItems(term) {
         contentDIV.innerHTML = contentDIV.textContent;
       }
 
-      // check if the urls are made up of ascii
-      if (contentDIV.textContent.match(/(https?:\/\/[\x01-\x7E]+)/g)) {
-        contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a class='emphasized' href='$1' target='_blank'>$1</a>");
-      }
+      // console.log(contentDIV.children.length);
+
+
+      // if (contentDIV.textContent.match(termRegex).length > 0) {
+      //   if (term.length >= 1) {
+      //     contentDIV.innerHTML = contentDIV.innerHTML.replace(termRegex, "<span class='highlighted'>$1</span>$2");
+      //   } else {
+      //     contentDIV.innerHTML = contentDIV.textContent;
+      //   }
+      // } else {
+      //   let consumedTerm = '';
+      //   let tempTerm = term;
+      //   let hit;
+      //   let hitRange = [];
+      //   let newRegex;
+      //   let hitWords;
+      //   let replaced = false;
+      //   contentDIV.childNodes.forEach(node => {
+      //     if (consumedTerm.length === 0) {
+      //       newRegex = new RegExp(`^.*(${escapeRegExp(tempTerm)}).*$`, 'ig')
+      //       console.log(node);
+      //       hitWords = node.innerText.match(newRegex);
+      //       if (hitWords.length > 0) {
+      //         // totally replace
+      //         node.innerText.replace(termRegex, "<span class='highlighted'>$1</span>$2");
+      //         termTerm = term;
+      //         consumedTerm = '';
+      //         replaced = true;
+      //       } else {
+      //         // match with part of term
+      //         newRegex = new RegExp(`^.*(${escapeRegExp(tempTerm)})$`, 'i')
+      //       }
+      //     } else {
+      //       newRegex = new RegExp(`^(${escapeRegExp(tempTerm)}).*$`, 'i')
+      //     }
+      //     if (!replaced) {
+      //       while (tempTerm.length !== 0 && hit === null) {
+      //         hit = node.innerText.match(newRegex);
+      //         if (hit) {
+      //           hitRange.push({
+      //             node: node,
+      //             from: hit.index,
+      //             len: node.innerText.length
+      //           })
+      //           console.log(hitRange);
+      //         }
+      //         consumedTerm = tempTerm.slice(x.length - 1) + consumedTerm;
+      //         tempTerm = tempTerm.slice(0, x.length - 1);
+      //         newRegex = new RegExp(`^.*(${escapeRegExp(tempTerm)})$`, 'i');
+      //       }
+      //       if (tempTerm.length === 0) {
+      //         while (hitRange.length !== 0) {
+      //           let x = hitRange.pop()
+      //           let part = x.node.innerText.slice(from, len);
+      //           let partRegex = new RegExp(`(${escapeRegExp(part)})`, 'i');
+      //           x.node.innerText.replace(partRegex, "<span class='highlighted'>$1</span>");
+      //         }
+      //         // reset
+      //         tempTerm = term;
+      //         consumedTerm = '';
+      //         hit = null;
+      //         hitRange = {}
+      //       } else {
+      //         tempTerm = consumedTerm;
+      //         hit = null;
+      //       }
+      //     } else {
+      //       replaced = false;
+      //     }
+      //   })
+
+      // }
+
+      // // check if the urls are made up of ascii
+      // if (contentDIV.textContent.match(/(https?:\/\/[\x01-\x7E]+)/g)) {
+      //   contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a class='emphasized' href='$1' target='_blank'>$1</a>");
+      // }
     });
   return hits;
 };
 
-const setHashtagSearch = () => {
+const setDropdownListItems = () => {
   // remove hashtag from dropwdown
   while (dropdownList.firstChild) {
     dropdownList.removeChild(dropdownList.firstChild);
   }
 
-  for (let i = 0; i < tagStack.length; i++) {
-    if (tagStack[i] !== '') {
+  tagStack.forEach(tag => {
+    if (tag !== '') {
+      // append li
       let li = document.createElement('li');
-      li.textContent = tagStack[i];
+      li.textContent = tag;
+      dropdownList.appendChild(li);
 
+      // attach events
       li.addEventListener('mouseover', (e) => {
         // work as hover
         let liSelected = dropdownList.querySelector('.selected');
-        if (liSelected !== null) {
+        if (liSelected) {
           liSelected.classList.remove('selected');
         }
         e.target.classList.add('selected');
@@ -251,18 +299,16 @@ const setHashtagSearch = () => {
 
       li.addEventListener('click', (e) => {
         fireSearchWithQuery('#' + e.target.textContent);
-        dropdownList.classList.add('hidden');
+        hideDropdownList();
       });
-
-      dropdownList.appendChild(li);
     }
-  }
+  })
 }
 
 const exportTextItems = () => {
-  // get text items to export
   let content = '';
 
+  // get text items to export
   let textitemIDs = Array.from(stackDOM.children)
     .filter(textItem => !textItem.classList.contains('date'))
     .filter(textItem => !textItem.classList.contains('filtered'))
@@ -272,16 +318,18 @@ const exportTextItems = () => {
 
   let filteredItems = stack.filter(item => textitemIDs.includes(item.id));
 
-  for (let i = 0; i < filteredItems.length; i++) {
-    content += `${filteredItems[i].content}\n`;
-    if (typeof filteredItems[i].footnote.pageTitle !== 'undefined') {
-      content += filteredItems[i].footnote.pageTitle + '\n';
-    }
-    if (typeof filteredItems[i].footnote.url !== 'undefined') {
-      content += filteredItems[i].footnote.url + "\n";
-    }
-    content += '\n';
-  }
+  // concatenate contents
+  Array.from(filteredItems)
+    .forEach(item => {
+      content += `${item.content}\n`;
+      if (typeof item.footnote.pageTitle !== 'undefined') {
+        content += item.footnote.pageTitle + '\n';
+      }
+      if (typeof item.footnote.url !== 'undefined') {
+        content += item.footnote.url + "\n";
+      }
+      content += '\n';
+    })
 
   // create url to download
   const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
@@ -294,18 +342,11 @@ const exportTextItems = () => {
 
   const url = window.URL.createObjectURL(blob);
 
+  // download
   chrome.downloads.download({
     url: url,
     filename: formatDate() + '.txt',
     saveAs: true
-  });
-}
-
-// save text and hashtags in the textarea when closing
-const saveAddItemForm = () => {
-  background.chrome.storage.local.set({
-    textarea: textHolder,
-    tags: tagsHolder
   });
 }
 
@@ -330,8 +371,8 @@ const clearAllItems = () => {
   stack = [];
   dateStack = [];
   tagStack = ['note', 'clip', 'bookmark'];
-  textHolder = '';
-  tagsHolder = [];
+  draftTextHolder = '';
+  draftHashtagsHolder = [];
 }
 
 
@@ -378,7 +419,6 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
       lastTextItem.insertBefore(editIcon, lastTextItem.querySelector('i'));
     }
   }
-
 
   enableURLInText(lastTextItem);
   appendHashTags(footnote.tags);
@@ -445,20 +485,6 @@ const addTextItemToStack = (id, type, content, footnote = {}, date = formatDate(
   stackStorage.set(JSON.stringify(stack));
 };
 
-const addNewHashtag = (tagName) => {
-  let tag = document.createElement('span');
-
-  tag.classList.add('hashtag');
-  tag.textContent = tagName.slice(1);
-  tag.addEventListener('click', (e) => {
-    e.target.parentElement.removeChild(e.target);
-    let index = tagsHolder.indexOf(tagName);
-    tagsHolder.splice(index, 1);
-  });
-  tagarea.appendChild(tag);
-  tagsHolder.push(tagName);
-}
-
 const selectOnDropdownList = (e) => {
   let selected = dropdownList.querySelector('.selected');
 
@@ -467,7 +493,7 @@ const selectOnDropdownList = (e) => {
       selected.classList.remove('selected');
       fireSearchWithQuery('#' + selected.textContent);
     }
-    dropdownList.classList.add('hidden');
+    hideDropdownList()
   } else if (e.keyCode === 38) {
     if (!dropdownList.classList.contains('hidden')) {
       if (selected) {
@@ -475,13 +501,13 @@ const selectOnDropdownList = (e) => {
           selected.classList.remove('selected');
           selected.previousSibling.classList.add('selected');
         } else {
-          dropdownList.classList.add('hidden');
+          hideDropdownList()
         }
       }
     }
   } else if (e.keyCode === 40) {
     if (dropdownList.classList.contains('hidden')) {
-      dropdownList.classList.remove('hidden');
+      showDropdownList()
     } else {
       if (selected) {
         if (selected.nextSibling) {
@@ -495,13 +521,7 @@ const selectOnDropdownList = (e) => {
   }
 }
 
-/* inner functions */
-function fireSearchWithQuery(query) {
-  searchBox.value = query;
-  searchBox.dispatchEvent(new Event('input'));
-};
-
-const submitText = (e) => {
+const submitForm = (e) => {
   if (e.keyCode === 13 && e.ctrlKey) {
     let errClass = tagarea.querySelector('.error');
 
@@ -520,6 +540,7 @@ const submitText = (e) => {
       let footnote = {
         tags: addingTags
       };
+
       let id = uuidv4();
       let type = 'note';
       let date = formatDate();
@@ -527,23 +548,21 @@ const submitText = (e) => {
       addTextItemToStack(id, type, text, footnote, date);
       renderTextItem(id, type, text, footnote, date);
 
-      headerBoard.classList.remove('entering');
-      headerBoard.textContent = "Item Added!";
+      topboard.classList.remove('entering');
+      topboard.textContent = "Item Added!";
       timer = setTimeout(() => {
-        headerBoard.textContent = '';
+        topboard.textContent = '';
         switchToolboxVisibility(false);
-
       }, 700);
 
       // clear form and holders
       textarea.value = '';
-      textHolder = '';
-      tagsHolder = [];
+      draftTextHolder = '';
+      draftHashtagsHolder = [];
 
       return false;
     }
   }
-
 };
 
 function attachEditIconsEvent() {
@@ -573,7 +592,7 @@ function attachEditIconsEvent() {
       let id = e.target.querySelector('input').value;
       let newHTML = e.target.querySelector('.content').innerHTML.replace(/<br>$/, '');
 
-      updateHeaderBoard(e.target.querySelector('.content'));
+      updateTextInfoOnTopboard(e.target.querySelector('.content'));
 
       updateTextItem(id, newHTML);
     })
@@ -605,7 +624,7 @@ function attachEditIconsEvent() {
     });
 
     wrapper.querySelector('.content').addEventListener('focus', (e) => {
-      updateHeaderBoard(e.target);
+      updateTextInfoOnTopboard(e.target);
       wrapper.classList.add('editing');
       var selection = window.getSelection();
       var range = document.createRange();
@@ -629,55 +648,97 @@ function attachEditIconsEvent() {
 
 }
 
+/* search */
+function fireSearchWithQuery(query) {
+  searchBox.value = query;
+  searchBox.dispatchEvent(new Event('input'));
+};
+
+function showDropdownList() {
+  //
+  setDropdownListItems();
+
+  dropdownList.classList.remove('hidden');
+}
+
+function hideDropdownList() {
+  dropdownList.classList.add('hidden');
+}
+
+function cancelSearch() {
+  fireSearchWithQuery('');
+  searchBox.focus();
+}
+
+/* clear stack window modal*/
+function showClearStackWindow() {
+  clearStackWindow.classList.remove('hidden');
+}
+
+function hideClearStackWindow() {
+  clearStackWindow.classList.add('hidden');
+}
+
 const initializeEventListeners = () => {
 
   /* window */
-  window.onscroll = changeStickyOpacityAutomatically;
+  window.onunload = function saveDraftForm() {
+    // save text and hashtags in the textarea when closing
+    background.chrome.storage.local.set({
+      textarea: draftTextHolder,
+      tags: draftHashtagsHolder
+    });
+  };
 
-  window.onunload = saveAddItemForm; // fired when popup.html closing
+  window.onscroll = function changeStickyOpacityAutomatically() {
+    // show header and footer when scroll to the top/bottom
+    if (window.pageYOffset == 0) {
+      header.style.opacity = '1';
+      footer.style.opacity = '1';
+    } else if (document.body.offsetHeight + window.scrollY >= document.body.scrollHeight) {
+      header.style.opacity = '1';
+      footer.style.opacity = '1';
+    } else {
+      header.style.opacity = '0';
+      footer.style.opacity = '0';
+    }
+  }
 
   /* search  */
-  searchBox.addEventListener('dblclick', () => {
-    dropdownList.classList.remove('hidden');
-  });
+  searchBox.addEventListener('dblclick', showDropdownList);
+
   searchBox.addEventListener('input', updateSearchResult);
 
   searchBox.addEventListener('keyup', selectOnDropdownList)
 
   searchBox.addEventListener('focus', closeAddTextItemForm);
 
-  searchCancelButton.addEventListener('click', () => {
-    fireSearchWithQuery('');
-    searchBox.focus();
-  })
+  searchCancelButton.addEventListener('click', cancelSearch)
 
   /* toolbox */
-  topOpener.addEventListener('click', () => {
-    if (topOpener.innerText === 'post_add') {
-      textareaOpener.dispatchEvent(new Event('click'));
-    } else {
-      closeAddTextItemForm();
-    }
-  });
+  topOpener.addEventListener('click', openAddTextItemForm);
 
   viewSwitcher.addEventListener('click', switchViewStyles);
 
   fileExporter.addEventListener('click', exportTextItems);
 
   /* add-sort container */
-  textareaOpener.addEventListener('mouseover', switchTextareaOpenerIcons);
-
-  textareaOpener.addEventListener('mouseout', switchTextareaOpenerIcons);
-
   textareaOpener.addEventListener('click', openAddTextItemForm);
 
   sortBySwitcher.addEventListener('click', switchSortOrder);
 
   /* textarea */
-  textarea.addEventListener('focus', () => {
-    fitDOMHeightToContent(textarea);
-    updateHeaderBoard();
+  textarea.addEventListener('focus', (e) => {
+    fitHeightToContent(e.target);
+    updateTextInfoOnTopboard();
   })
+
+  textarea.addEventListener('blur', () => {
+    topboard.classList.remove('entering');
+    topboard.textContent = '';
+  })
+
+  textarea.addEventListener('keyup', submitForm);
 
   textarea.addEventListener('input', (e) => {
     if (timer) {
@@ -704,18 +765,16 @@ const initializeEventListeners = () => {
       } else {
         e.target.value = e.target.value.replace(regex, '')
         if (hashtags) {
-          addNewHashtag(hashtags[2])
+          addNewHashtag(hashtags[2].slice(1))
         }
       }
     }
 
-    textHolder = e.target.value.trim();
+    draftTextHolder = e.target.value.trim();
 
-    fitDOMHeightToContent(textarea);
-    updateHeaderBoard();
+    fitHeightToContent(textarea);
+    updateTextInfoOnTopboard();
   })
-
-  textarea.addEventListener('keyup', submitText);
 
   /* checkboxes for text stack */
   stackDOM.addEventListener('mouseover', closeAddTextItemForm)
@@ -738,7 +797,7 @@ const initializeEventListeners = () => {
       parent.style.opacity = '0.5';
       parent.style.textDecoration = 'line-through';
 
-      headerBoard.textContent = "Item Removed!";
+      topboard.textContent = "Item Removed!";
       switchToolboxVisibility(false);
 
       // remove
@@ -748,7 +807,7 @@ const initializeEventListeners = () => {
         stackStorage.set(JSON.stringify(stack));
 
         parent.remove();
-        headerBoard.textContent = '';
+        topboard.textContent = '';
 
         switchToolboxVisibility(true);
       }, 450);
@@ -756,38 +815,48 @@ const initializeEventListeners = () => {
   });
 
   /* clear stack button */
-  clearStackButton.addEventListener('click', () => {
-    clearStackWindow.classList.remove('hidden');
-  });
+  clearStackButton.addEventListener('click', showClearStackWindow);
 
-  /* modal window */
-  overlay.addEventListener('click', () => {
-    clearStackWindow.classList.add('hidden');
-  });
+  /* clear stack window modal */
+  overlay.addEventListener('click', hideClearStackWindow);
 
   confirmButton.addEventListener('click', () => {
     clearAllItems();
-    clearStackWindow.classList.add('hidden');
+    hideClearStackWindow();
   })
 
-  cancelButton.addEventListener('click', () => {
-    clearStackWindow.classList.add('hidden');
-  })
+  cancelButton.addEventListener('click', hideClearStackWindow)
+}
+
+const addNewHashtag = (tagName) => {
+  // create tag
+  let hashtag = document.createElement('span');
+  hashtag.classList.add('hashtag');
+  hashtag.textContent = tagName;
+  tagarea.appendChild(hashtag);
+
+  // attach remove event
+  hashtag.addEventListener('click', function removeTag(e) {
+    e.target.parentElement.removeChild(e.target);
+    let index = draftHashtagsHolder.indexOf(tagName);
+    draftHashtagsHolder.splice(index, 1);
+  });
+
+  // save draft hashtags
+  draftHashtagsHolder.push(tagName);
 }
 
 const restoreTextArea = () => {
-  chrome.storage.local.get(['textarea', 'tags'], res => {
-    textarea.textContent = res.textarea;
-    textHolder = res.textarea;
-    if (typeof res.tags !== 'undefined') {
-      res.tags.forEach(tag => {
+  chrome.storage.local.get(['textarea', 'tags'], result => {
+    // restore textarea
+    draftTextHolder = result.textarea;
+    textarea.textContent = result.textarea;
+    // restore tagarea
+    if (typeof result.tags !== 'undefined') {
+      result.tags.forEach(tag => {
         addNewHashtag(tag);
       })
     }
-    chrome.storage.local.set({
-      textarea: '',
-      tags: []
-    });
   })
 }
 
@@ -799,5 +868,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // workaround to avoid displaying view switcher delay
   switchViewStyles();
-  setHashtagSearch();
+  setDropdownListItems();
 });
