@@ -7,7 +7,8 @@ import {
   formatDate,
   fitHeightToContent,
   uuidv4,
-  stackStorage
+  stackStorage,
+  enableURLEmbededInText
 } from './common_lib.js';
 
 /* header */
@@ -120,10 +121,10 @@ const closeAddTextItemForm = () => {
   switchToolboxVisibility(true);
 }
 
-const updateTextInfoOnTopboard = (dom = null) => {
+const updateTextInfoOnTopboard = (text) => {
   switchToolboxVisibility(false);
 
-  let info = dom ? extractTextInfo(dom.textContent) : extractTextInfo(textarea.value);
+  let info = extractTextInfo(text);
 
   topboard.innerHTML = `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`;
 
@@ -132,9 +133,9 @@ const updateTextInfoOnTopboard = (dom = null) => {
   }
 }
 
-const updateSearchResult = (e) => {
+const updateSearchResult = () => {
 
-  let term = e.target.value.trim().toLowerCase();
+  let term = searchBox.value.trim().toLowerCase();
   let hits = filterTextItems(term);
 
   // change styles on search
@@ -402,8 +403,6 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   stackDOM.innerHTML += template;
 
   let lastTextItem = stackDOM.lastElementChild;
-
-  // consider text item without url as a note
   lastTextItem.classList.add(type);
 
   if (type === 'clip') {
@@ -420,16 +419,12 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
     }
   }
 
-  enableURLInText(lastTextItem);
+  let contentDIV = lastTextItem.firstElementChild;
+  contentDIV.innerHTML = enableURLEmbededInText(contentDIV.textContent);
+
   appendHashTags(footnote.tags);
 
   insertDateDIV();
-
-  /* inner functions */
-  function enableURLInText(dom) {
-    let contentDIV = dom.firstElementChild;
-    contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a href='$1' target='_blank'>$1</a>");
-  }
 
   function appendHashTags() {
     if (typeof footnote.tags !== 'undefined') {
@@ -555,7 +550,7 @@ const submitForm = (e) => {
       displayMessageOnTopboard('Item Added!');
 
       timer = setTimeout(() => {
-        updateTextInfoOnTopboard();
+        updateTextInfoOnTopboard(textarea.value);
       }, 700);
 
       // clear form and holders
@@ -595,7 +590,7 @@ function attachEditIconsEvent() {
       let id = e.target.querySelector('input').value;
       let newHTML = e.target.querySelector('.content').innerHTML.replace(/<br>$/, '');
 
-      updateTextInfoOnTopboard(e.target.querySelector('.content'));
+      updateTextInfoOnTopboard(e.target.querySelector('.content').textContent);
 
       updateTextItem(id, newHTML);
     })
@@ -627,7 +622,7 @@ function attachEditIconsEvent() {
     });
 
     wrapper.querySelector('.content').addEventListener('focus', (e) => {
-      updateTextInfoOnTopboard(e.target);
+      updateTextInfoOnTopboard(e.target.textContent);
       wrapper.classList.add('editing');
       var selection = window.getSelection();
       var range = document.createRange();
@@ -714,7 +709,7 @@ function inputForm(e) {
   draftTextHolder = e.target.value.trim();
 
   fitHeightToContent(textarea);
-  updateTextInfoOnTopboard();
+  updateTextInfoOnTopboard(textarea.value);
 }
 
 const initializeEventListeners = () => {
@@ -768,7 +763,7 @@ const initializeEventListeners = () => {
   /* textarea */
   textarea.addEventListener('focus', (e) => {
     fitHeightToContent(e.target);
-    updateTextInfoOnTopboard();
+    updateTextInfoOnTopboard(e.target.textContent);
   })
 
   textarea.addEventListener('blur', () => {

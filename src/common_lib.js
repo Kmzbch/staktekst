@@ -134,6 +134,10 @@ function fitHeightToContent(textarea, minHeight = 25) {
     }
 }
 
+function enableURLEmbededInText(text) {
+    return text.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a href='$1' target='_blank'>$1</a>");
+}
+
 export {
     copyTextWithTitleUrl,
     pushText,
@@ -144,5 +148,6 @@ export {
     fitHeightToContent,
     uuidv4,
     stackStorage,
-    zoomToFit
+    zoomToFit,
+    enableURLEmbededInText
 }
