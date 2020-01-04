@@ -62,6 +62,7 @@ let background = chrome.extension.getBackgroundPage();
 /* switches */
 const switchToolboxVisibility = (forseVisible = false) => {
   if (forseVisible) {
+    topboard.textContent = '';
     toolbox.classList.remove('hidden');
   } else {
     toolbox.classList.add('hidden');
@@ -147,7 +148,6 @@ const updateSearchResult = (e) => {
   } else {
     switchToolboxVisibility(true);
 
-    topboard.textContent = '';
     searchCancelButton.classList.add('hidden');
     footer.classList.remove('hidden');
 
@@ -487,14 +487,15 @@ const addTextItemToStack = (id, type, content, footnote = {}, date = formatDate(
 
 const selectOnDropdownList = (e) => {
   let selected = dropdownList.querySelector('.selected');
-
   if (e.keyCode === 13) {
+    // Enter
     if (selected) {
       selected.classList.remove('selected');
       fireSearchWithQuery('#' + selected.textContent);
     }
     hideDropdownList()
   } else if (e.keyCode === 38) {
+    // Up
     if (!dropdownList.classList.contains('hidden')) {
       if (selected) {
         if (selected.previousSibling) {
@@ -506,6 +507,7 @@ const selectOnDropdownList = (e) => {
       }
     }
   } else if (e.keyCode === 40) {
+    // Down
     if (dropdownList.classList.contains('hidden')) {
       showDropdownList()
     } else {
@@ -523,36 +525,37 @@ const selectOnDropdownList = (e) => {
 
 const submitForm = (e) => {
   if (e.keyCode === 13 && e.ctrlKey) {
+    // Ctrl + Enter
     let errClass = tagarea.querySelector('.error');
 
     if (errClass === null) {
-      let text = textarea.value.trim();
-      if (text === '' || text === '\n') {
+      let content = textarea.value.trim();
+      if (content === '' || content === '\n') {
         textarea.value = '';
         return false;
       }
 
+      // 
       let addingTags = [];
       for (let i = 1; i < tagarea.children.length; i++) {
         addingTags.push(tagarea.children[i].innerText);
       }
 
+      let id = uuidv4();
+      let type = 'note';
       let footnote = {
         tags: addingTags
       };
-
-      let id = uuidv4();
-      let type = 'note';
       let date = formatDate();
 
-      addTextItemToStack(id, type, text, footnote, date);
-      renderTextItem(id, type, text, footnote, date);
+      addTextItemToStack(id, type, content, footnote, date);
+      renderTextItem(id, type, content, footnote, date);
 
-      topboard.classList.remove('entering');
-      topboard.textContent = "Item Added!";
+      // display system message
+      displayMessageOnTopboard('Item Added!');
+
       timer = setTimeout(() => {
-        topboard.textContent = '';
-        switchToolboxVisibility(false);
+        updateTextInfoOnTopboard();
       }, 700);
 
       // clear form and holders
@@ -655,9 +658,7 @@ function fireSearchWithQuery(query) {
 };
 
 function showDropdownList() {
-  //
   setDropdownListItems();
-
   dropdownList.classList.remove('hidden');
 }
 
@@ -677,6 +678,43 @@ function showClearStackWindow() {
 
 function hideClearStackWindow() {
   clearStackWindow.classList.add('hidden');
+}
+
+
+function inputForm(e) {
+  if (timer) {
+    clearTimeout(timer)
+  }
+
+  let errClass = tagarea.querySelector('.error');
+
+  if (errClass) {
+    errClass.parentElement.removeChild(errClass);
+  }
+
+  let hashtags = e.target.value.match(/(^|\s)((#|＃)[^\s]+)(\s$|\n)/);
+
+  if (hashtags) {
+    let regex = new RegExp(`(^|\\s)${escapeRegExp(hashtags[2])}(\\s$|\\n)`);
+    let tagsAdded = tagarea.querySelectorAll('.hashtag').length;
+
+    if (tagsAdded >= 5) {
+      let errMessage = document.createElement('span');
+      errMessage.className = 'error';
+      errMessage.textContent = 'タグは最大5個まで';
+      tagarea.appendChild(errMessage);
+    } else {
+      e.target.value = e.target.value.replace(regex, '')
+      if (hashtags) {
+        addNewHashtag(hashtags[2].slice(1))
+      }
+    }
+  }
+
+  draftTextHolder = e.target.value.trim();
+
+  fitHeightToContent(textarea);
+  updateTextInfoOnTopboard();
 }
 
 const initializeEventListeners = () => {
@@ -740,41 +778,7 @@ const initializeEventListeners = () => {
 
   textarea.addEventListener('keyup', submitForm);
 
-  textarea.addEventListener('input', (e) => {
-    if (timer) {
-      clearTimeout(timer)
-    }
-
-    let errClass = tagarea.querySelector('.error');
-
-    if (errClass) {
-      errClass.parentElement.removeChild(errClass);
-    }
-
-    let hashtags = e.target.value.match(/(^|\s)((#|＃)[^\s]+)(\s$|\n)/);
-
-    if (hashtags) {
-      let regex = new RegExp(`(^|\\s)${escapeRegExp(hashtags[2])}(\\s$|\\n)`);
-      let tagsAdded = tagarea.querySelectorAll('.hashtag').length;
-
-      if (tagsAdded >= 5) {
-        let errMessage = document.createElement('span');
-        errMessage.className = 'error';
-        errMessage.textContent = 'タグは最大5個まで';
-        tagarea.appendChild(errMessage);
-      } else {
-        e.target.value = e.target.value.replace(regex, '')
-        if (hashtags) {
-          addNewHashtag(hashtags[2].slice(1))
-        }
-      }
-    }
-
-    draftTextHolder = e.target.value.trim();
-
-    fitHeightToContent(textarea);
-    updateTextInfoOnTopboard();
-  })
+  textarea.addEventListener('input', inputForm)
 
   /* checkboxes for text stack */
   stackDOM.addEventListener('mouseover', closeAddTextItemForm)
@@ -784,33 +788,9 @@ const initializeEventListeners = () => {
     if (e.target.classList.contains('tag')) {
       fireSearchWithQuery(e.target.innerHTML);
     } else if (e.target.classList.contains('checkbox')) {
-      removeTextItem(e);
-    }
-
-    /* inner functions */
-    function removeTextItem(e) {
-      let parent = e.target.parentElement;
-
-      // apply visual effects and display Message
       e.target.style = 'color: white !important;';
-      parent.style.color = 'black !important'
-      parent.style.opacity = '0.5';
-      parent.style.textDecoration = 'line-through';
-
-      topboard.textContent = "Item Removed!";
-      switchToolboxVisibility(false);
-
-      // remove
-      setTimeout(() => {
-        let id = parent.querySelector('input').value;
-        stack = stack.filter(item => item.id !== id);
-        stackStorage.set(JSON.stringify(stack));
-
-        parent.remove();
-        topboard.textContent = '';
-
-        switchToolboxVisibility(true);
-      }, 450);
+      let textitemDOM = e.target.parentElement;
+      removeTextItem(textitemDOM);
     }
   });
 
@@ -826,6 +806,33 @@ const initializeEventListeners = () => {
   })
 
   cancelButton.addEventListener('click', hideClearStackWindow)
+}
+
+function displayMessageOnTopboard(message) {
+  if (topboard.classList.contains('entering')) {
+    topboard.classList.remove('entering');
+  }
+
+  topboard.textContent = message;
+  switchToolboxVisibility(false);
+}
+
+function removeTextItem(textitemDOM) {
+  // apply visual effects and display Message
+  textitemDOM.classList.add('removed')
+
+  displayMessageOnTopboard("Item Removed!");
+
+  setTimeout(() => {
+    // remove the item
+    let id = textitemDOM.querySelector('input').value;
+    stack = stack.filter(item => item.id !== id);
+    stackStorage.set(JSON.stringify(stack));
+
+    textitemDOM.remove();
+
+    switchToolboxVisibility(true);
+  }, 450);
 }
 
 const addNewHashtag = (tagName) => {

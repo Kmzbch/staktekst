@@ -4,6 +4,12 @@
     z-index: 999999;
 }
 
+.removed {
+    color: black !important;
+    opacity: 0.5 !important;
+    text-decoration: line-through;
+}
+
 .hidden {
     display: none !important;
 }
@@ -347,7 +353,6 @@ input:focus {
 
     flex-direction: row;
 }
-
 
 /* .opener */
 .opener-top:hover {
