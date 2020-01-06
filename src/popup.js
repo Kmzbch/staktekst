@@ -47,7 +47,8 @@ const clearStackWindow = document.querySelector('#clear-window');
 const messageBox = document.querySelector('.messagebox');
 const overlay = document.querySelector('.overlay');
 const confirmButton = document.querySelector('.ok');
-const cancelButton = document.querySelector('.cancel')
+const cancelButton = document.querySelector('.cancel');
+const sizeChanger = document.querySelector('.size-changer');
 
 // holder variables
 let stack = [];
@@ -62,7 +63,26 @@ let scrollYHolder = 0;
 let timer = null;
 let background = chrome.extension.getBackgroundPage();
 
+let minHeightOfTextarea = 200;
+
 /* switches */
+const switchTextareaSize = () => {
+  let sizeChangerIcon = document.querySelector('.size-changer').firstChild;
+  if (sizeChangerIcon.textContent === 'expand_more') {
+    minHeightOfTextarea = 200;
+    textarea.style.height = minHeightOfTextarea + 'px';
+    // textarea.style.minHeight = minHeightOfTextarea + 'px';
+    sizeChangerIcon.textContent = 'expand_less';
+  } else if (sizeChangerIcon.textContent === 'expand_less') {
+    minHeightOfTextarea = 25;
+    textarea.style.height = minHeightOfTextarea + 'px';
+    // textarea.style.minHeight = minHeightOfTextarea + 'px';
+    sizeChangerIcon.textContent = 'expand_more';
+  }
+}
+
+sizeChanger.addEventListener('click', switchTextareaSize);
+
 const switchToolboxVisibility = (forseVisible = false) => {
   if (forseVisible) {
     topboard.textContent = '';
@@ -413,7 +433,7 @@ const selectOnDropdownList = (e) => {
 }
 
 const submitForm = (e) => {
-  if (e.keyCode === 13 && e.shiftKey) {
+  if (e.keyCode === 13 && e.ctrlKey) {
     // Ctrl + Enter
     let errClass = tagarea.querySelector('.error');
 
@@ -427,7 +447,10 @@ const submitForm = (e) => {
       // 
       let addingTags = [];
       for (let i = 1; i < tagarea.children.length; i++) {
-        addingTags.push(tagarea.children[i].innerText);
+        if (!tagarea.children[i].classList.contains('size-changer')) {
+          addingTags.push(tagarea.children[i].innerText);
+
+        }
       }
 
       let id = uuidv4();
@@ -522,7 +545,7 @@ function updateInputForm(e) {
 
   draftTextHolder = e.target.value.trim();
 
-  fitHeightToContent(textarea);
+  fitHeightToContent(textarea, minHeightOfTextarea);
   updateTextInfoOnTopboard(textarea.value);
 }
 
@@ -837,7 +860,7 @@ const initializeEventListeners = () => {
   })
 
   searchBox.addEventListener('dblclick', () => {
-    searchBox.value = '';
+    fireSearchWithQuery('')
     showDropdownList();
   });
   searchBox.addEventListener('click', showDropdownList);
@@ -874,7 +897,7 @@ const initializeEventListeners = () => {
       let tag = searchBox.value.slice(1).split(' ')[0]
       addHashtagToDraft(tag);
     }
-    fitHeightToContent(e.target);
+    fitHeightToContent(e.target, minHeightOfTextarea);
     updateTextInfoOnTopboard(e.target.textContent);
   })
 

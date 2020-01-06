@@ -107,30 +107,33 @@ function pushText(content, type, pageTitle = '', pageURL = '') {
 }
 
 function fitHeightToContent(textarea, minHeight = 25) {
-    const isOverflown = ({
-        clientWidth,
-        clientHeight,
-        scrollWidth,
-        scrollHeight
-    }) => {
-        return scrollHeight > clientHeight || scrollWidth > clientWidth;
-    }
-
-    // variable height
-    while (!isOverflown(textarea)) {
-        let initialHeight = parseFloat(getComputedStyle(textarea).height);
-        if (initialHeight < minHeight) {} else {
-            textarea.style.height = (initialHeight - 10) + "px";
+    if (minHeight <= 25) {
+        const isOverflown = ({
+            clientWidth,
+            clientHeight,
+            scrollWidth,
+            scrollHeight
+        }) => {
+            return scrollHeight > clientHeight || scrollWidth > clientWidth;
         }
-    }
 
-    while (isOverflown(textarea)) {
-        let initialHeight = parseFloat(getComputedStyle(textarea).height);
-        let adjustedHeight = (initialHeight + 10);
-        if (adjustedHeight < minHeight) {
-            adjustedHeight = minHeight;
+        // variable height
+        while (!isOverflown(textarea)) {
+            let initialHeight = parseFloat(getComputedStyle(textarea).height);
+            if (initialHeight < minHeight) {} else {
+                textarea.style.height = (initialHeight - 10) + "px";
+            }
         }
-        textarea.style.height = adjustedHeight + "px";
+
+        while (isOverflown(textarea)) {
+            let initialHeight = parseFloat(getComputedStyle(textarea).height);
+            let adjustedHeight = (initialHeight + 10);
+            if (adjustedHeight < minHeight) {
+                adjustedHeight = minHeight;
+            }
+            textarea.style.height = adjustedHeight + "px";
+        }
+
     }
 }
 
