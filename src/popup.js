@@ -57,6 +57,8 @@ let dateStack = [];
 let draftTextHolder = ''; // to save draft text when unloading
 let draftHashtagsHolder = [];
 
+let scrollYHolder = 0;
+
 let timer = null;
 let background = chrome.extension.getBackgroundPage();
 
@@ -138,7 +140,20 @@ const updateTextInfoOnTopboard = (text) => {
 const updateSearchResult = () => {
 
   let term = searchBox.value.trim().toLowerCase();
-  let hits = filterTextItems(term);
+  // let hits = filterTextItems(term);
+  // filterDropdownListItems();
+
+
+  let hits;
+  if (term.split(' ').length > 1) {
+    let tagQuery = term.split(' ')[0]
+    let query = term.split(' ')[1];
+    hits = filterTextItems(query);
+    filterDropdownListItems(tagQuery);
+  } else {
+    hits = filterTextItems(term);
+    filterDropdownListItems(term);
+  }
 
   // change styles on search
   if (term) {
@@ -206,11 +221,42 @@ function filterTextItems(term) {
   return hits;
 };
 
+const filterDropdownListItems = (tag) => {
+  // let tagName = searchBox.value.trim().toLowerCase();
+  // tagName = tagName.slice(1);
+  let tagName = tag.trim().toLowerCase();
+  tagName = tagName.slice(1);
+
+
+  let termRegex;
+  let hits = 0;
+
+  // Search in Japanese/English
+  if (containsJapanese(tagName)) {
+    termRegex = new RegExp(`^(${escapeRegExp(tagName)})(.*?)`, 'i');
+  } else {
+    termRegex = new RegExp(`^(${escapeRegExp(tagName)})(.*?)`, 'i');
+  }
+
+  Array.from(dropdownList.children)
+    .map(tagItem => {
+      if (tagItem.textContent.match(termRegex)) {
+        tagItem.classList.remove('filtered');
+      } else {
+        tagItem.classList.add('filtered');
+      }
+      return tagItem;
+    })
+}
+
+
 const setDropdownListItems = () => {
   // remove hashtag from dropwdown
   while (dropdownList.firstChild) {
     dropdownList.removeChild(dropdownList.firstChild);
   }
+
+  tagStack = tagStack.slice(0, 3).concat(tagStack.slice(3).sort());
 
   tagStack.forEach(tag => {
     if (tag !== '') {
@@ -325,9 +371,11 @@ const addTextItemToStack = (id, type, content, footnote = {}, date = formatDate(
   });
   stackStorage.set(JSON.stringify(stack));
 };
-
 const selectOnDropdownList = (e) => {
   let selected = dropdownList.querySelector('.selected');
+  let unfiltered = Array.from(dropdownList.children).filter(tagItem => !tagItem.classList.contains('filtered'));
+  let index = unfiltered.findIndex(item => item === selected);
+
   if (e.keyCode === 13) {
     // Enter
     if (selected) {
@@ -339,9 +387,9 @@ const selectOnDropdownList = (e) => {
     // Up
     if (!dropdownList.classList.contains('hidden')) {
       if (selected) {
-        if (selected.previousSibling) {
+        if (index - 1 >= 0) {
           selected.classList.remove('selected');
-          selected.previousSibling.classList.add('selected');
+          unfiltered[index - 1].classList.add('selected');
         } else {
           hideDropdownList()
         }
@@ -353,19 +401,19 @@ const selectOnDropdownList = (e) => {
       showDropdownList()
     } else {
       if (selected) {
-        if (selected.nextSibling) {
+        if (unfiltered.length > index + 1) {
           selected.classList.remove('selected');
-          selected.nextSibling.classList.add('selected');
+          unfiltered[index + 1].classList.add('selected');
         }
       } else {
-        dropdownList.firstElementChild.classList.add('selected');
+        unfiltered[0].classList.add('selected');
       }
     }
   }
 }
 
 const submitForm = (e) => {
-  if (e.keyCode === 13 && e.ctrlKey) {
+  if (e.keyCode === 13 && e.shiftKey) {
     // Ctrl + Enter
     let errClass = tagarea.querySelector('.error');
 
@@ -418,7 +466,10 @@ function fireSearchWithQuery(query) {
 
 function showDropdownList() {
   setDropdownListItems();
+  // filterDropdownListItems();
+  filterDropdownListItems(searchBox.value);
   dropdownList.classList.remove('hidden');
+  dropdownList.focus();
 }
 
 function hideDropdownList() {
@@ -592,7 +643,8 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   let stackWrapper = document.createElement('div');
   stackWrapper.className = 'stackwrapper';
   stackWrapper.classList.add(type);
-  stackWrapper.innerHTML = `<div class='content'>${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><div class="spacer"></div><div class="footnote"></div>`;
+  // stackWrapper.innerHTML = `<div class='content'>${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><div class="spacer"></div><div class="footnote"></div>`;
+  stackWrapper.innerHTML = `<div class='content'>${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><input type='hidden' value="${date}"><div class="spacer"></div><div class="footnote"></div>`;
 
   stackDOM.appendChild(stackWrapper);
 
@@ -623,24 +675,48 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
       }
     })
   }
-
-  // create date separator
-  let dateSeparator = document.createElement('div');
-  dateSeparator.className = 'date';
-  dateSeparator.textContent = date;
-
-  if (dateStack.length == 0) {
-    // insert at the bottom
-    stackDOM.insertBefore(dateSeparator, stackWrapper);
-    dateStack.push(date);
-  } else {
-    // insert if the text item has the date after the one before
-    if (dateStack[dateStack.length - 1] !== date) {
-      stackDOM.insertBefore(dateSeparator, stackWrapper);
-      dateStack.push(date);
-    }
-  }
 }
+
+const insertDateSeparator = () => {
+
+  Array.from(stackDOM.children).forEach(wrapper => {
+    let dateSeparator = document.createElement('div');
+    dateSeparator.className = 'date';
+
+    let date = wrapper.querySelectorAll('input')[1].value;
+
+    if (dateStack.length === 0) {
+      // dateSeparator.innerHTML = `<a id='${date}' href='#'>${date}</a>`;
+      dateSeparator.innerHTML = date;
+
+      stackDOM.insertBefore(dateSeparator, wrapper);
+      dateStack.push(date);
+    } else {
+      if (dateStack[dateStack.length - 1] !== date) {
+        dateSeparator.innerHTML = date;
+        stackDOM.insertBefore(dateSeparator, wrapper);
+        dateStack.push(date);
+      }
+    }
+  })
+
+
+  // insert current time
+  let now = new Date();
+  let hours = ('0' + now.getHours()).slice(-2);
+  let minutes = ('0' + now.getMinutes()).slice(-2);
+
+  let currentTime = hours + ':' + minutes;
+  let todaySeparator = document.createElement('div');
+  todaySeparator.className = 'date';
+  todaySeparator.classList.add('current');
+  //  todaySeparator.textContent = currentTime + ' ' + formatDate();
+  todaySeparator.textContent = formatDate() + ' ' + currentTime;
+
+  stackDOM.append(todaySeparator);
+
+}
+
 
 const renderStack = () => {
   stackStorage.get(raw => {
@@ -652,6 +728,8 @@ const renderStack = () => {
         let type = res.hasOwnProperty('type') ? res.type : 'note';
         renderTextItem(res.id, type, res.content, res.footnote, res.date);
       });
+      insertDateSeparator();
+
     }
   });
 };
@@ -689,11 +767,30 @@ const restorDraftForm = () => {
   })
 }
 
+const restoreScrollY = () => {
+  let now = new Date().getTime();
+
+  chrome.storage.local.get(['scrollY', 'timeClosedLastTime'], result => {
+    if (typeof result.timeClosedLastTime !== 'undefined') {
+      let last = result.timeClosedLastTime;
+
+      let diff = (now - last);
+
+      if (diff < 30000) {
+        // restore scrollY
+        if (typeof result.scrollY !== 'undefined') {
+          scrollYHolder = result.scrollY;
+          window.scrollTo(0, scrollYHolder);
+        }
+      }
+    }
+  })
+}
+
 const initializeEventListeners = () => {
 
   /* window */
   window.onunload = function saveDraftForm() {
-    // save text and hashtags in the textarea when closing
     background.chrome.storage.local.set({
       textarea: draftTextHolder,
       tags: draftHashtagsHolder
@@ -712,10 +809,38 @@ const initializeEventListeners = () => {
       header.style.opacity = '0';
       footer.style.opacity = '0';
     }
+    // save scrollY position and the time of scrolling
+    scrollYHolder = window.scrollY;
+    let now = new this.Date().getTime();
+
+    background.chrome.storage.local.set({
+      timeClosedLastTime: new this.Date().getTime(),
+      scrollY: scrollYHolder,
+
+    });
+
   }
 
+  /* dropdown list */
+  dropdownList.addEventListener('mouseleave', () => {
+    hideDropdownList();
+  })
+  header.addEventListener('mouseleave', () => {
+    hideDropdownList();
+  })
+
   /* search  */
-  searchBox.addEventListener('dblclick', showDropdownList);
+  searchBox.addEventListener('click', () => {
+    if (getComputedStyle(dropdownList) !== 'hidden') {
+      hideDropdownList();
+    }
+  })
+
+  searchBox.addEventListener('dblclick', () => {
+    searchBox.value = '';
+    showDropdownList();
+  });
+  searchBox.addEventListener('click', showDropdownList);
 
   searchBox.addEventListener('input', updateSearchResult);
 
@@ -739,6 +864,16 @@ const initializeEventListeners = () => {
 
   /* textarea */
   textarea.addEventListener('focus', (e) => {
+    hideDropdownList();
+    if (searchBox.value.slice(0, 1) === '#' && !draftHashtagsHolder.includes(searchBox.value.slice(1))) {
+      while (tagarea.lastChild && tagarea.children.length > 1) {
+        tagarea.removeChild(tagarea.lastChild);
+      }
+      draftHashtagsHolder.length = [];
+
+      let tag = searchBox.value.slice(1).split(' ')[0]
+      addHashtagToDraft(tag);
+    }
     fitHeightToContent(e.target);
     updateTextInfoOnTopboard(e.target.textContent);
   })
@@ -786,6 +921,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeEventListeners();
   restorDraftForm();
   renderStack();
+
+  restoreScrollY();
 
   tagStack = tagStack.sort();
 
