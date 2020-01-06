@@ -77,10 +77,12 @@ const switchViewStyles = (forceDefault = false) => {
   let switchingToListView = defaultview.disabled || !forceDefault;
 
   if (switchingToListView) {
+    switchSortOrder(false);
     defaultview.disabled = false;
     listview.disabled = true;
     viewSwitcher.textContent = 'reorder';
   } else {
+    switchSortOrder(true);
     defaultview.disabled = true;
     listview.disabled = false;
     viewSwitcher.textContent = 'format_list_bulleted';
@@ -167,6 +169,7 @@ function filterTextItems(term) {
     termRegex = new RegExp(`\\b(${escapeRegExp(term)})(.*?)\\b`, 'ig');
   }
 
+
   Array.from(stackDOM.children)
     .map(textItem => {
       // remove text decoration and highlight
@@ -194,83 +197,11 @@ function filterTextItems(term) {
         contentDIV.innerHTML = contentDIV.textContent;
       }
 
-      // console.log(contentDIV.children.length);
+      // check if the urls are made up of ascii
+      if (contentDIV.textContent.match(/(https?:\/\/[\x01-\x7E]+)/g)) {
+        contentDIV.innerHTML = enableLinkEmbededInText(contentDIV.textContent);
+      }
 
-
-      // if (contentDIV.textContent.match(termRegex).length > 0) {
-      //   if (term.length >= 1) {
-      //     contentDIV.innerHTML = contentDIV.innerHTML.replace(termRegex, "<span class='highlighted'>$1</span>$2");
-      //   } else {
-      //     contentDIV.innerHTML = contentDIV.textContent;
-      //   }
-      // } else {
-      //   let consumedTerm = '';
-      //   let tempTerm = term;
-      //   let hit;
-      //   let hitRange = [];
-      //   let newRegex;
-      //   let hitWords;
-      //   let replaced = false;
-      //   contentDIV.childNodes.forEach(node => {
-      //     if (consumedTerm.length === 0) {
-      //       newRegex = new RegExp(`^.*(${escapeRegExp(tempTerm)}).*$`, 'ig')
-      //       console.log(node);
-      //       hitWords = node.innerText.match(newRegex);
-      //       if (hitWords.length > 0) {
-      //         // totally replace
-      //         node.innerText.replace(termRegex, "<span class='highlighted'>$1</span>$2");
-      //         termTerm = term;
-      //         consumedTerm = '';
-      //         replaced = true;
-      //       } else {
-      //         // match with part of term
-      //         newRegex = new RegExp(`^.*(${escapeRegExp(tempTerm)})$`, 'i')
-      //       }
-      //     } else {
-      //       newRegex = new RegExp(`^(${escapeRegExp(tempTerm)}).*$`, 'i')
-      //     }
-      //     if (!replaced) {
-      //       while (tempTerm.length !== 0 && hit === null) {
-      //         hit = node.innerText.match(newRegex);
-      //         if (hit) {
-      //           hitRange.push({
-      //             node: node,
-      //             from: hit.index,
-      //             len: node.innerText.length
-      //           })
-      //           console.log(hitRange);
-      //         }
-      //         consumedTerm = tempTerm.slice(x.length - 1) + consumedTerm;
-      //         tempTerm = tempTerm.slice(0, x.length - 1);
-      //         newRegex = new RegExp(`^.*(${escapeRegExp(tempTerm)})$`, 'i');
-      //       }
-      //       if (tempTerm.length === 0) {
-      //         while (hitRange.length !== 0) {
-      //           let x = hitRange.pop()
-      //           let part = x.node.innerText.slice(from, len);
-      //           let partRegex = new RegExp(`(${escapeRegExp(part)})`, 'i');
-      //           x.node.innerText.replace(partRegex, "<span class='highlighted'>$1</span>");
-      //         }
-      //         // reset
-      //         tempTerm = term;
-      //         consumedTerm = '';
-      //         hit = null;
-      //         hitRange = {}
-      //       } else {
-      //         tempTerm = consumedTerm;
-      //         hit = null;
-      //       }
-      //     } else {
-      //       replaced = false;
-      //     }
-      //   })
-
-      // }
-
-      // // check if the urls are made up of ascii
-      // if (contentDIV.textContent.match(/(https?:\/\/[\x01-\x7E]+)/g)) {
-      //   contentDIV.innerHTML = contentDIV.textContent.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a class='emphasized' href='$1' target='_blank'>$1</a>");
-      // }
     });
   return hits;
 };
@@ -826,8 +757,10 @@ const initializeEventListeners = () => {
 
   stackDOM.addEventListener('click', e => {
     if (e.target.classList.contains('tag')) {
+      // when tag clicked
       fireSearchWithQuery(e.target.innerHTML);
     } else if (e.target.classList.contains('checkbox')) {
+      // when checkbox clicked
       e.target.style = 'color: white !important;';
       let textitemDOM = e.target.parentElement;
       removeTextItem(textitemDOM);

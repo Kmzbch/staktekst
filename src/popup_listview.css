@@ -109,9 +109,9 @@
     content: '#'
 }
 
-.spacer {
+/* .spacer {
     height: 16px;
-}
+} */
 
 .filtered {
     display: none !important;
@@ -467,15 +467,14 @@ input:focus {
     text-overflow: none;
 } */
 
-.clip,
+/* .clip,
 .bookmark {
-    /* display: block; */
-    display: none;
+    display: block;
     height: 40px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-}
+} */
 
 
 /* to do: title form */
@@ -494,8 +493,8 @@ input:focus {
     margin-left: 10px !important;
     margin-right: 15px;
     background-color: lemonchiffon !important; */
-    font-weight: bolder;
-    /* text-decoration: underline; */
+    /* font-weight: bolder; */
+    /* font-style: italic; */
 }
 
 .note .footnote {
@@ -504,8 +503,7 @@ input:focus {
 }
 
 .footnote {
-    display: none;
-    position: absolute;
+    /* position: absolute;
     bottom: 5px;
     right: 7px;
     margin-top: 10px;
@@ -513,7 +511,13 @@ input:focus {
     margin-right: 3 !important;
     font-size: 12px !important;
     -moz-user-select: none;
-    user-select: none;
+    user-select: none; */
+
+    font-size: 12px !important;
+    padding-bottom: 5px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .tag:hover {

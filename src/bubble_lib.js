@@ -9,19 +9,19 @@ const SEARCH_ENGINE_ICONS = [{
         command: "google",
     }, {
         className: "material-icons stackButton",
-        title: "Vocabulary.comで単語検索",
+        title: "Vocabulary.comで単語を検索",
         innerText: "check",
         command: "vocabulary",
     }, {
         // className: "fas fa-user-friends stackButton",
         className: "material-icons stackButton",
-        title: "Do People Say Itでフレーズ検索",
+        title: "Do People Say Itでフレーズを検索",
         innerText: "people",
         command: "dopeoplesayit",
     },
     {
         className: "fas fa-book fa-lg stackButton",
-        title: "Urban Dictionaryで単語検索",
+        title: "Urban Dictionaryで単語を検索",
         command: "urban",
     }, {
         // className: "fab fa-twitter fa-lg stackButton",
@@ -30,12 +30,12 @@ const SEARCH_ENGINE_ICONS = [{
 
         // className: "material-icons stackButton",
         className: "fab fa-twitter fa-lg stackButton",
-        title: 'Netspeakでフレーズ検索',
+        title: 'Netspeakでフレーズを検索',
         command: 'netspeak'
     },
     {
         className: "fab fa-youtube fa-lg stackButton",
-        title: "Youglish検索",
+        title: "Youglishで発音を検索",
         command: "youglish",
     }, {
         className: "material-icons stackButton",
