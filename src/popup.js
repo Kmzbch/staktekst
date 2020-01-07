@@ -227,9 +227,14 @@ function filterTextItems(term) {
 
       // add highlight when searching
       if (term.length >= 1) {
+        contentDIV.innerHTML = contentDIV.innerHTML.replace(/<br>/ig, '\n');
         contentDIV.innerHTML = contentDIV.textContent.replace(termRegex, "<span class='highlighted'>$1</span>$2");
+        contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/ig, '<br>');
+
       } else {
-        contentDIV.innerHTML = contentDIV.textContent;
+        // contentDIV.innerHTML = contentDIV.textContent;
+        termRegex = /<span class='highlighted'>(.*?)<\/span>/
+        contentDIV.innerHTML = contentDIV.innerHTML.replace(termRegex, '$1');
       }
 
       // check if the urls are made up of ascii
@@ -375,7 +380,10 @@ const clearAllItems = () => {
 
 const updateTextItem = (id, html) => {
   let index = stack.findIndex(item => item.id === id);
-  stack[index].content = html;
+  //  stack[index].content = html;
+
+  stack[index].content = html.replace(/<br>/ig, '\n');
+  console.log(stack[index].content);
   stackStorage.set(JSON.stringify(stack));
 };
 
@@ -665,11 +673,58 @@ function attachContentEditableEvents(wrapper) {
 const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   let stackWrapper = document.createElement('div');
   stackWrapper.className = 'stackwrapper';
+  stackWrapper.id = id;
   stackWrapper.classList.add(type);
+
+  // content = content.replace(/\n/g, '<br>')
   // stackWrapper.innerHTML = `<div class='content'>${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><div class="spacer"></div><div class="footnote"></div>`;
   stackWrapper.innerHTML = `<div class='content'>${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><input type='hidden' value="${date}"><div class="spacer"></div><div class="footnote"></div>`;
 
+
   stackDOM.appendChild(stackWrapper);
+
+  //on dragover
+  if (stackWrapper.classList.contains('note')) {
+    stackWrapper.draggable = true;
+
+    stackWrapper.addEventListener('dragover', function allowDrop(e) {
+      e.preventDefault();
+    });
+    stackWrapper.addEventListener('drop', function drop(e) {
+      e.preventDefault();
+      let appendingItemId = e.dataTransfer.getData("id");
+      let content = stack.find(item => item.id === appendingItemId).content;
+
+      let newHTML;
+      let id;
+      let contentItem;
+      let wrapper;
+
+      if (e.target.classList.contains('stackwrapper')) {
+        contentItem = e.target.querySelector('.content');
+        newHTML = contentItem.innerHTML;
+        id = e.target.querySelector('input').value;
+        wrapper = e.target;
+      } else {
+        contentItem = e.target.parentElement.querySelector('.content');
+        newHTML = contentItem.innerHTML;
+        id = e.target.parentElement.querySelector('input').value;
+        wrapper = e.target.parentElement;
+      }
+      newHTML = newHTML + '<br>' + content.replace(/\n/ig, '<br>');
+
+      contentItem.innerHTML = newHTML;
+
+      let toBeRemoved = Array.from(stackDOM.children).find(item => item.id === appendingItemId);
+      console.log(newHTML);
+      updateTextItem(id, newHTML);
+      removeTextItem(toBeRemoved);
+    });
+    stackWrapper.addEventListener('dragstart', function drag(e) {
+      let itemId = e.target.querySelector('input').value;
+      e.dataTransfer.setData("id", itemId);
+    })
+  }
 
   // enable URL link
   let contentDIV = stackWrapper.firstElementChild;
@@ -683,6 +738,8 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
       attachContentEditableEvents(stackWrapper);
     }
   }
+  contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
+
 
   // add hashtags
   if (typeof footnote.tags !== 'undefined') {
@@ -698,6 +755,9 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
       }
     })
   }
+
+
+
 }
 
 const insertDateSeparator = () => {
