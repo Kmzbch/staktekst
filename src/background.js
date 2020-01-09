@@ -98,6 +98,18 @@ const getMessage = (request, sender, sendResponse) => {
         });
       })
     });
+  } else if (request.command === 'OVERLAY_ON' || request.command === 'OVERLAY_OFF') {
+    chrome.tabs.query({
+      currentWindow: true,
+      active: true
+    }, function (tabs) {
+      chrome.tabs.sendMessage(tabs[0].id, {
+        command: request.command
+      }, null);
+    })
+    sendResponse({
+      message: 'sent!'
+    });
   } else {
     if (request.selection) {
       selectedTextHolder = request.selection;
@@ -114,3 +126,19 @@ const getMessage = (request, sender, sendResponse) => {
 let selectedTextHolder = null;
 
 chrome.runtime.onMessage.addListener(getMessage);
+
+// chrome.runtime.onConnect.addListener(function (externalPort) {
+//   externalPort.onDisconnect.addListener(function () {
+//     console.log("onDisconnect");
+//     // chrome.tabs.query({
+//     //   currentWindow: true,
+//     //   active: true
+//     // }, function (tabs) {
+//     //   chrome.tabs.sendMessage(tabs[0].id, {
+//     //     command: 'OVERLAY_OFF'
+//     //   }, null);
+//     // })
+//   })
+
+//   console.log("onConnect")
+// })

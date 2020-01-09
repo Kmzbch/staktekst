@@ -3,6 +3,16 @@
     display: none !important;
 }
 
+#overlay {
+    position: fixed !important;
+    top: 0px !important;
+    left: 0px !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 9999999 !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+}
+
 /* button styles */
 .stackButton {
     transform: scale(0.95);

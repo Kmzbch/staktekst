@@ -208,9 +208,22 @@ footer {
 /* searchbox styles */
 textarea:focus,
 input:focus {
-    border: none;
+    /* border: none; */
     outline: none;
 }
+
+textarea,
+input {
+    /* border: none; */
+    outline: none;
+}
+
+
+/* 
+textarea:focus,
+input:focus {
+    outline: none;
+} */
 
 .searchbox::-webkit-search-cancel-button {
     -webkit-appearance: none;
@@ -379,6 +392,11 @@ input:focus {
     vertical-align: text-bottom;
 }
 
+
+#add-sort {
+    display: block;
+}
+
 /* add container styles*/
 .add-textitem {
     /* display: none; */
@@ -438,6 +456,19 @@ input:focus {
     /* text-align: center; */
     font-size: 16px;
     margin: 10px;
+}
+
+
+
+.size-changer {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    color: rgba(0, 0, 0, 0.5);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    cursor: pointer;
+
 }
 
 .date::after {
@@ -532,6 +563,32 @@ input:focus {
     font-weight: bold;
 }
 
+.divWrap::before {
+    content: '#' !important;
+    color: rgba(0, 0, 0, 0.3) !important;
+}
+
+.divWrap:hover::before {
+    font-weight: bold;
+    color: rgba(0, 0, 0, 0.6) !important;
+}
+
+.divWrap {
+    display: inline;
+}
+
+.tagadd:focus {
+    border-bottom: 1px solid lightgray !important;
+}
+
+.tagadd {
+    overflow: visible;
+    width: 70px;
+    background: none;
+    border: none;
+    /* border-bottom: 1px solid lightgray; */
+}
+
 .tagarea {
     position: relative;
     width: 375px;
@@ -544,6 +601,10 @@ input:focus {
     margin-right: auto;
     margin-bottom: 5px;
     background-color: azure;
+
+    border-bottom: 1px solid rgba(0, 0, 0, 0.3) !important;
+    border-left: 1px solid rgba(0, 0, 0, 0.3) !important;
+    border-right: 1px solid rgba(0, 0, 0, 0.3) !important;
 }
 
 .hashtag:hover {
@@ -551,6 +612,20 @@ input:focus {
     font-weight: bold;
 }
 
+
+.duedate::before {
+    /* content: '~'; */
+    color: red;
+}
+
+.duedate {
+    /* position: absolute;
+    bottom: 5px;
+    right: 30px; */
+    font-size: 13px;
+    font-weight: bold;
+    color: royalblue;
+}
 
 /* .hashtag:hover::after {
     content: "\00d7";

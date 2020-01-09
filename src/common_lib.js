@@ -106,35 +106,44 @@ function pushText(content, type, pageTitle = '', pageURL = '') {
     });
 }
 
-function fitHeightToContent(textarea, minHeight = 25) {
-    if (minHeight <= 25) {
-        const isOverflown = ({
-            clientWidth,
-            clientHeight,
-            scrollWidth,
-            scrollHeight
-        }) => {
-            return scrollHeight > clientHeight || scrollWidth > clientWidth;
-        }
-
-        // variable height
-        while (!isOverflown(textarea)) {
-            let initialHeight = parseFloat(getComputedStyle(textarea).height);
-            if (initialHeight < minHeight) {} else {
-                textarea.style.height = (initialHeight - 10) + "px";
-            }
-        }
-
-        while (isOverflown(textarea)) {
-            let initialHeight = parseFloat(getComputedStyle(textarea).height);
-            let adjustedHeight = (initialHeight + 10);
-            if (adjustedHeight < minHeight) {
-                adjustedHeight = minHeight;
-            }
-            textarea.style.height = adjustedHeight + "px";
-        }
-
+function fitHeightToContent(textarea) {
+    const isOverflown = ({
+        clientWidth,
+        clientHeight,
+        scrollWidth,
+        scrollHeight
+    }) => {
+        return scrollHeight > clientHeight || scrollWidth > clientWidth;
     }
+
+
+    // variable height
+    while (!isOverflown(textarea)) {
+        let initialHeight = parseFloat(getComputedStyle(textarea).height);
+        let minHeight = parseFloat(getComputedStyle(textarea).minHeight);
+
+        if (initialHeight <= minHeight) {
+            break;
+        } else {
+            if (initialHeight > minHeight) {
+                textarea.style.height = (initialHeight - 10) + "px";
+
+            }
+        }
+    }
+
+    while (isOverflown(textarea)) {
+
+        let initialHeight = parseFloat(getComputedStyle(textarea).height);
+        let minHeight = parseFloat(getComputedStyle(textarea).minHeight);
+
+        let adjustedHeight = (initialHeight + 10);
+        if (adjustedHeight < minHeight) {
+            adjustedHeight = minHeight;
+        }
+        textarea.style.height = adjustedHeight + "px";
+    }
+
 }
 
 function enableURLEmbededInText(text) {

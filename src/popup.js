@@ -58,30 +58,47 @@ let dateStack = [];
 let draftTextHolder = ''; // to save draft text when unloading
 let draftHashtagsHolder = [];
 
+let searchQueryHolder = '';
 let scrollYHolder = 0;
 
 let timer = null;
 let background = chrome.extension.getBackgroundPage();
 
-let minHeightOfTextarea = 200;
-
 /* switches */
-const switchTextareaSize = () => {
+const switchTextareaSize = (e, forceExpandLess = false) => {
   let sizeChangerIcon = document.querySelector('.size-changer').firstChild;
-  if (sizeChangerIcon.textContent === 'expand_more') {
-    minHeightOfTextarea = 200;
-    textarea.style.height = minHeightOfTextarea + 'px';
-    // textarea.style.minHeight = minHeightOfTextarea + 'px';
-    sizeChangerIcon.textContent = 'expand_less';
-  } else if (sizeChangerIcon.textContent === 'expand_less') {
-    minHeightOfTextarea = 25;
-    textarea.style.height = minHeightOfTextarea + 'px';
-    // textarea.style.minHeight = minHeightOfTextarea + 'px';
+
+  if (sizeChangerIcon.textContent === 'expand_less' || forceExpandLess) {
+    textarea.style.height = 25 + 'px';
+    textarea.style.minHeight = 25 + 'px';
     sizeChangerIcon.textContent = 'expand_more';
+
+    //
+    chrome.runtime.sendMessage({
+        command: 'OVERLAY_OFF'
+      },
+      response => {
+        console.log(response.message);
+      }
+    );
+
+  } else if (sizeChangerIcon.textContent === 'expand_more') {
+    textarea.style.height = 300 + 'px';
+    textarea.style.minHeight = 300 + 'px';
+
+    sizeChangerIcon.textContent = 'expand_less';
+
+    //
+    chrome.runtime.sendMessage({
+        command: 'OVERLAY_ON'
+      },
+      response => {
+        console.log(response.message);
+      }
+    );
   }
 }
 
-sizeChanger.addEventListener('click', switchTextareaSize);
 
 const switchToolboxVisibility = (forseVisible = false) => {
   if (forseVisible) {
@@ -136,6 +153,14 @@ const openAddTextItemForm = () => {
 }
 
 const closeAddTextItemForm = () => {
+  chrome.runtime.sendMessage({
+      command: 'OVERLAY_OFF'
+    },
+    response => {
+      console.log(response.message);
+    }
+  );
+
   textarea.classList.add('hidden');
   tagarea.classList.add('hidden');
 
@@ -163,9 +188,11 @@ const updateSearchResult = () => {
   // let hits = filterTextItems(term);
   // filterDropdownListItems();
 
+  searchQueryHolder = term;
+
 
   let hits;
-  if (term.split(' ').length > 1) {
+  if (term.split(' ').length > 1 && term.split(' ')[0].slice(0, 1) === '#') {
     let tagQuery = term.split(' ')[0]
     let query = term.split(' ')[1];
     hits = filterTextItems(query);
@@ -233,7 +260,7 @@ function filterTextItems(term) {
 
       } else {
         // contentDIV.innerHTML = contentDIV.textContent;
-        termRegex = /<span class='highlighted'>(.*?)<\/span>/
+        termRegex = /<span class="highlighted">(.*?)<\/span>/g
         contentDIV.innerHTML = contentDIV.innerHTML.replace(termRegex, '$1');
       }
 
@@ -276,36 +303,39 @@ const filterDropdownListItems = (tag) => {
 
 
 const setDropdownListItems = () => {
-  // remove hashtag from dropwdown
+  // remove all from dropdown
   while (dropdownList.firstChild) {
     dropdownList.removeChild(dropdownList.firstChild);
   }
 
   tagStack = tagStack.slice(0, 3).concat(tagStack.slice(3).sort());
 
-  tagStack.forEach(tag => {
-    if (tag !== '') {
-      // append li
-      let li = document.createElement('li');
-      li.textContent = tag;
-      dropdownList.appendChild(li);
+  // create list from tagStack
+  tagStack
+    .filter(item => isNaN(Date.parse(item))) // filter duedate tag
+    .forEach(tag => {
+      if (tag !== '') {
+        let li = document.createElement('li');
+        li.textContent = tag;
 
-      // attach events
-      li.addEventListener('mouseover', (e) => {
-        // work as hover
-        let liSelected = dropdownList.querySelector('.selected');
-        if (liSelected) {
-          liSelected.classList.remove('selected');
-        }
-        e.target.classList.add('selected');
-      });
+        dropdownList.appendChild(li);
 
-      li.addEventListener('click', (e) => {
-        fireSearchWithQuery('#' + e.target.textContent);
-        hideDropdownList();
-      });
-    }
-  })
+        // attach events
+        li.addEventListener('mouseover', (e) => {
+          // work as hover
+          let liSelected = dropdownList.querySelector('.selected');
+          if (liSelected) {
+            liSelected.classList.remove('selected');
+          }
+          e.target.classList.add('selected');
+        });
+
+        li.addEventListener('click', (e) => {
+          fireSearchWithQuery('#' + e.target.textContent);
+          hideDropdownList();
+        });
+      }
+    })
 }
 
 const exportTextItems = () => {
@@ -399,26 +429,29 @@ const addTextItemToStack = (id, type, content, footnote = {}, date = formatDate(
   });
   stackStorage.set(JSON.stringify(stack));
 };
+
 const selectOnDropdownList = (e) => {
-  let selected = dropdownList.querySelector('.selected');
+  let liSelected = dropdownList.querySelector('.selected');
   let unfiltered = Array.from(dropdownList.children).filter(tagItem => !tagItem.classList.contains('filtered'));
-  let index = unfiltered.findIndex(item => item === selected);
+  let index = unfiltered.findIndex(item => item === liSelected);
 
   if (e.keyCode === 13) {
     // Enter
-    if (selected) {
-      selected.classList.remove('selected');
-      fireSearchWithQuery('#' + selected.textContent);
+    if (liSelected) {
+      liSelected.classList.remove('selected');
+      fireSearchWithQuery('#' + liSelected.textContent);
     }
     hideDropdownList()
   } else if (e.keyCode === 38) {
     // Up
     if (!dropdownList.classList.contains('hidden')) {
-      if (selected) {
+      if (liSelected) {
         if (index - 1 >= 0) {
-          selected.classList.remove('selected');
+          // move up
+          liSelected.classList.remove('selected');
           unfiltered[index - 1].classList.add('selected');
         } else {
+          // if no item to select at the top
           hideDropdownList()
         }
       }
@@ -428,12 +461,14 @@ const selectOnDropdownList = (e) => {
     if (dropdownList.classList.contains('hidden')) {
       showDropdownList()
     } else {
-      if (selected) {
+      if (liSelected) {
         if (unfiltered.length > index + 1) {
-          selected.classList.remove('selected');
+          // move down
+          liSelected.classList.remove('selected');
           unfiltered[index + 1].classList.add('selected');
         }
       } else {
+        // if no item to select at the bottom
         unfiltered[0].classList.add('selected');
       }
     }
@@ -457,7 +492,6 @@ const submitForm = (e) => {
       for (let i = 1; i < tagarea.children.length; i++) {
         if (!tagarea.children[i].classList.contains('size-changer')) {
           addingTags.push(tagarea.children[i].innerText);
-
         }
       }
 
@@ -483,6 +517,18 @@ const submitForm = (e) => {
       draftTextHolder = '';
       draftHashtagsHolder = [];
 
+
+      //
+      switchTextareaSize(e, true);
+
+      chrome.runtime.sendMessage({
+          command: 'OVERLAY_OFF'
+        },
+        response => {
+          console.log(response.message);
+        }
+      );
+
       return false;
     }
   }
@@ -497,10 +543,9 @@ function fireSearchWithQuery(query) {
 
 function showDropdownList() {
   setDropdownListItems();
-  // filterDropdownListItems();
   filterDropdownListItems(searchBox.value);
+  // show
   dropdownList.classList.remove('hidden');
-  dropdownList.focus();
 }
 
 function hideDropdownList() {
@@ -532,6 +577,25 @@ function updateInputForm(e) {
     errClass.parentElement.removeChild(errClass);
   }
 
+  // let hashtags = e.target.value.match(/(^|\s)((#|＃)[^\s]+)(\s$|\n)/);
+
+  // if (hashtags) {
+  //   let regex = new RegExp(`(^|\\s)${escapeRegExp(hashtags[2])}(\\s$|\\n)`);
+  //   let tagsAdded = tagarea.querySelectorAll('.hashtag').length;
+
+  //   if (tagsAdded >= 5) {
+  //     let errMessage = document.createElement('span');
+  //     errMessage.className = 'error';
+  //     errMessage.textContent = 'タグは最大5個まで';
+  //     tagarea.appendChild(errMessage);
+  //   } else {
+  //     e.target.value = e.target.value.replace(regex, '')
+  //     if (hashtags) {
+  //       addHashtagToDraft(hashtags[2].slice(1))
+  //     }
+  //   }
+  // }
+  // let hashtags = e.target.value.match(/(^|\s)((#|＃|~)[^\s]+)(\s$|\n)/);
   let hashtags = e.target.value.match(/(^|\s)((#|＃)[^\s]+)(\s$|\n)/);
 
   if (hashtags) {
@@ -545,15 +609,18 @@ function updateInputForm(e) {
       tagarea.appendChild(errMessage);
     } else {
       e.target.value = e.target.value.replace(regex, '')
-      if (hashtags) {
-        addHashtagToDraft(hashtags[2].slice(1))
-      }
+      // if (hashtags[1] === '~') {
+      //   // if(hashtags[2])
+      //   addDueDateToDraft(hashtags[2].slice(1))
+      // } else {
+      addHashtagToDraft(hashtags[2].slice(1))
+      // }
     }
   }
 
   draftTextHolder = e.target.value.trim();
 
-  fitHeightToContent(textarea, minHeightOfTextarea);
+  fitHeightToContent(textarea);
   updateTextInfoOnTopboard(textarea.value);
 }
 
@@ -623,13 +690,30 @@ function attachContentEditableEvents(wrapper) {
     selection.addRange(range);
   })
 
-  contentDIV.addEventListener('blur', (e) => {
+  // contentDIV.addEventListener('blur', (e) => {
+  //   contentDIV.contentEditable = false;
+  //   contentDIV.innerHTML = contentDIV.innerHTML.replace(/<br>$/, '');
+
+  //   wrapper.classList.remove('editing');
+  //   editIcon.classList.remove('hidden');
+  // });
+  wrapper.addEventListener('focusout', (e) => {
     contentDIV.contentEditable = false;
     contentDIV.innerHTML = contentDIV.innerHTML.replace(/<br>$/, '');
 
     wrapper.classList.remove('editing');
     editIcon.classList.remove('hidden');
   });
+
+  contentDIV.addEventListener('keyup', (e) => {
+    // if (e.keyCode === 13 && e.ctrlKey) {
+    //   // Ctrl + Enter
+    //   contentDIV.dispatchEvent(new Event('focusout'));
+    // }
+    fireChange(e);
+  });
+
+
 
   // add to wrapper
   wrapper.addEventListener('dblclick', (e) => {
@@ -650,15 +734,19 @@ function attachContentEditableEvents(wrapper) {
   // detect changes on content editable
   wrapper.addEventListener('blur', fireChange);
   wrapper.addEventListener('keyup', fireChange);
+
   wrapper.addEventListener('paste', fireChange);
   wrapper.addEventListener('copy', fireChange);
   wrapper.addEventListener('cut', fireChange);
   wrapper.addEventListener('mouseup', fireChange);
   wrapper.addEventListener('change', (e) => {
+    // if (e.target.classList.contains('content')) {
     let id = e.target.querySelector('input').value;
     let newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
     updateTextInfoOnTopboard(contentDIV.textContent);
     updateTextItem(id, newHTML);
+
+    // }
   })
 
   function fireChange(e) {
@@ -711,14 +799,18 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
         id = e.target.parentElement.querySelector('input').value;
         wrapper = e.target.parentElement;
       }
-      newHTML = newHTML + '<br>' + content.replace(/\n/ig, '<br>');
 
-      contentItem.innerHTML = newHTML;
+      if (appendingItemId !== id) {
+        newHTML = newHTML + '<br>' + content.replace(/\n/ig, '<br>');
 
-      let toBeRemoved = Array.from(stackDOM.children).find(item => item.id === appendingItemId);
-      console.log(newHTML);
-      updateTextItem(id, newHTML);
-      removeTextItem(toBeRemoved);
+        contentItem.innerHTML = newHTML;
+
+        let toBeRemoved = Array.from(stackDOM.children).find(item => item.id === appendingItemId);
+        updateTextItem(id, newHTML);
+        removeTextItem(toBeRemoved);
+
+      }
+
     });
     stackWrapper.addEventListener('dragstart', function drag(e) {
       let itemId = e.target.querySelector('input').value;
@@ -741,25 +833,83 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
 
 
-  // add hashtags
   if (typeof footnote.tags !== 'undefined') {
     footnote.tags.forEach(item => {
       if (!['note', 'clip', 'bookmark'].includes(item)) {
         let tag = document.createElement('span');
         tag.className = 'tag';
-        tag.textContent = '#' + item;
-        stackWrapper.querySelector('.footnote').appendChild(tag);
+        if (!isNaN(Date.parse(item))) {
+          tag.classList.add('duedate');
+          tag.textContent = '~' + item;
+
+          stackWrapper.querySelector('.footnote').appendChild(tag);
+
+          tag.parentNode.insertBefore(tag, tag.parentNode.firstChild);
+
+        } else {
+          tag.textContent = '#' + item;
+          stackWrapper.querySelector('.footnote').appendChild(tag);
+        }
         if (!tagStack.includes(item)) {
           tagStack.push(item);
         }
       }
     })
+
+    if (stackWrapper.querySelector('.footnote').childNodes.length < 5) {
+      let divWrap = document.createElement('div');
+      divWrap.classList.add('divWrap');
+      stackWrapper.querySelector('.footnote').appendChild(divWrap)
+
+      let input = document.createElement('input');
+      input.type = 'text';
+      input.classList.add('tagadd');
+      input.addEventListener('blur', (ev) => {
+        // ev.target.remove(ev.target);
+      })
+      input.addEventListener('keyup', (ev) => {
+        ev.preventDefault();
+        if (ev.keyCode === 13) {
+          if (ev.target.value !== '') {
+            let id = stackWrapper.querySelector('input').value;
+            updateTag(id, ev.target.value);
+            let newTag = document.createElement('span');
+            newTag.className = 'tag';
+            if (!isNaN(Date.parse(ev.target.value))) {
+              newTag.classList.add('duedate');
+              newTag.textContent = '~' + ev.target.value;
+              stackWrapper.querySelector('.footnote').appendChild(newTag);
+              newTag.parentNode.insertBefore(newTag, newTag.parentNode.firstChild);
+            } else {
+              newTag.textContent = '#' + ev.target.value;
+              stackWrapper.querySelector('.footnote').insertBefore(newTag, divWrap);
+            }
+            if (!tagStack.includes(ev.target.value)) {
+              tagStack.push(ev.target.value);
+            }
+            ev.target.value = '';
+            if (stackWrapper.querySelector('.footnote').childElementCount >= 6) {
+              divWrap.classList.add('hidden');
+            }
+          }
+        }
+      })
+      // stackWrapper.querySelector('.footnote').appendChild(input);
+      divWrap.appendChild(input);
+
+    }
+
   }
-
-
-
 }
 
+
+const updateTag = (id, tagName) => {
+  let index = stack.findIndex(item => item.id === id);
+  //  stack[index].content = html;
+  stack[index].footnote.tags.push(tagName);
+  console.log(stack[index].footnote.tags);
+  stackStorage.set(JSON.stringify(stack));
+};
 const insertDateSeparator = () => {
 
   Array.from(stackDOM.children).forEach(wrapper => {
@@ -782,7 +932,6 @@ const insertDateSeparator = () => {
       }
     }
   })
-
 
   // insert current time
   let now = new Date();
@@ -817,6 +966,26 @@ const renderStack = () => {
   });
 };
 
+const addDueDateToDraft = (tagName) => {
+  // create tag
+  let hashtag = document.createElement('span');
+  hashtag.classList.add('hashtag');
+  hashtag.textContent = tagName;
+  tagarea.appendChild(hashtag);
+
+  // attach remove event
+  hashtag.addEventListener('click', function removeHashTag(e) {
+    e.target.parentElement.removeChild(e.target);
+    // to be removed from storage
+    let index = draftHashtagsHolder.indexOf(tagName);
+    draftHashtagsHolder.splice(index, 1);
+  });
+
+  // save draft hashtags
+  draftHashtagsHolder.push(tagName);
+}
+
+
 const addHashtagToDraft = (tagName) => {
   // create tag
   let hashtag = document.createElement('span');
@@ -836,51 +1005,58 @@ const addHashtagToDraft = (tagName) => {
   draftHashtagsHolder.push(tagName);
 }
 
-const restorDraftForm = () => {
-  chrome.storage.local.get(['textarea', 'tags'], result => {
-    // restore textarea
-    draftTextHolder = result.textarea;
-    textarea.textContent = result.textarea;
-    // restore tagarea
-    if (typeof result.tags !== 'undefined') {
-      result.tags.forEach(tag => {
-        addHashtagToDraft(tag);
-      })
-    }
-  })
-}
+const restorePreviousState = () => {
+  chrome.storage.local.get(['searchQuery', 'textarea', 'tags', 'timeClosedLastTime', 'scrollY'],
+    state => {
+      // restore textarea
+      if (typeof state.textarea !== 'undefined') {
+        draftTextHolder = state.textarea;
+        textarea.textContent = state.textarea;
+      }
+      // restore tagarea
+      if (typeof state.tags !== 'undefined') {
+        state.tags.forEach(t => {
+          addHashtagToDraft(t);
+        })
+      }
+      // restore scrollY position
+      if (typeof state.timeClosedLastTime !== 'undefined') {
+        const TIME_ELAPSED = 30000;
 
-const restoreScrollY = () => {
-  let now = new Date().getTime();
+        let now = new Date().getTime();
+        let then = state.timeClosedLastTime;
+        let timeElapsed = (now - then);
 
-  chrome.storage.local.get(['scrollY', 'timeClosedLastTime'], result => {
-    if (typeof result.timeClosedLastTime !== 'undefined') {
-      let last = result.timeClosedLastTime;
-
-      let diff = (now - last);
-
-      if (diff < 30000) {
-        // restore scrollY
-        if (typeof result.scrollY !== 'undefined') {
-          scrollYHolder = result.scrollY;
-          window.scrollTo(0, scrollYHolder);
+        if (timeElapsed < TIME_ELAPSED) {
+          // restore scrollY
+          if (typeof state.scrollY !== 'undefined') {
+            scrollYHolder = state.scrollY;
+            window.scrollTo(0, scrollYHolder);
+          }
+          // restore searchbox
+          if (typeof state.searchQuery !== 'undefined') {
+            fireSearchWithQuery(state.searchQuery);
+            searchQueryHolder = searchBox.value
+          }
         }
       }
-    }
-  })
+    })
 }
+
 
 const initializeEventListeners = () => {
 
   /* window */
-  window.onunload = function saveDraftForm() {
+  window.onunload = () => {
+    // save state
     background.chrome.storage.local.set({
+      searchQuery: searchQueryHolder,
       textarea: draftTextHolder,
       tags: draftHashtagsHolder
     });
   };
 
-  window.onscroll = function changeStickyOpacityAutomatically() {
+  window.onscroll = () => {
     // show header and footer when scroll to the top/bottom
     if (window.pageYOffset == 0) {
       header.style.opacity = '1';
@@ -892,38 +1068,32 @@ const initializeEventListeners = () => {
       header.style.opacity = '0';
       footer.style.opacity = '0';
     }
-    // save scrollY position and the time of scrolling
+    // save scrollY position
     scrollYHolder = window.scrollY;
-    let now = new this.Date().getTime();
 
-    background.chrome.storage.local.set({
-      timeClosedLastTime: new this.Date().getTime(),
+    chrome.storage.local.set({
+      timeClosedLastTime: new Date().getTime(),
       scrollY: scrollYHolder,
-
     });
-
   }
 
+  window.addEventListener('blur', () => {
+    chrome.runtime.sendMessage({
+        command: 'OVERLAY_OFF'
+      },
+      null
+    );
+  })
+
   /* dropdown list */
-  dropdownList.addEventListener('mouseleave', () => {
-    hideDropdownList();
-  })
-  header.addEventListener('mouseleave', () => {
-    hideDropdownList();
-  })
+  dropdownList.addEventListener('mouseleave', hideDropdownList);
 
-  /* search  */
-  searchBox.addEventListener('click', () => {
-    if (getComputedStyle(dropdownList) !== 'hidden') {
-      hideDropdownList();
-    }
-  })
+  header.addEventListener('mouseleave', hideDropdownList);
 
-  searchBox.addEventListener('dblclick', () => {
-    fireSearchWithQuery('')
-    showDropdownList();
-  });
-  searchBox.addEventListener('click', showDropdownList);
+  /* searchbox  */
+  searchBox.addEventListener('click', hideDropdownList)
+
+  searchBox.addEventListener('dblclick', showDropdownList);
 
   searchBox.addEventListener('input', updateSearchResult);
 
@@ -945,9 +1115,9 @@ const initializeEventListeners = () => {
 
   sortBySwitcher.addEventListener('click', switchSortOrder);
 
+  /////////
   /* textarea */
   textarea.addEventListener('focus', (e) => {
-    hideDropdownList();
     if (searchBox.value.slice(0, 1) === '#' && !draftHashtagsHolder.includes(searchBox.value.slice(1))) {
       while (tagarea.lastChild && tagarea.children.length > 1) {
         tagarea.removeChild(tagarea.lastChild);
@@ -957,7 +1127,7 @@ const initializeEventListeners = () => {
       let tag = searchBox.value.slice(1).split(' ')[0]
       addHashtagToDraft(tag);
     }
-    fitHeightToContent(e.target, minHeightOfTextarea);
+    fitHeightToContent(e.target);
     updateTextInfoOnTopboard(e.target.textContent);
   })
 
@@ -970,18 +1140,20 @@ const initializeEventListeners = () => {
 
   textarea.addEventListener('input', updateInputForm)
 
-  /* checkboxes for text stack */
-  stackDOM.addEventListener('mouseover', closeAddTextItemForm)
+  sizeChanger.addEventListener('click', switchTextareaSize);
 
-  stackDOM.addEventListener('click', e => {
+  // text stack
+  stackDOM.addEventListener('click', (e) => {
     if (e.target.classList.contains('tag')) {
-      // when tag clicked
+      // when hashtag clicked
       fireSearchWithQuery(e.target.innerHTML);
     } else if (e.target.classList.contains('checkbox')) {
       // when checkbox clicked
       e.target.style = 'color: white !important;';
-      let textitemDOM = e.target.parentElement;
-      removeTextItem(textitemDOM);
+      let textItem = e.target.parentElement;
+      removeTextItem(textItem);
+    } else {
+      closeAddTextItemForm();
     }
   });
 
@@ -1002,10 +1174,8 @@ const initializeEventListeners = () => {
 // initialize
 document.addEventListener('DOMContentLoaded', () => {
   initializeEventListeners();
-  restorDraftForm();
   renderStack();
-
-  restoreScrollY();
+  restorePreviousState();
 
   tagStack = tagStack.sort();
 
