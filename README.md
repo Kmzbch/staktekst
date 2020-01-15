@@ -1,17 +1,8 @@
 # <img src="public/icons/icon_48.png" width="45" align="left"> Staktekst
 
-My Chrome Extension
+A Chrome Extension which assists users in reading English
 
 ## Features
 
-- popup window for web search
-- clip and add words/sentences/paragraphs to the To-do-list-like list
-
-## Install
-
-[**Chrome** extension]() <!-- TODO: Add chrome extension link inside parenthesis -->
-
-## Contribution
-
-Suggestions and pull requests are welcomed!.
-
+- popup speech bubble over a selected word/sentence/paragraph for websearch
+- to-do-list-like note where you can save the selected text
