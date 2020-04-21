@@ -53,20 +53,6 @@ function uuidv4() {
     )
 }
 
-function zoomToFit(tab) {
-    chrome.tabs.getZoom(tab.id, (zoomFactor) => {
-        if (zoomFactor !== 1) {
-            // reset zoom rate
-            chrome.tabs.setZoom(tab.id, 1, (zoomFactor) => {});
-        } else {
-            let rate = 1.5;
-            chrome.tabs.setZoom(tab.id, rate, function (zoomFactor) {
-                console.log(zoomFactor);
-            })
-        }
-    })
-}
-
 const stackStorage = {
     get: callback => {
         chrome.storage.local.get(['raw'], result => {
@@ -160,6 +146,5 @@ export {
     fitHeightToContent,
     uuidv4,
     stackStorage,
-    zoomToFit,
     enableURLEmbededInText
 }

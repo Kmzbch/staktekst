@@ -5,7 +5,10 @@ chrome.runtime.sendMessage({}, response => {
 	let translateFrom = document.querySelector('#sourceButtonUrlTranslation');
 	let translateInto = document.querySelector('#targetButtonTextTranslation');
 
-	text.value = response.text;
+	//	text.value = response.text;
+	text.value = response.text.replace(/\n/g, " ");
+	text.value = text.value.replace(/ +/g, " ");
+
 	translateFrom.value = 'en';
 	translateInto.value = 'ja';
 

@@ -1,144 +1,136 @@
 'use strict';
 
+// import functions
 import {
   copyTextWithTitleUrl,
-  pushText,
-  zoomToFit
+  pushText
 } from './common_lib.js';
 
-const BUBBLE_MENUS = [{
-    id: "mirai",
-    url: "https://miraitranslate.com/en/trial/",
-  },
-  {
-    id: "oddcast",
-    url: "http://www.oddcast.com/ttsdemo/index.php",
-  },
-  {
-    id: "extendedcopy",
-  },
-  {
-    id: "pushtext",
-  },
-  {
-    id: "youglish",
-    url: "https://youglish.com/search/%s",
-  },
-  {
-    id: "dopeoplesayit",
-    url: "https://dopeoplesay.com/q/%s",
-  },
-  {
-    id: "skell",
-    url: "https://skell.sketchengine.co.uk/run.cgi/concordance?lpos=&query=%s",
-  },
-  {
-    // id: "twitter",
-    // url: "https://twitter.com/search?q=%s",
-    id: 'netspeak',
-    url: 'https://netspeak.org/#q=%s&corpus=web-en'
-  },
-  {
-    id: "vocabulary",
-    url: "https://www.vocabulary.com/dictionary/%s",
-  },
-  {
-    id: "urban",
-    url: "https://www.urbandictionary.com/define.php?term=%s",
-  },
-  {
-    id: "google",
-    url: "https://encrypted.google.com/search?hl=en&gl=en&tbm=isch&q=%s",
-  },
+// search engines for bubble menu
+const MENU_ITEMS = [{
+  id: "mirai",
+  url: "https://miraitranslate.com/en/trial/",
+},
+{
+  id: "oddcast",
+  url: "http://www.oddcast.com/ttsdemo/index.php",
+},
+{
+  id: "extendedcopy",
+},
+{
+  id: "pushtext",
+},
+{
+  id: "youglish",
+  url: "https://youglish.com/search/%s",
+},
+{
+  id: "dopeoplesayit",
+  url: "https://dopeoplesay.com/q/%s",
+},
+{
+  id: "skell",
+  url: "https://skell.sketchengine.co.uk/run.cgi/concordance?lpos=&query=%s",
+},
+{
+  id: 'netspeak',
+  url: 'https://netspeak.org/#q=%s&corpus=web-en'
+},
+{
+  id: "twitter",
+  url: "https://twitter.com/search?q=%s",
+},
+{
+  id: "vocabulary",
+  url: "https://www.vocabulary.com/dictionary/%s",
+},
+{
+  id: "urban",
+  url: "https://www.urbandictionary.com/define.php?term=%s",
+},
+{
+  id: "google",
+  url: "https://encrypted.google.com/search?hl=en&gl=en&tbm=isch&q=%s",
+},
 ];
 
-const executeCommand = (commandId, text = '') => {
-  chrome.tabs.query({
-    active: true,
-    currentWindow: true
-  }, tabs => {
-    if (commandId === 'extendedcopy') {
-      copyTextWithTitleUrl(text, tabs[0].title, tabs[0].url);
-    } else if (commandId === 'pushtext') {
-      let type = 'clip';
-      pushText(text, type, tabs[0].title, tabs[0].url);
-    } else if (commandId === 'bookmark') {
-      text = tabs[0].title + '\n' + tabs[0].url;
-      let type = 'bookmark';
-      pushText(text, type, '', '');
-    } else if (commandId === 'zoomtofit') {
-      zoomToFit(tabs[0]);
-    } else {
-      let command = BUBBLE_MENUS.find(item => item.id === commandId);
+const executeUserCommand = (commandId, text, tabTitle, tabUrl, tabs) => {
+  switch (commandId) {
+    // system features
+    case 'extendedcopy':
+      copyTextWithTitleUrl(text, tabTitle, tabUrl);
+      break;
+    case 'pushtext':
+      pushText(text, 'clip', tabTitle, tabUrl);
+      break;
+    case 'bookmark':
+      pushText(tabTitle + '\n' + tabUrl, 'bookmark', '', '');
+      break;
+    case 'switchzoom':
+      chrome.tabs.getZoom(tabs[0].id, (zoomFactor) => {
+        zoomFactor = zoomFactor === 1 ? 1.5 : 1;
+        chrome.tabs.setZoom(tabs[0].id, zoomFactor, function (zoomFactor) {
+          console.log("zoom factor:" + zoomFactor);
+        })
+      })
+      break;
+    // web features
+    default:
+      let command = MENU_ITEMS.find(item => item.id === commandId);
       let urlWithQuery = command.url.replace('%s', text);
+      // open the URL
       chrome.tabs.create({
         url: urlWithQuery
       });
-      // let offsetX = Math.floor(screen.width / 2);
-      // chrome.windows.create({
-      //   url: urlWithQuery,
-      //   type: "panel",
-      //   width: offsetX,
-      //   height: 912,
-      //   left: 0
-      // });
-    }
-  });
+      break;
+  }
 }
 
+// get a message from content script
 const getMessage = (request, sender, sendResponse) => {
-  if (request.command === 'GET_ZOOMFACTOR') {
-    chrome.tabs.query({
-      currentWindow: true,
-      active: true
-    }, function (tabs) {
-      chrome.tabs.getZoom(tabs[0].id, (zoomFactor) => {
-        sendResponse({
-          zoomFactor: zoomFactor
+  // query for the current tab
+  chrome.tabs.query({
+    currentWindow: true,
+    active: true
+  }, (tabs) => {
+    switch (request.command) {
+      case 'GET_ZOOMFACTOR':
+        // get the current zoom factor
+        chrome.tabs.getZoom(tabs[0].id, (zoomFactor) => {
+          sendResponse({
+            zoomFactor: zoomFactor
+          });
+        })
+        break;
+      case 'OVERLAY_ON':
+      case 'OVERLAY_OFF':
+        // send message to the current tab
+        chrome.tabs.sendMessage(tabs[0].id, {
+          command: request.command
+        }, () => {
+          sendResponse({
+            message: 'overlay switched!'
+          });
         });
-      })
-    });
-  } else if (request.command === 'OVERLAY_ON' || request.command === 'OVERLAY_OFF') {
-    chrome.tabs.query({
-      currentWindow: true,
-      active: true
-    }, function (tabs) {
-      chrome.tabs.sendMessage(tabs[0].id, {
-        command: request.command
-      }, null);
-    })
-    sendResponse({
-      message: 'sent!'
-    });
-  } else {
-    if (request.selection) {
-      selectedTextHolder = request.selection;
-      executeCommand(request.command, selectedTextHolder);
+        break;
+      default:
+        if (request.selection) {
+          executeUserCommand(request.command, request.selection, tabs[0].title, tabs[0].url, tabs);
+          selectionHolder = request.selection;
+        }
+        sendResponse({
+          text: selectionHolder // only used for mirai translate and oddcast
+        });
+
+        break;
     }
-    sendResponse({
-      // only used for mirai translate and oddcast
-      text: selectedTextHolder
-    });
-  }
+  });
+
   return true;
 }
 
-let selectedTextHolder = null;
+let selectionHolder = null;
 
+// attach getMessage to onMessage event
 chrome.runtime.onMessage.addListener(getMessage);
-
-// chrome.runtime.onConnect.addListener(function (externalPort) {
-//   externalPort.onDisconnect.addListener(function () {
-//     console.log("onDisconnect");
-//     // chrome.tabs.query({
-//     //   currentWindow: true,
-//     //   active: true
-//     // }, function (tabs) {
-//     //   chrome.tabs.sendMessage(tabs[0].id, {
-//     //     command: 'OVERLAY_OFF'
-//     //   }, null);
-//     // })
-//   })
-
-//   console.log("onConnect")
-// })

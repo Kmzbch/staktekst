@@ -3,51 +3,51 @@
 import './currentTab.css';
 
 const SEARCH_ENGINE_ICONS = [{
-        className: "material-icons stackButton",
-        title: "Google画像検索",
-        innerText: "image_search",
-        command: "google",
-    }, {
-        className: "material-icons stackButton",
-        title: "Vocabulary.comで単語を検索",
-        innerText: "check",
-        command: "vocabulary",
-    }, {
-        // className: "fas fa-user-friends stackButton",
-        className: "material-icons stackButton",
-        title: "Do People Say Itでフレーズを検索",
-        innerText: "people",
-        command: "dopeoplesayit",
-    },
-    {
-        className: "fas fa-book fa-lg stackButton",
-        title: "Urban Dictionaryで単語を検索",
-        command: "urban",
-    }, {
-        // className: "fab fa-twitter fa-lg stackButton",
-        // title: "Twitterでツイート検索",
-        // command: "twitter",
+    className: "material-icons stackButton",
+    title: "Google画像検索",
+    innerText: "image_search",
+    command: "google",
+}, {
+    className: "material-icons stackButton",
+    title: "Vocabulary.comで単語を検索",
+    innerText: "check",
+    command: "vocabulary",
+}, {
+    // className: "fas fa-user-friends stackButton",
+    className: "material-icons stackButton",
+    title: "Do People Say Itでフレーズを検索",
+    innerText: "people",
+    command: "dopeoplesayit",
+},
+{
+    className: "fas fa-book fa-lg stackButton",
+    title: "Urban Dictionaryで単語を検索",
+    command: "urban",
+}, {
+    // className: "fab fa-twitter fa-lg stackButton",
+    // title: "Twitterでツイート検索",
+    // command: "twitter",
 
-        // className: "material-icons stackButton",
-        className: "fab fa-twitter fa-lg stackButton",
-        title: 'Netspeakでフレーズを検索',
-        command: 'netspeak'
-    },
-    {
-        className: "fab fa-youtube fa-lg stackButton",
-        title: "Youglishで発音を検索",
-        command: "youglish",
-    }, {
-        className: "material-icons stackButton",
-        title: "みらい翻訳で英→日翻訳",
-        innerText: "translate",
-        command: "mirai",
-    }, {
-        className: "material-icons stackButton",
-        title: "Oddcastでテキストを読み上げ",
-        innerText: "message",
-        command: "oddcast",
-    }
+    // className: "material-icons stackButton",
+    className: "fab fa-twitter fa-lg stackButton",
+    title: 'Netspeakでフレーズを検索',
+    command: 'netspeak'
+},
+{
+    className: "fab fa-youtube fa-lg stackButton",
+    title: "Youglishで発音を検索",
+    command: "youglish",
+}, {
+    className: "material-icons stackButton",
+    title: "みらい翻訳で英→日翻訳",
+    innerText: "translate",
+    command: "mirai",
+}, {
+    className: "material-icons stackButton",
+    title: "Oddcastでテキストを読み上げ",
+    innerText: "message",
+    command: "oddcast",
+}
 ]
 
 const SYSTEM_COMMAND_ICONS = [{
@@ -70,8 +70,8 @@ const FLOAT_COMMAND_ICONS = [{
 }, {
     className: "material-icons zoom-icon",
     title: "ページを拡大",
-    innerText: "zoom_in",
-    command: "zoomtofit",
+    innerText: "switchzoom",
+    command: "switchzoom",
 
 }]
 
