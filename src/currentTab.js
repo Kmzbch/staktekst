@@ -1,5 +1,7 @@
 'use strict';
 
+import * as bubble_lib from './bubble_lib.js';
+
 // attach overlay to the current page
 let overlay = document.createElement('div');
 overlay.id = 'overlay';
