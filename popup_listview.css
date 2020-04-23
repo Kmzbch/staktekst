@@ -806,11 +806,11 @@ input:focus {
 
 }
 
-#float-container:hover {
+#floatContainer:hover {
     opacity: 1 !important;
 }
 
-#float-container {
+#floatContainer {
     display: none !important;
     cursor: pointer !important;
     color: rgba(0, 0, 0, 0.8);

@@ -80,126 +80,99 @@ const createIconDOM = ({
     innerText = '',
     command
 }) => {
-    let iconDOM = document.createElement('i');
-
-    iconDOM.setAttribute('class', className);
-    iconDOM.setAttribute('title', title);
-    iconDOM.innerText = innerText;
-
-    iconDOM.addEventListener('mousedown', () => {
-        sendCommandMessage(command);
-        // remove selection and bubble
-        document.getSelection().removeAllRanges();
-        renderBubble();
+    return $('<i>', {
+        addClass: className,
+        title: title,
+        text: innerText,
+        on: {
+            mousedown: () => {
+                sendCommandMessage(command);
+                window.getSelection().removeAllRanges();
+                renderBubble();
+            }
+        }
     });
-
-    return iconDOM;
 }
 
 const createBubbleDOM = () => {
 
-    let bubbleDOM = document.createElement('div');
-    bubbleDOM.setAttribute('id', 'bubble');
-    bubbleDOM.classList.add('hidden');
+    let bubble = $('<div id="bubble" class="hidden"></div>')
+        .append($('<div id="leftContainer"></div>'))
+        .append($('<div id="rightContainer"></div>'))
+        .append($('<div id="floatContainer"></div>'))
 
-    let leftContainer = document.createElement('div');
-    let rightContainer = document.createElement('div');
-
-    leftContainer.setAttribute('id', 'leftContainer');
-    rightContainer.setAttribute('id', 'rightContainer');
 
     // append icons on the bubble left
     SEARCH_ENGINE_ICONS.forEach(icon => {
-        leftContainer.appendChild(createIconDOM(icon));
+        createIconDOM(icon).appendTo(bubble.find('#leftContainer'))
     });
 
     // append icons on the bubble right
     SYSTEM_COMMAND_ICONS.forEach(icon => {
         if (icon.command === 'pushtext') {
             // remove pushtext icon when on popup.html
-            if (!document.URL.includes('chrome-extension://')) {
-                rightContainer.appendChild(createIconDOM(icon));
+            if (!location.href.includes('chrome-extension://')) {
+                createIconDOM(icon).appendTo(bubble.find('#rightContainer'))
             }
         } else {
-            rightContainer.appendChild(createIconDOM(icon));
+            createIconDOM(icon).appendTo(bubble.find('#rightContainer'))
         }
     });
 
-    bubbleDOM.appendChild(leftContainer);
-    bubbleDOM.appendChild(rightContainer);
-
     // append icons on the float container
-    let floatContainer = document.createElement('div');
-    floatContainer.setAttribute('id', 'float-container');
-
     FLOAT_COMMAND_ICONS.forEach(icon => {
-        floatContainer.appendChild(createIconDOM(icon))
+        createIconDOM(icon).appendTo(bubble.find('#floatContainer'))
     });
 
-    bubbleDOM.appendChild(floatContainer);
-
-    return bubbleDOM;
+    return bubble;
 }
 
 const renderBubble = () => {
+    let bubble = $('#bubble');
+
     setTimeout(() => {
-        let selection = document.getSelection();
+        let selection = window.getSelection();
 
         if (selection.toString() === '') {
-            bubble.classList.add('hidden');
+            bubble.addClass('hidden');
         } else {
-            bubble.classList.remove('hidden');
+            bubble.removeClass('hidden');
 
-            // switch zoom icon
+            // switch zoom icons
             chrome.runtime.sendMessage({
                 command: 'GET_ZOOMFACTOR'
             }, response => {
                 if (response.zoomFactor === 1) {
-                    bubble.querySelector('.zoom-icon').innerText = 'zoom_in'
-                    bubble.querySelector('.zoom-icon').title = 'ページを拡大'
-
+                    $('.zoom-icon').text('zoom_in');
+                    $('.zoom-icon').title = 'ページを拡大';
                 } else {
-                    bubble.querySelector('.zoom-icon').innerText = 'zoom_out'
-                    bubble.querySelector('.zoom-icon').title = 'ページ倍率をリセット'
+                    $('.zoom-icon').text('zoom_out')
+                    $('.zoom-icon').title = 'ページ倍率をリセット'
                 }
             });
 
             // set the bubble position based on selection
             let boundingCR = selection.getRangeAt(0).getBoundingClientRect();
-            bubble.style.top = (boundingCR.top - 80) + window.scrollY + 'px';
-            bubble.style.left = Math.floor((boundingCR.left + boundingCR.right) / 2) - 50 + window.scrollX + 'px';
+            bubble.css('top', (boundingCR.top - 80) + window.scrollY + 'px')
+            bubble.css('left', Math.floor((boundingCR.left + boundingCR.right) / 2) - 50 + window.scrollX + 'px');
         }
     }, 30)
 }
 
 const hideBubble = () => {
-    if (getComputedStyle(bubble).display !== 'none') {
-        bubble.classList.add('hidden');
+    if ($('#bubble').css('display') !== 'none') {
+        $('#bubble').addClass('hidden');
     }
 }
 
-const bubble = (() => {
-    let elem = document.querySelector('#bubble');
-    if (!elem) {
-        elem = createBubbleDOM();
-        document.body.appendChild(elem);
-    }
-    return elem;
-})();
-
 const sendCommandMessage = (command) => {
-    let text = document.getSelection().toString();
+    let text = window.getSelection().toString();
 
     // only for popup.html
-    if (document.URL.includes('chrome-extension://')) {
+    if (location.href.includes('chrome-extension://')) {
         text = text.replace(/check\s$/, '');
-
-        // get url and title from footnote
-        let textitem = window.getSelection().getRangeAt(0).commonAncestorContainer.parentElement;
-        // let aTag = textitem.classList.contains('clip') ? textitem.querySelector('a') : null;
-        // let url = aTag ? aTag.href : '';
-        // let title = aTag ? aTag.innerText : '';
-
+        // // get url and title from footnote
+        // let textitem = window.getSelection().getRangeAt(0).commonAncestorContainer.parentElement;
     }
 
     chrome.runtime.sendMessage({
@@ -207,6 +180,9 @@ const sendCommandMessage = (command) => {
         selection: text.trim()
     });
 }
+
+// attach bubble
+$('body').append(createBubbleDOM());
 
 // attach bubble to the loaded page
 document.addEventListener('mouseup', renderBubble)
