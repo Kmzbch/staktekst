@@ -13,18 +13,11 @@
   "content_scripts": [
     {
       "js": [
-        "oddcastScript.js"
+        "lib/jquery-3.5.0.min.js",
+        "newTab.js"
       ],
       "matches": [
-        "http://www.oddcast.com/ttsdemo/index.php"
-      ],
-      "run_at": "document_end"
-    },
-    {
-      "js": [
-        "miraiTranslateScript.js"
-      ],
-      "matches": [
+        "http://www.oddcast.com/ttsdemo/index.php",
         "https://miraitranslate.com/trial/",
         "https://miraitranslate.com/en/trial/"
       ],
@@ -32,7 +25,7 @@
     },
     {
       "js": [
-        "jquery-3.5.0.min.js",
+        "lib/jquery-3.5.0.min.js",
         "bubble_lib.js",
         "currentTab.js"
       ],

@@ -86,6 +86,7 @@ const executeUserCommand = (commandId, text, tabTitle, tabUrl, tabs) => {
 
 // get a message from content script
 const getMessage = (request, sender, sendResponse) => {
+  console.log(request.command);
   // query for the current tab
   chrome.tabs.query({
     currentWindow: true,
@@ -115,9 +116,11 @@ const getMessage = (request, sender, sendResponse) => {
         if (request.selection) {
           executeUserCommand(request.command, request.selection, tabs[0].title, tabs[0].url, tabs);
           selectionHolder = request.selection;
+          commandHolder = request.command;
         }
         sendResponse({
-          text: selectionHolder // only used for mirai translate and oddcast
+          text: selectionHolder, // only used for mirai translate and oddcast
+          command: commandHolder
         });
 
         break;
@@ -128,6 +131,7 @@ const getMessage = (request, sender, sendResponse) => {
 }
 
 let selectionHolder = null;
+let commandHolder = "";
 
 // attach getMessage to onMessage event
 chrome.runtime.onMessage.addListener(getMessage);

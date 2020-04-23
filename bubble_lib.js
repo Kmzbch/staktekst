@@ -101,7 +101,6 @@ const createBubbleDOM = () => {
         .append($('<div id="rightContainer"></div>'))
         .append($('<div id="floatContainer"></div>'))
 
-
     // append icons on the bubble left
     SEARCH_ENGINE_ICONS.forEach(icon => {
         createIconDOM(icon).appendTo(bubble.find('#leftContainer'))
