@@ -1,41 +1,21 @@
-/* header */
-const header = document.querySelector('header');
-
 // seachbox
 const searchBox = document.querySelector('.searchbox');
-const searchCancelButton = document.querySelector('.searchcancel-button');
 const dropdownList = document.querySelector('#dropdownlist');
 
 // toolbox
-const toolbox = document.querySelector('#toolbox');
-const topOpener = document.querySelector('.opener-top');
 const viewSwitcher = document.querySelector('.switchview');
-const fileExporter = document.querySelector('.fileexport');
 
 // headerboard
 const topboard = document.querySelector('.header-board');
 
 /* main */
 // textarea
-const textareaOpener = document.querySelector('.opener');
 const sortBySwitcher = document.querySelector('.sort-by');
 const textarea = document.querySelector('.add-textitem');
 const tagarea = document.querySelector('.tagarea');
 
 // items
 const stackDOM = document.querySelector('#textstack');
-
-/* footer */
-const footer = document.querySelector('footer');
-const clearStackButton = document.querySelector('.clear-button');
-
-/* stack clear modal */
-const clearStackWindow = document.querySelector('#clear-window');
-const messageBox = document.querySelector('.messagebox');
-const overlay = document.querySelector('.overlay');
-const confirmButton = document.querySelector('.ok');
-const cancelButton = document.querySelector('.cancel');
-const sizeChanger = document.querySelector('.size-changer');
 
 // holder variables
 let stack = [];
@@ -82,13 +62,12 @@ const switchTextareaSize = (e, forceExpandLess = false) => {
   }
 }
 
-
 const switchToolboxVisibility = (forseVisible = false) => {
   if (forseVisible) {
     topboard.textContent = '';
-    toolbox.classList.remove('hidden');
+    $('#toolbox').removeClass('hidden');
   } else {
-    toolbox.classList.add('hidden');
+    $('#toolbox').addClass('hidden');
   }
 }
 
@@ -126,7 +105,7 @@ const switchSortOrder = (forceByNew = false) => {
 const openAddTextItemForm = () => {
   switchToolboxVisibility(false);
 
-  textareaOpener.classList.add('hidden');
+  $('.opener').addClass('hidden');
   sortBySwitcher.classList.add('hidden');
 
   textarea.classList.remove('hidden');
@@ -144,7 +123,7 @@ const closeAddTextItemForm = () => {
   textarea.classList.add('hidden');
   tagarea.classList.add('hidden');
 
-  textareaOpener.classList.remove('hidden');
+  $('.opener').removeClass('hidden');
   sortBySwitcher.classList.remove('hidden');
 
   switchToolboxVisibility(true);
@@ -184,8 +163,9 @@ const updateSearchResult = () => {
     switchToolboxVisibility(false);
 
     topboard.textContent = hits === 0 ? 'No Results' : `${hits} of ${stack.length}`;
-    searchCancelButton.classList.remove('hidden');
-    footer.classList.add('hidden');
+    $('.searchcancel-button').removeClass('hidden');
+
+    $('footer').addClass('hidden');
 
     // if(term.slice(0, 1) === '#'){
     //   showDropdownList();
@@ -195,8 +175,8 @@ const updateSearchResult = () => {
   } else {
     switchToolboxVisibility(true);
 
-    searchCancelButton.classList.add('hidden');
-    footer.classList.remove('hidden');
+    $('.searchcancel-button').addClass('hidden');
+    $('footer').removeClass('hidden');
 
     hideDropdownList();
   }
@@ -536,11 +516,11 @@ function cancelSearch() {
 
 /* clear stack window modal*/
 function showClearStackWindow() {
-  clearStackWindow.classList.remove('hidden');
+  $('#clear-window').removeClass('hidden');
 }
 
 function hideClearStackWindow() {
-  clearStackWindow.classList.add('hidden');
+  $('#clear-window').addClass('hidden');
 }
 
 function updateInputForm(e) {
@@ -1002,14 +982,14 @@ const initializeEventListeners = () => {
   window.onscroll = () => {
     // show header and footer when scroll to the top/bottom
     if (window.pageYOffset == 0) {
-      header.style.opacity = '1';
-      footer.style.opacity = '1';
+      $('header').css('opacity', 1)
+      $('footer').css('opacity', 1)
     } else if (document.body.offsetHeight + window.scrollY >= document.body.scrollHeight) {
-      header.style.opacity = '1';
-      footer.style.opacity = '1';
+      $('header').css('opacity', 1)
+      $('footer').css('opacity', 1)
     } else {
-      header.style.opacity = '0';
-      footer.style.opacity = '0';
+      $('header').css('opacity', 0)
+      $('footer').css('opacity', 0)
     }
     // save scrollY position
     scrollYHolder = window.scrollY;
@@ -1031,7 +1011,7 @@ const initializeEventListeners = () => {
   /* dropdown list */
   dropdownList.addEventListener('mouseleave', hideDropdownList);
 
-  header.addEventListener('mouseleave', hideDropdownList);
+  $('header').on('mouseleave', hideDropdownList);
 
   /* searchbox  */
   searchBox.addEventListener('click', hideDropdownList)
@@ -1044,17 +1024,17 @@ const initializeEventListeners = () => {
 
   searchBox.addEventListener('focus', closeAddTextItemForm);
 
-  searchCancelButton.addEventListener('click', cancelSearch)
+  $('.searchcancel-button').click(cancelSearch);
 
   /* toolbox */
-  topOpener.addEventListener('click', openAddTextItemForm);
+  $('.opener-top').click(openAddTextItemForm);
 
   viewSwitcher.addEventListener('click', switchViewStyles);
 
-  fileExporter.addEventListener('click', exportTextItems);
+  $('.fileexport').click(exportTextItems);
 
   /* add-sort container */
-  textareaOpener.addEventListener('click', openAddTextItemForm);
+  $('.opener').click(openAddTextItemForm);
 
   sortBySwitcher.addEventListener('click', switchSortOrder);
 
@@ -1083,7 +1063,7 @@ const initializeEventListeners = () => {
 
   textarea.addEventListener('input', updateInputForm)
 
-  sizeChanger.addEventListener('click', switchTextareaSize);
+  $('.size-changer').click(switchTextareaSize);
 
   // text stack
   stackDOM.addEventListener('click', (e) => {
@@ -1101,17 +1081,19 @@ const initializeEventListeners = () => {
   });
 
   /* clear stack button */
-  clearStackButton.addEventListener('click', showClearStackWindow);
+  $('.clear-button').click(showClearStackWindow);
 
   /* clear stack window modal */
-  overlay.addEventListener('click', hideClearStackWindow);
+  $('.overlay').click(hideClearStackWindow);
 
-  confirmButton.addEventListener('click', () => {
+  // clear stack dialog
+  $('.ok').click(() => {
     clearAllItems();
     hideClearStackWindow();
-  })
+  });
 
-  cancelButton.addEventListener('click', hideClearStackWindow)
+  $('.cancel').click(hideClearStackWindow);
+
 }
 
 // initialize
