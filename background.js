@@ -1,8 +1,5 @@
 'use strict';
 
-// import functions
-// import('./common_lib.js');
-
 // search engines for bubble menu
 const MENU_ITEMS = [{
   id: "mirai",
@@ -86,7 +83,12 @@ const executeUserCommand = (commandId, text, tabTitle, tabUrl, tabs) => {
 
 // get a message from content script
 const getMessage = (request, sender, sendResponse) => {
+  // message info
+  console.log(sender.tab ?
+    "from a content script:" + sender.tab.url :
+    "from the extension");
   console.log(request.command);
+
   // query for the current tab
   chrome.tabs.query({
     currentWindow: true,
