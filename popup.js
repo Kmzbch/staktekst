@@ -1,16 +1,3 @@
-import './popup.css';
-import * as bubble_lib from './bubble_lib.js';
-import {
-  escapeRegExp,
-  extractTextInfo,
-  containsJapanese,
-  formatDate,
-  fitHeightToContent,
-  uuidv4,
-  stackStorage,
-  enableURLEmbededInText as enableLinkEmbededInText
-} from './common_lib.js';
-
 /* header */
 const header = document.querySelector('header');
 
@@ -75,8 +62,8 @@ const switchTextareaSize = (e, forceExpandLess = false) => {
 
     //
     chrome.runtime.sendMessage({
-        command: 'OVERLAY_OFF'
-      },
+      command: 'OVERLAY_OFF'
+    },
       null
     );
 
@@ -88,8 +75,8 @@ const switchTextareaSize = (e, forceExpandLess = false) => {
 
     //
     chrome.runtime.sendMessage({
-        command: 'OVERLAY_ON'
-      },
+      command: 'OVERLAY_ON'
+    },
       null
     );
   }
@@ -150,8 +137,8 @@ const openAddTextItemForm = () => {
 
 const closeAddTextItemForm = () => {
   chrome.runtime.sendMessage({
-      command: 'OVERLAY_OFF'
-    },
+    command: 'OVERLAY_OFF'
+  },
     null);
 
   textarea.classList.add('hidden');
@@ -261,7 +248,7 @@ function filterTextItems(term) {
 
       // check if the urls are made up of ascii
       if (contentDIV.textContent.match(/(https?:\/\/[\x01-\x7E]+)/g)) {
-        contentDIV.innerHTML = enableLinkEmbededInText(contentDIV.textContent);
+        contentDIV.innerHTML = enableURLEmbededInText(contentDIV.textContent);
       }
 
     });
@@ -513,8 +500,8 @@ const submitForm = (e) => {
       switchTextareaSize(e, true);
 
       chrome.runtime.sendMessage({
-          command: 'OVERLAY_OFF'
-        },
+        command: 'OVERLAY_OFF'
+      },
         response => {
           console.log(response.message);
         }
@@ -677,7 +664,7 @@ function attachContentEditableEvents(wrapper) {
   wrapper.addEventListener('dblclick', (e) => {
     if (wrapper.classList.contains('note')) {
       if (!e.target.classList.contains('content')) {
-        setTimeout(bubble_lib.hideBubble, 30);
+        setTimeout(hideBubble, 30);
         setTimeout(() => {
           contentDIV.contentEditable = true;
           editIcon.classList.add('hidden');
@@ -781,7 +768,7 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
 
   // enable URL link
   let contentDIV = stackWrapper.firstElementChild;
-  contentDIV.innerHTML = enableLinkEmbededInText(contentDIV.textContent);
+  contentDIV.innerHTML = enableURLEmbededInText(contentDIV.textContent);
 
   if (type === 'clip') {
     stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag hidden">#clip</span><a href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</a>`;
@@ -1035,8 +1022,8 @@ const initializeEventListeners = () => {
 
   window.addEventListener('blur', () => {
     chrome.runtime.sendMessage({
-        command: 'OVERLAY_OFF'
-      },
+      command: 'OVERLAY_OFF'
+    },
       null
     );
   })

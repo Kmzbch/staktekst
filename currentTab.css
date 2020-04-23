@@ -52,7 +52,6 @@
     -moz-user-select: none;
 }
 
-
 #bubble {
     display: flex;
     flex-wrap: nowrap;

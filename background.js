@@ -1,10 +1,7 @@
 'use strict';
 
 // import functions
-import {
-  copyTextWithTitleUrl,
-  pushText
-} from './common_lib.js';
+// import('./common_lib.js');
 
 // search engines for bubble menu
 const MENU_ITEMS = [{

@@ -72,6 +72,7 @@ const stackStorage = {
 };
 
 function pushText(content, type, pageTitle = '', pageURL = '') {
+    console.log("aSDFASD");
     stackStorage.get(raw => {
         if (typeof raw === 'undefined') {
             stackStorage.reset();
@@ -134,17 +135,4 @@ function fitHeightToContent(textarea) {
 
 function enableURLEmbededInText(text) {
     return text.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<a href='$1' target='_blank'>$1</a>");
-}
-
-export {
-    copyTextWithTitleUrl,
-    pushText,
-    escapeRegExp,
-    extractTextInfo,
-    containsJapanese,
-    formatDate,
-    fitHeightToContent,
-    uuidv4,
-    stackStorage,
-    enableURLEmbededInText
 }

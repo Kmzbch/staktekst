@@ -2,8 +2,8 @@
   "background": {
     "persistent": false,
     "scripts": [
-      "background.js",
-      "common_lib.js"
+      "common_lib.js",
+      "background.js"
     ]
   },
   "browser_action": {
@@ -32,6 +32,8 @@
     },
     {
       "js": [
+        "jquery-3.5.0.min.js",
+        "bubble_lib.js",
         "currentTab.js"
       ],
       "css": [

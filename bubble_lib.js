@@ -1,7 +1,5 @@
 'use strict';
 
-import './currentTab.css';
-
 const SEARCH_ENGINE_ICONS = [{
     className: "material-icons stackButton",
     title: "Google画像検索",
@@ -212,7 +210,3 @@ const sendCommandMessage = (command) => {
 
 // attach bubble to the loaded page
 document.addEventListener('mouseup', renderBubble)
-
-export {
-    hideBubble
-}
