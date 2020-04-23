@@ -1,16 +1,8 @@
 // seachbox
-const searchBox = document.querySelector('.searchbox');
 const dropdownList = document.querySelector('#dropdownlist');
-
-// toolbox
-const viewSwitcher = document.querySelector('.switchview');
-
-// headerboard
-const topboard = document.querySelector('.header-board');
 
 /* main */
 // textarea
-const sortBySwitcher = document.querySelector('.sort-by');
 const textarea = document.querySelector('.add-textitem');
 const tagarea = document.querySelector('.tagarea');
 
@@ -64,7 +56,7 @@ const switchTextareaSize = (e, forceExpandLess = false) => {
 
 const switchToolboxVisibility = (forseVisible = false) => {
   if (forseVisible) {
-    topboard.textContent = '';
+    $('.header-board').text('');
     $('#toolbox').removeClass('hidden');
   } else {
     $('#toolbox').addClass('hidden');
@@ -81,23 +73,22 @@ const switchViewStyles = (forceDefault = false) => {
     switchSortOrder(false);
     defaultview.disabled = false;
     listview.disabled = true;
-    viewSwitcher.textContent = 'reorder';
+    $('.switchview').text('reorder');
   } else {
     switchSortOrder(true);
     defaultview.disabled = true;
     listview.disabled = false;
-    viewSwitcher.textContent = 'format_list_bulleted';
+    $('.switchview').text('format_list_bulleted');
   }
 }
 
 const switchSortOrder = (forceByNew = false) => {
-  let sortingByNew = !sortBySwitcher.innerHTML.includes('New') || !forceByNew;
-
+  let sortingByNew = !$('.sort-by').html().includes('New') || !forceByNew;
   if (sortingByNew) {
-    sortBySwitcher.innerHTML = 'New <i class="material-icons">arrow_upward</i>';
+    $('.sort-by').html('New <i class="material-icons">arrow_upward</i>');
     stackDOM.style.flexDirection = 'column-reverse';
   } else {
-    sortBySwitcher.innerHTML = 'Old <i class="material-icons">arrow_downward</i>';
+    $('.sort-by').html('Old <i class="material-icons">arrow_downward</i>');
     stackDOM.style.flexDirection = 'column';
   }
 }
@@ -106,7 +97,7 @@ const openAddTextItemForm = () => {
   switchToolboxVisibility(false);
 
   $('.opener').addClass('hidden');
-  sortBySwitcher.classList.add('hidden');
+  $('.sort-by').addClass('hidden');
 
   textarea.classList.remove('hidden');
   tagarea.classList.remove('hidden');
@@ -124,7 +115,7 @@ const closeAddTextItemForm = () => {
   tagarea.classList.add('hidden');
 
   $('.opener').removeClass('hidden');
-  sortBySwitcher.classList.remove('hidden');
+  $('.sort-by').removeClass('hidden');
 
   switchToolboxVisibility(true);
 }
@@ -134,16 +125,16 @@ const updateTextInfoOnTopboard = (text) => {
 
   let info = extractTextInfo(text);
 
-  topboard.innerHTML = `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`;
+  $('.header-board').html(`${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`);
 
-  if (!topboard.classList.contains('entering')) {
-    topboard.classList.add('entering');
+  if (!$('.header-board').hasClass('entering')) {
+    $('.header-board').addClass('entering');
   }
 }
 
 const updateSearchResult = () => {
 
-  let term = searchBox.value.trim().toLowerCase();
+  let term = $('.searchbox').val().trim().toLowerCase();
 
   searchQueryHolder = term;
 
@@ -162,7 +153,7 @@ const updateSearchResult = () => {
   if (term) {
     switchToolboxVisibility(false);
 
-    topboard.textContent = hits === 0 ? 'No Results' : `${hits} of ${stack.length}`;
+    $('.header-board').text(hits === 0 ? 'No Results' : `${hits} of ${stack.length}`)
     $('.searchcancel-button').removeClass('hidden');
 
     $('footer').addClass('hidden');
@@ -356,7 +347,7 @@ const clearAllItems = () => {
   }
 
   textarea.value = '';
-  searchBox.value = '';
+  $('.searchbox').val('');
 
   // reset holder variables
   stack = [];
@@ -494,13 +485,13 @@ const submitForm = (e) => {
 
 /* search */
 function fireSearchWithQuery(query) {
-  searchBox.value = query;
-  searchBox.dispatchEvent(new Event('input'));
+  $('.searchbox').val(query);
+  $('.searchbox').trigger('input')
 };
 
 function showDropdownList() {
   setDropdownListItems();
-  filterDropdownListItems(searchBox.value);
+  filterDropdownListItems($('.searchbox').val());
   // show
   dropdownList.classList.remove('hidden');
 }
@@ -511,7 +502,7 @@ function hideDropdownList() {
 
 function cancelSearch() {
   fireSearchWithQuery('');
-  searchBox.focus();
+  $('.searchbox').trigger('focus');
 }
 
 /* clear stack window modal*/
@@ -563,11 +554,12 @@ function updateInputForm(e) {
 }
 
 function displayMessageOnTopboard(message) {
-  if (topboard.classList.contains('entering')) {
-    topboard.classList.remove('entering');
+
+  if ($('.header-board').hasClass('entering')) {
+    $('.header-board').removeClass('entering');
   }
 
-  topboard.textContent = message;
+  $('.header-board').text(message);
   switchToolboxVisibility(false);
 }
 
@@ -957,7 +949,7 @@ const restorePreviousState = () => {
           // restore searchbox
           if (typeof state.searchQuery !== 'undefined') {
             fireSearchWithQuery(state.searchQuery);
-            searchQueryHolder = searchBox.value
+            searchQueryHolder = $('.searchbox').val();
           }
         }
       }
@@ -1014,40 +1006,33 @@ const initializeEventListeners = () => {
   $('header').on('mouseleave', hideDropdownList);
 
   /* searchbox  */
-  searchBox.addEventListener('click', hideDropdownList)
-
-  searchBox.addEventListener('dblclick', showDropdownList);
-
-  searchBox.addEventListener('input', updateSearchResult);
-
-  searchBox.addEventListener('keyup', selectOnDropdownList)
-
-  searchBox.addEventListener('focus', closeAddTextItemForm);
+  $('.searchbox').click(hideDropdownList);
+  $('.searchbox').dblclick(showDropdownList);
+  $('.searchbox').focus(closeAddTextItemForm);
+  $('.searchbox').keyup(selectOnDropdownList);
+  $('.searchbox').on('input', updateSearchResult);
 
   $('.searchcancel-button').click(cancelSearch);
 
   /* toolbox */
   $('.opener-top').click(openAddTextItemForm);
-
-  viewSwitcher.addEventListener('click', switchViewStyles);
-
+  $('.switchview').click(switchViewStyles);
   $('.fileexport').click(exportTextItems);
 
   /* add-sort container */
   $('.opener').click(openAddTextItemForm);
-
-  sortBySwitcher.addEventListener('click', switchSortOrder);
+  $('.sort-by').click(switchSortOrder);
 
   /////////
   /* textarea */
   textarea.addEventListener('focus', (e) => {
-    if (searchBox.value.slice(0, 1) === '#' && !draftHashtagsHolder.includes(searchBox.value.slice(1))) {
+    if ($('.searchbox').val().slice(0, 1) === '#' && !draftHashtagsHolder.includes($('.searchbox').val().slice(1))) {
       while (tagarea.lastChild && tagarea.children.length > 1) {
         tagarea.removeChild(tagarea.lastChild);
       }
       draftHashtagsHolder.length = [];
 
-      let tag = searchBox.value.slice(1).split(' ')[0]
+      let tag = $('.searchbox').val().slice(1).split(' ')[0]
       addHashtagToDraft(tag);
     }
     fitHeightToContent(e.target);
@@ -1055,8 +1040,8 @@ const initializeEventListeners = () => {
   })
 
   textarea.addEventListener('blur', () => {
-    topboard.classList.remove('entering');
-    topboard.textContent = '';
+    $('.header-board').removeClass('entering');
+    $('.header-board').text('')
   })
 
   textarea.addEventListener('keyup', submitForm);
