@@ -135,11 +135,6 @@ const updateSearchResult = () => {
 
     $('footer').addClass('hidden');
 
-    // if(term.slice(0, 1) === '#'){
-    //   showDropdownList();
-
-    // }
-
   } else {
     switchToolboxVisibility(true);
 
@@ -217,7 +212,7 @@ const filterDropdownListItems = (tag) => {
     termRegex = new RegExp(`^(${escapeRegExp(tagName)})(.*?)`, 'i');
   }
 
-  Array.from(dropdownList.children)
+  Array.from($('#dropdownlist').children())
     .map(tagItem => {
       if (tagItem.textContent.match(termRegex)) {
         tagItem.classList.remove('filtered');
@@ -230,8 +225,8 @@ const filterDropdownListItems = (tag) => {
 
 const setDropdownListItems = () => {
   // remove all from dropdown
-  while (dropdownList.firstChild) {
-    dropdownList.removeChild(dropdownList.firstChild);
+  while ($('#dropdownlist').first()) {
+    $('#dropdownlist').remove($('#dropdownlist').first());
   }
 
   tagStack = tagStack.slice(0, 3).concat(tagStack.slice(3).sort());
@@ -244,14 +239,14 @@ const setDropdownListItems = () => {
         let li = document.createElement('li');
         li.textContent = tag;
 
-        dropdownList.appendChild(li);
+        $('#dropdownlist').append(li);
 
         // attach events
         li.addEventListener('mouseover', (e) => {
           // work as hover
-          let liSelected = dropdownList.querySelector('.selected');
+          let liSelected = $('#dropdownlist').find('.selected');
           if (liSelected) {
-            liSelected.classList.remove('selected');
+            liSelected.removeClass('selected');
           }
           e.target.classList.add('selected');
         });
@@ -357,25 +352,25 @@ const addTextItemToStack = (id, type, content, footnote = {}, date = formatDate(
 };
 
 const selectOnDropdownList = (e) => {
-  let liSelected = dropdownList.querySelector('.selected');
-  let unfiltered = Array.from(dropdownList.children).filter(tagItem => !tagItem.classList.contains('filtered'));
+  let liSelected = $('#dropdownlist').find('.selected');
+  let unfiltered = Array.from($('#dropdownlist').children()).filter(tagItem => !tagItem.hasClass('filtered'));
   let index = unfiltered.findIndex(item => item === liSelected);
 
   if (e.keyCode === 13) {
     // Enter
     if (liSelected) {
-      liSelected.classList.remove('selected');
-      fireSearchWithQuery('#' + liSelected.textContent);
+      liSelected.removeClass('selected');
+      fireSearchWithQuery('#' + liSelected.text());
     }
     hideDropdownList()
   } else if (e.keyCode === 38) {
     // Up
-    if (!dropdownList.classList.contains('hidden')) {
+    if (!$('#dropdownlist').hasClass('hidden')) {
       if (liSelected) {
         if (index - 1 >= 0) {
           // move up
-          liSelected.classList.remove('selected');
-          unfiltered[index - 1].classList.add('selected');
+          liSelected.removeClass('selected');
+          unfiltered[index - 1].addClass('selected');
         } else {
           // if no item to select at the top
           hideDropdownList()
@@ -384,7 +379,7 @@ const selectOnDropdownList = (e) => {
     }
   } else if (e.keyCode === 40) {
     // Down
-    if (dropdownList.classList.contains('hidden')) {
+    if ($('#dropdownlist').hasClass('hidden')) {
       showDropdownList()
     } else {
       if (liSelected) {
@@ -515,12 +510,7 @@ function updateInputForm(e) {
       tagarea.appendChild(errMessage);
     } else {
       e.target.value = e.target.value.replace(regex, '')
-      // if (hashtags[1] === '~') {
-      //   // if(hashtags[2])
-      //   addDueDateToDraft(hashtags[2].slice(1))
-      // } else {
       addHashtagToDraft(hashtags[2].slice(1))
-      // }
     }
   }
 
@@ -789,6 +779,7 @@ const insertDateSeparator = () => {
 }
 
 const renderStack = () => {
+  // read from storage
   stackStorage.get(raw => {
     if (typeof raw === 'undefined') {
       stackStorage.reset();
@@ -799,44 +790,25 @@ const renderStack = () => {
         renderTextItem(res.id, type, res.content, res.footnote, res.date);
       });
       insertDateSeparator();
-
     }
   });
 };
 
-const addDueDateToDraft = (tagName) => {
-  // create tag
-  let hashtag = document.createElement('span');
-  hashtag.classList.add('hashtag');
-  hashtag.textContent = tagName;
-  tagarea.appendChild(hashtag);
-
-  // attach remove event
-  hashtag.addEventListener('click', function removeHashTag(e) {
-    e.target.parentElement.removeChild(e.target);
-    // to be removed from storage
-    let index = draftHashtagsHolder.indexOf(tagName);
-    draftHashtagsHolder.splice(index, 1);
-  });
-
-  // save draft hashtags
-  draftHashtagsHolder.push(tagName);
-}
-
 const addHashtagToDraft = (tagName) => {
   // create tag
-  let hashtag = document.createElement('span');
-  hashtag.classList.add('hashtag');
-  hashtag.textContent = tagName;
-  tagarea.appendChild(hashtag);
-
-  // attach remove event
-  hashtag.addEventListener('click', function removeHashTag(e) {
-    e.target.parentElement.removeChild(e.target);
-    // to be removed from storage
-    let index = draftHashtagsHolder.indexOf(tagName);
-    draftHashtagsHolder.splice(index, 1);
-  });
+  tagarea.append($('<span>', {
+    addClass: 'hashtag',
+    text: tagName,
+    on: {
+      // attach remove event
+      'click': (e) => {
+        $(e.currentTarget).remove();
+        // to be removed from storage
+        let index = draftHashtagsHolder.indexOf(tagName);
+        draftHashtagsHolder.splice(index, 1);
+      }
+    }
+  }).get(0))
 
   // save draft hashtags
   draftHashtagsHolder.push(tagName);
@@ -926,7 +898,6 @@ const initializeEventListeners = () => {
 
   /* dropdown list */
   dropdownList.addEventListener('mouseleave', hideDropdownList);
-
   $('header').on('mouseleave', hideDropdownList);
 
   /* searchbox  */
