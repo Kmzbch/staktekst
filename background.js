@@ -50,6 +50,8 @@ const MENU_ITEMS = [{
 ];
 
 const executeUserCommand = (commandId, text, tabTitle, tabUrl, tabs) => {
+  console.log(commandId);
+
   switch (commandId) {
     // system features
     case 'extendedcopy':

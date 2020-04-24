@@ -2,6 +2,7 @@
   "background": {
     "persistent": false,
     "scripts": [
+      "common_lib.js",
       "background.js"
     ]
   },
