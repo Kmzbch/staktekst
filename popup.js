@@ -6,7 +6,7 @@ const stackDOM = document.querySelector('#textstack');
 
 // holder variables
 let stack = [];
-let tagStack = ['note', 'clip', 'bookmark'];
+let tagStack = ['bookmark', 'clip', 'note'];
 let dateStack = [];
 
 let draftTextHolder = ''; // to save draft text when unloading
@@ -174,6 +174,7 @@ const setDropdownListItems = () => {
 
   // create list from tagStack
   tagStack
+    .sort()
     .filter(item => isNaN(Date.parse(item))) // filter duedate tag
     .forEach(tag => {
       if (tag !== '') {
@@ -265,7 +266,7 @@ const clearAllItems = () => {
   // reset holder variables
   stack = [];
   dateStack = [];
-  tagStack = ['note', 'clip', 'bookmark'];
+  tagStack = ['bookmark', 'clip', 'note'];
   draftTextHolder = '';
   draftHashtagsHolder = [];
 }
@@ -637,6 +638,9 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
 }
 
 
+/**
+ * 
+ */
 const insertDateSeparator = () => {
   Array.from(stackDOM.children).forEach(wrapper => {
     let dateSeparator = document.createElement('div');
@@ -674,29 +678,29 @@ const insertDateSeparator = () => {
   stackDOM.append(todaySeparator);
 }
 
+/**
+ * Restore the previous popup window state
+ * 
+ */
 const restorePreviousState = () => {
   chrome.storage.local.get(['searchQuery', 'textarea', 'tags', 'timeClosedLastTime', 'scrollY'],
     state => {
-      // restore textarea
-      if (typeof state.textarea !== 'undefined') {
-        draftTextHolder = state.textarea;
-        textarea.textContent = state.textarea;
-      }
-      // restore tagarea
-      if (typeof state.tags !== 'undefined') {
-        state.tags.forEach(t => {
-          addHashtagToDraft(t);
-        })
-      }
-      // restore scrollY position
       if (typeof state.timeClosedLastTime !== 'undefined') {
-        const TIME_ELAPSED = 30000;
+        let timeElapsed = (new Date().getTime() - state.timeClosedLastTime);
 
-        let now = new Date().getTime();
-        let then = state.timeClosedLastTime;
-        let timeElapsed = (now - then);
+        if (timeElapsed < 30000) {
+          // restore textarea
+          if (typeof state.textarea !== 'undefined') {
+            draftTextHolder = state.textarea;
+            $('.add-textitem').text(state.textarea);
+          }
+          // restore tagarea
+          if (typeof state.tags !== 'undefined') {
+            state.tags.forEach(t => {
+              addHashtagToDraft(t);
+            })
+          }
 
-        if (timeElapsed < TIME_ELAPSED) {
           // restore scrollY
           if (typeof state.scrollY !== 'undefined') {
             scrollYHolder = state.scrollY;
@@ -709,8 +713,6 @@ const restorePreviousState = () => {
           }
         }
       }
-      //////////
-      // restore sort order
     })
 }
 
@@ -980,6 +982,4 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeEventListeners();
   renderStack();
   restorePreviousState();
-
-  tagStack = tagStack.sort();
 });
