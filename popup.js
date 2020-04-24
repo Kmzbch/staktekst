@@ -20,12 +20,14 @@ let background = chrome.extension.getBackgroundPage();
 
 /* switches */
 const switchTextareaSize = (e, forceExpandLess = false) => {
-  let sizeChangerIcon = document.querySelector('.size-changer').firstChild;
+  let sizeChangerIcon = $('.size-changer').find('i');
 
-  if (sizeChangerIcon.textContent === 'expand_less' || forceExpandLess) {
-    textarea.style.height = 25 + 'px';
-    textarea.style.minHeight = 25 + 'px';
-    sizeChangerIcon.textContent = 'expand_more';
+  if (sizeChangerIcon.text() === 'expand_less' || forceExpandLess) {
+    $('.add-textitem').css({
+      height: '25px',
+      minHeight: '25px'
+    })
+    sizeChangerIcon.text('expand_more');
 
     //
     chrome.runtime.sendMessage({
@@ -34,11 +36,13 @@ const switchTextareaSize = (e, forceExpandLess = false) => {
       null
     );
 
-  } else if (sizeChangerIcon.textContent === 'expand_more') {
-    textarea.style.height = 300 + 'px';
-    textarea.style.minHeight = 300 + 'px';
+  } else if (sizeChangerIcon.text() === 'expand_more') {
+    $('.add-textitem').css({
+      height: '300px',
+      minHeight: '300px'
+    })
 
-    sizeChangerIcon.textContent = 'expand_less';
+    sizeChangerIcon.text('expand_less');
 
     //
     chrome.runtime.sendMessage({
@@ -46,66 +50,6 @@ const switchTextareaSize = (e, forceExpandLess = false) => {
     },
       null
     );
-  }
-}
-
-const switchToolboxVisibility = (forseVisible = false) => {
-  if (forseVisible) {
-    $('.header-board').text('');
-    $('#toolbox').removeClass('hidden');
-  } else {
-    $('#toolbox').addClass('hidden');
-  }
-}
-
-
-const switchSortOrder = (forceByNew = false) => {
-  let sortingByNew = !$('.sort-by').html().includes('New') || !forceByNew;
-  if (sortingByNew) {
-    $('.sort-by').html('New <i class="material-icons">arrow_upward</i>');
-    stackDOM.style.flexDirection = 'column-reverse';
-  } else {
-    $('.sort-by').html('Old <i class="material-icons">arrow_downward</i>');
-    stackDOM.style.flexDirection = 'column';
-  }
-}
-
-const openAddTextItemForm = () => {
-  switchToolboxVisibility(false);
-
-  $('.opener').addClass('hidden');
-  $('.sort-by').addClass('hidden');
-
-  textarea.classList.remove('hidden');
-  tagarea.classList.remove('hidden');
-
-  textarea.focus();
-}
-
-const closeAddTextItemForm = () => {
-  chrome.runtime.sendMessage({
-    command: 'OVERLAY_OFF'
-  },
-    null);
-
-  textarea.classList.add('hidden');
-  tagarea.classList.add('hidden');
-
-  $('.opener').removeClass('hidden');
-  $('.sort-by').removeClass('hidden');
-
-  switchToolboxVisibility(true);
-}
-
-const updateTextInfoOnTopboard = (text) => {
-  switchToolboxVisibility(false);
-
-  let info = extractTextInfo(text);
-
-  $('.header-board').html(`${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`);
-
-  if (!$('.header-board').hasClass('entering')) {
-    $('.header-board').addClass('entering');
   }
 }
 
@@ -224,10 +168,7 @@ const filterDropdownListItems = (tag) => {
 }
 
 const setDropdownListItems = () => {
-  // remove all from dropdown
-  while ($('#dropdownlist').first()) {
-    $('#dropdownlist').remove($('#dropdownlist').first());
-  }
+  $('#dropdownlist').empty();
 
   tagStack = tagStack.slice(0, 3).concat(tagStack.slice(3).sort());
 
@@ -318,7 +259,7 @@ const clearAllItems = () => {
     tagarea.removeChild(tagarea.lastChild);
   }
 
-  textarea.value = '';
+  $('.add-textitem').val('');
   $('.searchbox').val('');
 
   // reset holder variables
@@ -402,9 +343,9 @@ const submitForm = (e) => {
     let errClass = tagarea.querySelector('.error');
 
     if (errClass === null) {
-      let content = textarea.value.trim();
+      let content = $('.add-textitem').val().trim();
       if (content === '' || content === '\n') {
-        textarea.value = '';
+        $('.add-textitem').val('');
         return false;
       }
 
@@ -430,11 +371,11 @@ const submitForm = (e) => {
       displayMessageOnTopboard('Item Added!');
 
       timer = setTimeout(() => {
-        updateTextInfoOnTopboard(textarea.value);
+        updateTextInfoOnTopboard($('.add-textitem').val());
       }, 700);
 
       // clear form and holders
-      textarea.value = '';
+      $('.add-textitem').val('');
       draftTextHolder = '';
       draftHashtagsHolder = [];
 
@@ -455,59 +396,24 @@ const submitForm = (e) => {
   }
 };
 
-/* search */
-function fireSearchWithQuery(query) {
-  $('.searchbox').val(query);
-  $('.searchbox').trigger('input')
-};
-
-function showDropdownList() {
-  setDropdownListItems();
-  filterDropdownListItems($('.searchbox').val());
-  // show
-  dropdownList.classList.remove('hidden');
-}
-
-function hideDropdownList() {
-  dropdownList.classList.add('hidden');
-}
-
-function cancelSearch() {
-  fireSearchWithQuery('');
-  $('.searchbox').trigger('focus');
-}
-
-/* clear stack window modal*/
-function showClearStackWindow() {
-  $('#clear-window').removeClass('hidden');
-}
-
-function hideClearStackWindow() {
-  $('#clear-window').addClass('hidden');
-}
 
 function updateInputForm(e) {
+  // clear
   if (timer) {
     clearTimeout(timer)
   }
-
-  let errClass = tagarea.querySelector('.error');
-
-  if (errClass) {
-    errClass.parentElement.removeChild(errClass);
-  }
+  $('.tagarea').find('.error').remove();
 
   let hashtags = e.target.value.match(/(^|\s)((#|＃)[^\s]+)(\s$|\n)/);
 
   if (hashtags) {
     let regex = new RegExp(`(^|\\s)${escapeRegExp(hashtags[2])}(\\s$|\\n)`);
-    let tagsAdded = tagarea.querySelectorAll('.hashtag').length;
 
-    if (tagsAdded >= 5) {
-      let errMessage = document.createElement('span');
-      errMessage.className = 'error';
-      errMessage.textContent = 'タグは最大5個まで';
-      tagarea.appendChild(errMessage);
+    if ($('.hashtag').length >= 5) {
+      $('<span>', {
+        addClass: 'error',
+        text: 'タグは最大5個まで'
+      }).appendTo(tagarea)
     } else {
       e.target.value = e.target.value.replace(regex, '')
       addHashtagToDraft(hashtags[2].slice(1))
@@ -517,17 +423,7 @@ function updateInputForm(e) {
   draftTextHolder = e.target.value.trim();
 
   fitHeightToContent(textarea);
-  updateTextInfoOnTopboard(textarea.value);
-}
-
-function displayMessageOnTopboard(message) {
-
-  if ($('.header-board').hasClass('entering')) {
-    $('.header-board').removeClass('entering');
-  }
-
-  $('.header-board').text(message);
-  switchToolboxVisibility(false);
+  updateTextInfoOnTopboard($('.add-textitem').val());
 }
 
 function removeTextItem(textitemDOM) {
@@ -778,42 +674,6 @@ const insertDateSeparator = () => {
   stackDOM.append(todaySeparator);
 }
 
-const renderStack = () => {
-  // read from storage
-  stackStorage.get(raw => {
-    if (typeof raw === 'undefined') {
-      stackStorage.reset();
-    } else {
-      stack = JSON.parse(raw);
-      stack.forEach(res => {
-        let type = res.hasOwnProperty('type') ? res.type : 'note';
-        renderTextItem(res.id, type, res.content, res.footnote, res.date);
-      });
-      insertDateSeparator();
-    }
-  });
-};
-
-const addHashtagToDraft = (tagName) => {
-  // create tag
-  tagarea.append($('<span>', {
-    addClass: 'hashtag',
-    text: tagName,
-    on: {
-      // attach remove event
-      'click': (e) => {
-        $(e.currentTarget).remove();
-        // to be removed from storage
-        let index = draftHashtagsHolder.indexOf(tagName);
-        draftHashtagsHolder.splice(index, 1);
-      }
-    }
-  }).get(0))
-
-  // save draft hashtags
-  draftHashtagsHolder.push(tagName);
-}
-
 const restorePreviousState = () => {
   chrome.storage.local.get(['searchQuery', 'textarea', 'tags', 'timeClosedLastTime', 'scrollY'],
     state => {
@@ -853,7 +713,6 @@ const restorePreviousState = () => {
       // restore sort order
     })
 }
-
 
 const initializeEventListeners = () => {
 
@@ -897,15 +756,19 @@ const initializeEventListeners = () => {
   })
 
   /* dropdown list */
-  dropdownList.addEventListener('mouseleave', hideDropdownList);
+  $('#dropdownlist').on('mouseleave', hideDropdownList);
+
   $('header').on('mouseleave', hideDropdownList);
 
   /* searchbox  */
-  $('.searchbox').click(hideDropdownList);
-  $('.searchbox').dblclick(showDropdownList);
-  $('.searchbox').focus(closeAddTextItemForm);
-  $('.searchbox').keyup(selectOnDropdownList);
-  $('.searchbox').on('input', updateSearchResult);
+  $('.searchbox').on({
+    click: hideDropdownList,
+    dblclick: showDropdownList,
+    focus: closeAddTextItemForm,
+    keyup: selectOnDropdownList,
+    input: updateSearchResult
+  })
+
   $('.searchcancel-button').click(cancelSearch);
 
   /* toolbox */
@@ -931,12 +794,14 @@ const initializeEventListeners = () => {
     updateTextInfoOnTopboard(e.target.textContent);
   })
 
-  textarea.addEventListener('blur', () => {
-    $('.header-board').removeClass('entering');
-    $('.header-board').text('')
+  $('.add-textitem').on({
+    keyup: submitForm,
+    input: updateInputForm,
+    blur: () => {
+      $('.header-board').removeClass('entering');
+      $('.header-board').text('')
+    },
   })
-  textarea.addEventListener('keyup', submitForm);
-  textarea.addEventListener('input', updateInputForm)
 
   $('.size-changer').click(switchTextareaSize);
 
@@ -970,6 +835,145 @@ const initializeEventListeners = () => {
   $('.cancel').click(hideClearStackWindow);
 
 }
+
+/* search */
+function fireSearchWithQuery(query) {
+  $('.searchbox').val(query);
+  $('.searchbox').trigger('input')
+};
+
+function showDropdownList() {
+  setDropdownListItems();
+  filterDropdownListItems($('.searchbox').val());
+  $('#dropdownlist').removeClass('hidden');
+}
+
+function hideDropdownList() {
+  $('#dropdownlist').addClass('hidden');
+}
+
+function cancelSearch() {
+  fireSearchWithQuery('');
+  $('.searchbox').trigger('focus');
+}
+
+/* clear stack window modal*/
+function showClearStackWindow() {
+  $('#clear-window').removeClass('hidden');
+}
+
+function hideClearStackWindow() {
+  $('#clear-window').addClass('hidden');
+}
+
+function displayMessageOnTopboard(message) {
+  if ($('.header-board').hasClass('entering')) {
+    $('.header-board').removeClass('entering');
+  }
+  $('.header-board').text(message);
+
+  switchToolboxVisibility(false);
+}
+
+const switchSortOrder = (forceByNew = false) => {
+  let sortingByNew = !$('.sort-by').html().includes('New') || !forceByNew;
+  if (sortingByNew) {
+    $('.sort-by').html('New <i class="material-icons">arrow_upward</i>');
+    stackDOM.style.flexDirection = 'column-reverse';
+  } else {
+    $('.sort-by').html('Old <i class="material-icons">arrow_downward</i>');
+    stackDOM.style.flexDirection = 'column';
+  }
+}
+
+const switchToolboxVisibility = (forseVisible = false) => {
+  if (forseVisible) {
+    $('.header-board').text('');
+    $('#toolbox').removeClass('hidden');
+  } else {
+    $('#toolbox').addClass('hidden');
+  }
+}
+
+const openAddTextItemForm = () => {
+  switchToolboxVisibility(false);
+  // hide
+  $('.opener').addClass('hidden');
+  $('.sort-by').addClass('hidden');
+  // show
+  $('.add-textitem').removeClass('hidden');
+  $('.tagarea').removeClass('hidden');
+  // focus
+  $('.add-textitem').trigger('focus');
+}
+
+const closeAddTextItemForm = () => {
+  switchToolboxVisibility(true);
+
+  // hide
+  $('.add-textitem').addClass('hidden');
+  $('.tagarea').addClass('hidden');
+
+  // show
+  $('.opener').removeClass('hidden');
+  $('.sort-by').removeClass('hidden');
+
+  // turn off overlay
+  chrome.runtime.sendMessage({
+    command: 'OVERLAY_OFF'
+  },
+    null);
+}
+
+const updateTextInfoOnTopboard = (text) => {
+  switchToolboxVisibility(false);
+
+  let info = extractTextInfo(text);
+
+  $('.header-board').html(
+    `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`
+  );
+
+  if (!$('.header-board').hasClass('entering')) {
+    $('.header-board').addClass('entering');
+  }
+}
+
+const addHashtagToDraft = (tagName) => {
+  // create tag
+  tagarea.append($('<span>', {
+    addClass: 'hashtag',
+    text: tagName,
+    on: {
+      // attach remove event
+      'click': (e) => {
+        $(e.currentTarget).remove();
+        // to be removed from storage
+        let index = draftHashtagsHolder.indexOf(tagName);
+        draftHashtagsHolder.splice(index, 1);
+      }
+    }
+  }).get(0))
+
+  // save draft hashtags
+  draftHashtagsHolder.push(tagName);
+}
+
+const renderStack = () => {
+  // read from storage
+  stackStorage.get(raw => {
+    if (typeof raw === 'undefined') {
+      stackStorage.reset();
+    } else {
+      stack = JSON.parse(raw);
+      stack.forEach(res => {
+        let type = res.hasOwnProperty('type') ? res.type : 'note';
+        renderTextItem(res.id, type, res.content, res.footnote, res.date);
+      });
+      insertDateSeparator();
+    }
+  });
+};
 
 // initialize
 document.addEventListener('DOMContentLoaded', () => {
