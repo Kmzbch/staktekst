@@ -1,12 +1,7 @@
 // seachbox
 const dropdownList = document.querySelector('#dropdownlist');
-
-/* main */
-// textarea
 const textarea = document.querySelector('.add-textitem');
 const tagarea = document.querySelector('.tagarea');
-
-// items
 const stackDOM = document.querySelector('#textstack');
 
 // holder variables
@@ -63,24 +58,6 @@ const switchToolboxVisibility = (forseVisible = false) => {
   }
 }
 
-const switchViewStyles = (forceDefault = false) => {
-  let defaultview = document.querySelector('#style_default');
-  let listview = document.querySelector('#style_listview');
-
-  let switchingToListView = defaultview.disabled || !forceDefault;
-
-  if (switchingToListView) {
-    switchSortOrder(false);
-    defaultview.disabled = false;
-    listview.disabled = true;
-    $('.switchview').text('reorder');
-  } else {
-    switchSortOrder(true);
-    defaultview.disabled = true;
-    listview.disabled = false;
-    $('.switchview').text('format_list_bulleted');
-  }
-}
 
 const switchSortOrder = (forceByNew = false) => {
   let sortingByNew = !$('.sort-by').html().includes('New') || !forceByNew;
@@ -685,59 +662,6 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
 
   stackDOM.appendChild(stackWrapper);
 
-  //on dragover
-  // if (stackWrapper.classList.contains('note')) {
-  //   stackWrapper.draggable = true;
-
-  //   stackWrapper.addEventListener('dragover', function allowDrop(e) {
-  //     e.preventDefault();
-  //   });
-  //   stackWrapper.addEventListener('drop', function drop(e) {
-  //     e.preventDefault();
-  //     let appendingItemId = e.dataTransfer.getData("id");
-  //     let content = stack.find(item => item.id === appendingItemId).content;
-
-  //     let newHTML;
-  //     let id;
-  //     let contentItem;
-  //     let wrapper;
-
-  //     if (e.target.classList.contains('stackwrapper')) {
-  //       contentItem = e.target.querySelector('.content');
-  //       newHTML = contentItem.innerHTML;
-  //       id = e.target.querySelector('input').value;
-  //       wrapper = e.target;
-  //     } else {
-  //       contentItem = e.target.parentElement.querySelector('.content');
-  //       newHTML = contentItem.innerHTML;
-  //       id = e.target.parentElement.querySelector('input').value;
-  //       wrapper = e.target.parentElement;
-  //     }
-
-  //     if (appendingItemId !== id) {
-  //       newHTML = newHTML + '<br>' + content.replace(/\n/ig, '<br>');
-
-  //       contentItem.innerHTML = newHTML;
-
-  //       let toBeRemoved = Array.from(stackDOM.children).find(item => item.id === appendingItemId);
-  //       updateTextItem(id, newHTML);
-  //       removeTextItem(toBeRemoved);
-
-  //     }
-
-  //   });
-
-  //   stackWrapper.addEventListener('dragstart', function drag(e) {
-  //     console.log('!!!');
-  //     if (!e.target.classList.contains('content')) {
-
-  //       let itemId = e.target.querySelector('input').value;
-  //       e.dataTransfer.setData("id", itemId);
-
-  //     }
-  //   })
-  // }
-
   // enable URL link
   let contentDIV = stackWrapper.firstElementChild;
   contentDIV.innerHTML = enableURLEmbededInText(contentDIV.textContent);
@@ -961,7 +885,7 @@ const restorePreviousState = () => {
 
 const initializeEventListeners = () => {
 
-  /* window */
+  /* window events */
   window.onunload = () => {
     // save state
     background.chrome.storage.local.set({
@@ -1011,19 +935,16 @@ const initializeEventListeners = () => {
   $('.searchbox').focus(closeAddTextItemForm);
   $('.searchbox').keyup(selectOnDropdownList);
   $('.searchbox').on('input', updateSearchResult);
-
   $('.searchcancel-button').click(cancelSearch);
 
   /* toolbox */
   $('.opener-top').click(openAddTextItemForm);
-  $('.switchview').click(switchViewStyles);
   $('.fileexport').click(exportTextItems);
 
   /* add-sort container */
   $('.opener').click(openAddTextItemForm);
   $('.sort-by').click(switchSortOrder);
 
-  /////////
   /* textarea */
   textarea.addEventListener('focus', (e) => {
     if ($('.searchbox').val().slice(0, 1) === '#' && !draftHashtagsHolder.includes($('.searchbox').val().slice(1))) {
@@ -1043,9 +964,7 @@ const initializeEventListeners = () => {
     $('.header-board').removeClass('entering');
     $('.header-board').text('')
   })
-
   textarea.addEventListener('keyup', submitForm);
-
   textarea.addEventListener('input', updateInputForm)
 
   $('.size-changer').click(switchTextareaSize);
@@ -1088,7 +1007,4 @@ document.addEventListener('DOMContentLoaded', () => {
   restorePreviousState();
 
   tagStack = tagStack.sort();
-
-  // workaround to avoid view switcher delay
-  switchViewStyles();
 });
