@@ -249,11 +249,7 @@ const exportTextItems = () => {
 const clearAllItems = () => {
   // clear storage
   stackStorage.reset();
-
-  // remove DOMs
-  while (stackDOM.firstChild) {
-    stackDOM.removeChild(stackDOM.firstChild);
-  }
+  $('#textstack').empty();
 
   // remove hashtags
   while (tagarea.lastChild && tagarea.children.length > 1) {
@@ -547,7 +543,8 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
 
   stackWrapper.innerHTML = `<div class='content'>${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><input type='hidden' value="${date}"><div class="spacer"></div><div class="footnote"></div>`;
 
-  stackDOM.appendChild(stackWrapper);
+
+  $('#textstack').append(stackWrapper);
 
   // enable URL link
   let contentDIV = stackWrapper.firstElementChild;
@@ -649,7 +646,6 @@ const insertDateSeparator = () => {
     let date = wrapper.querySelectorAll('input')[1].value;
 
     if (dateStack.length === 0) {
-      // dateSeparator.innerHTML = `<a id='${date}' href='#'>${date}</a>`;
       dateSeparator.innerHTML = date;
 
       stackDOM.insertBefore(dateSeparator, wrapper);
@@ -881,10 +877,10 @@ const switchSortOrder = (forceByNew = false) => {
   let sortingByNew = !$('.sort-by').html().includes('New') || !forceByNew;
   if (sortingByNew) {
     $('.sort-by').html('New <i class="material-icons">arrow_upward</i>');
-    stackDOM.style.flexDirection = 'column-reverse';
+    $('#textstack').css('flexDirection', 'column-reverse')
   } else {
     $('.sort-by').html('Old <i class="material-icons">arrow_downward</i>');
-    stackDOM.style.flexDirection = 'column';
+    $('#textstack').css('flexDirection', 'column')
   }
 }
 

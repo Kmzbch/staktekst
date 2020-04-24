@@ -43,22 +43,24 @@ const SEARCH_ENGINE_ICONS = [{
 }, {
     className: "material-icons stackButton",
     title: "Oddcastでテキストを読み上げ",
-    innerText: "message",
+    innerText: "play_arrow",
     command: "oddcast",
 }
 ]
 
-const SYSTEM_COMMAND_ICONS = [{
-    className: "material-icons stackButton",
-    title: "URLとタイトル付きでコピー",
-    innerText: "assignment",
-    command: "extendedcopy",
-}, {
-    className: "material-icons stackButton",
-    title: "テキストをスタックにプッシュ",
-    innerText: "input",
-    command: "pushtext",
-}]
+const SYSTEM_COMMAND_ICONS = [
+    {
+        className: "material-icons stackButton",
+        title: "テキストをスタックにプッシュ",
+        innerText: "input",
+        command: "pushtext",
+    },
+    {
+        className: "material-icons stackButton",
+        title: "URLとタイトル付きでコピー",
+        innerText: "assignment",
+        command: "extendedcopy",
+    }]
 
 const FLOAT_COMMAND_ICONS = [{
     className: "material-icons bookmark-icon",

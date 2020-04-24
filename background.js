@@ -4,52 +4,76 @@
 const MENU_ITEMS = [{
   id: "mirai",
   url: "https://miraitranslate.com/en/trial/",
+  title: "みらい翻訳（英→日）",
+  contexts: ["selection"],
 },
 {
   id: "oddcast",
+  title: "Oddcastでテキスト読み上げ（英）",
+  contexts: ["selection"],
   url: "http://www.oddcast.com/ttsdemo/index.php",
 },
 {
   id: "extendedcopy",
+  title: "URL付きでコピー",
+  contexts: ["selection"],
 },
 {
   id: "pushtext",
+  title: "テキストをスタックにプッシュ",
+  contexts: ["page", "selection"],
 },
 {
   id: "youglish",
+  title: "Youglish",
+  contexts: ["selection"],
   url: "https://youglish.com/search/%s",
 },
 {
   id: "dopeoplesayit",
+  title: "Do People Say It",
+  contexts: ["selection"],
   url: "https://dopeoplesay.com/q/%s",
 },
 {
   id: "skell",
+  title: "SKELL",
+  contexts: ["selection"],
   url: "https://skell.sketchengine.co.uk/run.cgi/concordance?lpos=&query=%s",
 },
 {
   id: 'netspeak',
+  title: "NetSpeak",
+  contexts: ["selection"],
   url: 'https://netspeak.org/#q=%s&corpus=web-en'
 },
 {
   id: "twitter",
+  title: "Twitter",
+  contexts: ["selection"],
   url: "https://twitter.com/search?q=%s",
 },
 {
   id: "vocabulary",
+  title: "Vocabulary.com",
+  contexts: ["selection"],
   url: "https://www.vocabulary.com/dictionary/%s",
 },
 {
   id: "urban",
+  title: "Urban Dictionary",
+  contexts: ["selection"],
   url: "https://www.urbandictionary.com/define.php?term=%s",
 },
 {
   id: "google",
+  title: "Google画像検索",
+  contexts: ["selection"],
   url: "https://encrypted.google.com/search?hl=en&gl=en&tbm=isch&q=%s",
 },
 ];
 
-const executeUserCommand = (commandId, text, tabTitle, tabUrl, tabs) => {
+const executeUserCommand = (commandId, text, tabTitle, tabUrl, tabId) => {
   console.log(commandId);
 
   switch (commandId) {
@@ -64,9 +88,9 @@ const executeUserCommand = (commandId, text, tabTitle, tabUrl, tabs) => {
       pushText(tabTitle + '\n' + tabUrl, 'bookmark', '', '');
       break;
     case 'switchzoom':
-      chrome.tabs.getZoom(tabs[0].id, (zoomFactor) => {
+      chrome.tabs.getZoom(tabId, (zoomFactor) => {
         zoomFactor = zoomFactor === 1 ? 1.5 : 1;
-        chrome.tabs.setZoom(tabs[0].id, zoomFactor, function (zoomFactor) {
+        chrome.tabs.setZoom(tabId, zoomFactor, function (zoomFactor) {
           console.log("zoom factor:" + zoomFactor);
         })
       })
@@ -118,7 +142,7 @@ const getMessage = (request, sender, sendResponse) => {
         break;
       default:
         if (request.selection) {
-          executeUserCommand(request.command, request.selection, tabs[0].title, tabs[0].url, tabs);
+          executeUserCommand(request.command, request.selection, tabs[0].title, tabs[0].url, tabs[0].id);
           selectionHolder = request.selection;
           commandHolder = request.command;
         }
@@ -139,3 +163,34 @@ let commandHolder = "";
 
 // attach getMessage to onMessage event
 chrome.runtime.onMessage.addListener(getMessage);
+
+// attach context menu onclicked ivent
+chrome.contextMenus.onClicked.addListener((menuInfo, tab) => {
+  chrome.tabs.sendMessage(tab.id, {
+    command: 'GET_SELCTION'
+    /* message: "additional message here" */
+  }, response => {
+    let text = response.selection;
+    executeUserCommand(menuInfo.menuItemId, text, tab.title, tab.url, tab.id);
+    selectionHolder = text;
+    commandHolder = menuInfo.menuItemId;
+  });
+});
+
+// reset and create context menus
+chrome.contextMenus.removeAll(() => {
+  MENU_ITEMS.forEach(item => {
+    let picked = (({
+      id,
+      title,
+      type,
+      contexts
+    }) => ({
+      id,
+      title,
+      type,
+      contexts
+    }))(item);
+    chrome.contextMenus.create(picked);
+  });
+});
