@@ -2,8 +2,8 @@
 
 const SEARCH_ENGINE_ICONS = [{
     className: "material-icons stackButton",
-    title: "Google画像検索",
-    innerText: "image_search",
+    title: "Google検索",
+    innerText: "search",
     command: "google",
 }, {
     className: "material-icons stackButton",
@@ -18,9 +18,13 @@ const SEARCH_ENGINE_ICONS = [{
     command: "dopeoplesayit",
 },
 {
+    // className: "fas fa-book fa-lg stackButton",
+    // title: "Urban Dictionaryで単語を検索",
+    // command: "urban",
     className: "fas fa-book fa-lg stackButton",
-    title: "Urban Dictionaryで単語を検索",
-    command: "urban",
+    title: "SKELLで例文を検索",
+    command: "skell",
+
 }, {
     // className: "fab fa-twitter fa-lg stackButton",
     // title: "Twitterでツイート検索",

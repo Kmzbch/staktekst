@@ -10,6 +10,7 @@ let tagStack = ['bookmark', 'clip', 'note'];
 let dateStack = [];
 
 let draftTextHolder = ''; // to save draft text when unloading
+let textareaOpeningState = false;
 let draftHashtagsHolder = [];
 
 let searchQueryHolder = '';
@@ -19,39 +20,6 @@ let timer = null;
 let background = chrome.extension.getBackgroundPage();
 
 /* switches */
-const switchTextareaSize = (e, forceExpandLess = false) => {
-  let sizeChangerIcon = $('.size-changer').find('i');
-
-  if (sizeChangerIcon.text() === 'expand_less' || forceExpandLess) {
-    $('.add-textitem').css({
-      height: '25px',
-      minHeight: '25px'
-    })
-    sizeChangerIcon.text('expand_more');
-
-    //
-    chrome.runtime.sendMessage({
-      command: 'OVERLAY_OFF'
-    },
-      null
-    );
-
-  } else if (sizeChangerIcon.text() === 'expand_more') {
-    $('.add-textitem').css({
-      height: '300px',
-      minHeight: '300px'
-    })
-
-    sizeChangerIcon.text('expand_less');
-
-    //
-    chrome.runtime.sendMessage({
-      command: 'OVERLAY_ON'
-    },
-      null
-    );
-  }
-}
 
 const updateSearchResult = () => {
 
@@ -88,6 +56,7 @@ const updateSearchResult = () => {
     hideDropdownList();
   }
 }
+
 
 function filterTextItems(term) {
   let termRegex;
@@ -265,29 +234,8 @@ const clearAllItems = () => {
   tagStack = ['bookmark', 'clip', 'note'];
   draftTextHolder = '';
   draftHashtagsHolder = [];
+  textareaOpeningState = false;
 }
-
-const updateTextItem = (id, html) => {
-  let index = stack.findIndex(item => item.id === id);
-  //  stack[index].content = html;
-
-  stack[index].content = html.replace(/<br>/ig, '\n');
-  console.log(stack[index].content);
-  stackStorage.set(JSON.stringify(stack));
-};
-
-const addTextItemToStack = (id, type, content, footnote = {}, date = formatDate()) => {
-  stack.push({
-    id: id,
-    type: type,
-    content: content,
-    date: date,
-    footnote: {
-      tags: footnote.tags
-    },
-  });
-  stackStorage.set(JSON.stringify(stack));
-};
 
 const selectOnDropdownList = (e) => {
   let liSelected = $('#dropdownlist').find('.selected');
@@ -354,6 +302,7 @@ const submitForm = (e) => {
         }
       }
 
+      //
       let id = uuidv4();
       let type = 'note';
       let footnote = {
@@ -361,32 +310,31 @@ const submitForm = (e) => {
       };
       let date = formatDate();
 
-      addTextItemToStack(id, type, content, footnote, date);
+      // add item to stack
+      stack.push({
+        id: id,
+        type: type,
+        content: content,
+        date: date,
+        footnote: {
+          tags: footnote.tags
+        },
+      });
+      stackStorage.set(JSON.stringify(stack));
+
       renderTextItem(id, type, content, footnote, date);
 
       // display system message
       displayMessageOnTopboard('Item Added!');
-
       timer = setTimeout(() => {
         updateTextInfoOnTopboard($('.add-textitem').val());
       }, 700);
 
-      // clear form and holders
+      // clear form and holders to the initial state
       $('.add-textitem').val('');
       draftTextHolder = '';
       draftHashtagsHolder = [];
-
-
-      //
       switchTextareaSize(e, true);
-
-      chrome.runtime.sendMessage({
-        command: 'OVERLAY_OFF'
-      },
-        response => {
-          console.log(response.message);
-        }
-      );
 
       return false;
     }
@@ -521,9 +469,11 @@ function attachContentEditableEvents(wrapper) {
     let id = e.target.querySelector('input').value;
     let newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
     updateTextInfoOnTopboard(contentDIV.textContent);
-    updateTextItem(id, newHTML);
 
-    // }
+    // update teext item
+    let index = stack.findIndex(item => item.id === id);
+    stack[index].content = newHTML.replace(/<br>/ig, '\n');
+    stackStorage.set(JSON.stringify(stack));
   })
 
   function fireChange(e) {
@@ -674,44 +624,6 @@ const insertDateSeparator = () => {
   stackDOM.append(todaySeparator);
 }
 
-/**
- * Restore the previous popup window state
- * 
- */
-const restorePreviousState = () => {
-  chrome.storage.local.get(['searchQuery', 'textarea', 'tags', 'timeClosedLastTime', 'scrollY'],
-    state => {
-      if (typeof state.timeClosedLastTime !== 'undefined') {
-        let timeElapsed = (new Date().getTime() - state.timeClosedLastTime);
-
-        if (timeElapsed < 30000) {
-          // restore textarea
-          if (typeof state.textarea !== 'undefined') {
-            draftTextHolder = state.textarea;
-            $('.add-textitem').text(state.textarea);
-          }
-          // restore tagarea
-          if (typeof state.tags !== 'undefined') {
-            state.tags.forEach(t => {
-              addHashtagToDraft(t);
-            })
-          }
-
-          // restore scrollY
-          if (typeof state.scrollY !== 'undefined') {
-            scrollYHolder = state.scrollY;
-            window.scrollTo(0, scrollYHolder);
-          }
-          // restore searchbox
-          if (typeof state.searchQuery !== 'undefined') {
-            fireSearchWithQuery(state.searchQuery);
-            searchQueryHolder = $('.searchbox').val();
-          }
-        }
-      }
-    })
-}
-
 const initializeEventListeners = () => {
 
   /* window events */
@@ -720,7 +632,8 @@ const initializeEventListeners = () => {
     background.chrome.storage.local.set({
       searchQuery: searchQueryHolder,
       textarea: draftTextHolder,
-      tags: draftHashtagsHolder
+      tags: draftHashtagsHolder,
+      textareaIsOpen: textareaOpeningState
     });
   };
 
@@ -894,6 +807,8 @@ const switchToolboxVisibility = (forseVisible = false) => {
 }
 
 const openAddTextItemForm = () => {
+  textareaOpeningState = true;
+
   switchToolboxVisibility(false);
   // hide
   $('.opener').addClass('hidden');
@@ -906,16 +821,15 @@ const openAddTextItemForm = () => {
 }
 
 const closeAddTextItemForm = () => {
-  switchToolboxVisibility(true);
+  textareaOpeningState = false;
 
+  switchToolboxVisibility(true);
   // hide
   $('.add-textitem').addClass('hidden');
   $('.tagarea').addClass('hidden');
-
   // show
   $('.opener').removeClass('hidden');
   $('.sort-by').removeClass('hidden');
-
   // turn off overlay
   chrome.runtime.sendMessage({
     command: 'OVERLAY_OFF'
@@ -957,6 +871,9 @@ const addHashtagToDraft = (tagName) => {
   draftHashtagsHolder.push(tagName);
 }
 
+/**
+ * render textitems on stack
+ */
 const renderStack = () => {
   // read from storage
   stackStorage.get(raw => {
@@ -972,6 +889,81 @@ const renderStack = () => {
     }
   });
 };
+
+/**
+ * Restore the previous popup window state
+ * 
+ */
+const restorePreviousState = () => {
+  chrome.storage.local.get(['searchQuery', 'textarea', 'tags', 'timeClosedLastTime', 'scrollY', 'textareaIsOpen'],
+    state => {
+      if (typeof state.timeClosedLastTime !== 'undefined') {
+        let timeElapsed = (new Date().getTime() - state.timeClosedLastTime);
+
+        if (timeElapsed < 30000) {
+          // restore textarea
+          if (typeof state.textarea !== 'undefined') {
+            draftTextHolder = state.textarea;
+            $('.add-textitem').text(state.textarea);
+          }
+          // restore tagarea
+          if (typeof state.tags !== 'undefined') {
+            state.tags.forEach(t => {
+              addHashtagToDraft(t);
+            })
+          }
+          // restore scrollY
+          if (typeof state.scrollY !== 'undefined') {
+            scrollYHolder = state.scrollY;
+            window.scrollTo(0, scrollYHolder);
+          }
+          // restore searchbox
+          if (typeof state.searchQuery !== 'undefined') {
+            fireSearchWithQuery(state.searchQuery);
+            searchQueryHolder = $('.searchbox').val();
+          }
+          if (typeof state.textareaIsOpen !== 'undefined') {
+            if (state.textareaIsOpen) {
+              openAddTextItemForm();
+            }
+          }
+
+        }
+      }
+    })
+}
+
+const switchTextareaSize = (e, forceExpandLess = false) => {
+  let sizeChangerIcon = $('.size-changer').find('i');
+
+  let config = sizeChangerIcon.text() === 'expand_less' || forceExpandLess ?
+    {
+      height: '25px',
+      minHeight: '25px',
+      icon: 'expand_more',
+      command: 'OVERLAY_OFF'
+    } : {
+      height: '300px',
+      minHeight: '300px',
+      icon: 'expand_less',
+      command: 'OVERLAY_ON'
+    }
+
+  // change textarea size and icon
+  $('.add-textitem').css({
+    height: config.height,
+    minHeight: config.minHeight
+  })
+  sizeChangerIcon.text(config.icon);
+
+  // turn on/off overlay of the current tab
+  chrome.runtime.sendMessage({
+    command: config.command
+  },
+    null
+  );
+}
+
 
 // initialize
 document.addEventListener('DOMContentLoaded', () => {

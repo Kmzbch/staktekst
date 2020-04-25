@@ -67,11 +67,12 @@ const MENU_ITEMS = [{
 },
 {
   id: "google",
-  title: "Google画像検索",
+  title: "Google検索",
   contexts: ["selection"],
-  url: "https://encrypted.google.com/search?hl=en&gl=en&tbm=isch&q=%s",
+  url: "https://encrypted.google.com/search?hl=en&gl=en&q=%s",
 },
 ];
+
 
 const executeUserCommand = (commandId, text, tabTitle, tabUrl, tabId) => {
   console.log(commandId);
