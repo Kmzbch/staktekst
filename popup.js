@@ -4,20 +4,16 @@ const textarea = document.querySelector('.add-textitem');
 const tagarea = document.querySelector('.tagarea');
 const stackDOM = document.querySelector('#textstack');
 
-// holder variables
+// state variables
 let stack = [];
 let tagStack = ['bookmark', 'clip', 'note'];
 let dateStack = [];
-
 let windowState = {
   draftText: '',
   draftHashtags: [],
   searchQuery: '',
   scrollY: 0
 }
-
-let timer = null;
-let background = chrome.extension.getBackgroundPage();
 
 /* switches */
 
@@ -227,7 +223,7 @@ const clearAllItems = () => {
   $('.add-textitem').val('');
   $('.searchbox').val('');
 
-  // reset holder variables
+  // reset state variables
   stack = [];
   dateStack = [];
   tagStack = ['bookmark', 'clip', 'note'];
@@ -329,7 +325,7 @@ const submitForm = (e) => {
 
       // display system message
       displayMessageOnTopboard('Item Added!');
-      timer = setTimeout(() => {
+      setTimeout(() => {
         updateTextInfoOnTopboard($('.add-textitem').val());
       }, 700);
 
@@ -348,10 +344,6 @@ const submitForm = (e) => {
 
 
 function updateInputForm(e) {
-  // clear
-  if (timer) {
-    clearTimeout(timer)
-  }
   $('.tagarea').find('.error').remove();
 
   let hashtags = e.target.value.match(/(^|\s)((#|＃)[^\s]+)(\s$|\n)/);
@@ -417,7 +409,6 @@ function attachContentEditableEvents(wrapper) {
 
   // add to content DIV
   contentDIV.addEventListener('focus', (e) => {
-
     wrapper.classList.add('editing');
 
     // move caret to the text tail
@@ -588,7 +579,6 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   }
 }
 
-
 /**
  * 
  */
@@ -601,7 +591,6 @@ const insertDateSeparator = () => {
 
     if (dateStack.length === 0) {
       dateSeparator.innerHTML = date;
-
       stackDOM.insertBefore(dateSeparator, wrapper);
       dateStack.push(date);
     } else {
@@ -617,22 +606,18 @@ const insertDateSeparator = () => {
   let now = new Date();
   let hours = ('0' + now.getHours()).slice(-2);
   let minutes = ('0' + now.getMinutes()).slice(-2);
-
-  let currentTime = hours + ':' + minutes;
-  let todaySeparator = document.createElement('div');
-  todaySeparator.className = 'date';
-  todaySeparator.classList.add('current');
-  todaySeparator.textContent = formatDate() + ' ' + currentTime;
-
-  stackDOM.append(todaySeparator);
+  $('<div>', {
+    addClass: 'date current',
+    text: formatDate() + ' ' + hours + ':' + minutes
+  }).appendTo(stackDOM)
 }
 
 const initializeEventListeners = () => {
 
   /* window events */
   window.onunload = () => {
-    // save state
-    background.chrome.storage.local.set({
+    // save state in background.js
+    chrome.extension.getBackgroundPage().chrome.storage.local.set({
       searchQuery: windowState.searchQuery,
       textarea: windowState.draftText,
       tags: windowState.draftHashtags,
