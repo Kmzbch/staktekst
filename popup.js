@@ -12,7 +12,8 @@ let windowState = {
   draftText: '',
   draftHashtags: [],
   searchQuery: '',
-  scrollY: 0
+  scrollY: 0,
+  sortedByNew: true
 }
 
 /* switches */
@@ -233,6 +234,7 @@ const clearAllItems = () => {
     draftHashtags: [],
     searchQuery: '',
     scrollY: 0,
+    sortedByNew: true
   }
 }
 
@@ -383,6 +385,7 @@ function removeTextItem(textitemDOM) {
 
     // remove DOM
     textitemDOM.remove();
+
 
     switchToolboxVisibility(true);
   }, 450);
@@ -623,6 +626,7 @@ const initializeEventListeners = () => {
       tags: windowState.draftHashtags,
       scrollY: windowState.scrollY,
       timeClosedLastTime: new Date().toJSON(),
+      sortedByNew: windowState.sortedByNew
     });
   };
 
@@ -778,6 +782,7 @@ const switchSortOrder = (forceByNew = false) => {
     $('.sort-by').html('Old <i class="material-icons">arrow_downward</i>');
     $('#textstack').css('flexDirection', 'column')
   }
+  windowState.sortedByNew = sortingByNew;
 }
 
 const switchToolboxVisibility = (forseVisible = false) => {
@@ -872,7 +877,7 @@ const renderStack = () => {
  * 
  */
 const restorePreviousState = () => {
-  chrome.storage.local.get(['searchQuery', 'textarea', 'tags', 'timeClosedLastTime', 'scrollY'],
+  chrome.storage.local.get(['searchQuery', 'textarea', 'tags', 'timeClosedLastTime', 'scrollY', 'sortedByNew'],
     state => {
       if (typeof state.timeClosedLastTime !== 'undefined') {
         let timeElapsed = (new Date() - new Date(state.timeClosedLastTime));
@@ -899,6 +904,12 @@ const restorePreviousState = () => {
             fireSearchWithQuery(state.searchQuery);
             windowState.searchQuery = $('.searchbox').val();
           }
+          // restore sort order
+          if (typeof state.sortedByNew !== 'undefined') {
+            //            fireSearchWithQuery(state.searchQuery);
+            switchSortOrder(state.sortedByNew ? false : true)
+          }
+
         }
       }
     })
