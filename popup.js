@@ -9,12 +9,12 @@ let stack = [];
 let tagStack = ['bookmark', 'clip', 'note'];
 let dateStack = [];
 
-let draftTextHolder = ''; // to save draft text when unloading
-let textareaOpeningState = false;
-let draftHashtagsHolder = [];
-
-let searchQueryHolder = '';
-let scrollYHolder = 0;
+let windowState = {
+  draftText: '',
+  draftHashtags: [],
+  searchQuery: '',
+  scrollY: 0
+}
 
 let timer = null;
 let background = chrome.extension.getBackgroundPage();
@@ -25,7 +25,7 @@ const updateSearchResult = () => {
 
   let term = $('.searchbox').val().trim().toLowerCase();
 
-  searchQueryHolder = term;
+  windowState.searchQuery = term;
 
   let hits;
   if (term.split(' ').length > 1 && term.split(' ')[0].slice(0, 1) === '#') {
@@ -73,7 +73,6 @@ function filterTextItems(term) {
   Array.from(stackDOM.children)
     .map(textItem => {
       // remove text decoration and highlight
-      // textItem.firstChild.innerHTML = textItem.firstChild.innerText;
       textItem.firstChild.innerHTML = textItem.firstChild.innerHTML;
 
       if (textItem.textContent.match(termRegex)) {
@@ -232,9 +231,13 @@ const clearAllItems = () => {
   stack = [];
   dateStack = [];
   tagStack = ['bookmark', 'clip', 'note'];
-  draftTextHolder = '';
-  draftHashtagsHolder = [];
-  textareaOpeningState = false;
+
+  windowState = {
+    draftText: '',
+    draftHashtags: [],
+    searchQuery: '',
+    scrollY: 0,
+  }
 }
 
 const selectOnDropdownList = (e) => {
@@ -332,8 +335,10 @@ const submitForm = (e) => {
 
       // clear form and holders to the initial state
       $('.add-textitem').val('');
-      draftTextHolder = '';
-      draftHashtagsHolder = [];
+
+      windowState.draftText = '';
+      windowState.draftHashtags = [];
+
       switchTextareaSize(e, true);
 
       return false;
@@ -365,7 +370,7 @@ function updateInputForm(e) {
     }
   }
 
-  draftTextHolder = e.target.value.trim();
+  windowState.draftText = e.target.value.trim();
 
   fitHeightToContent(textarea);
   updateTextInfoOnTopboard($('.add-textitem').val());
@@ -465,7 +470,6 @@ function attachContentEditableEvents(wrapper) {
   wrapper.addEventListener('cut', fireChange);
   wrapper.addEventListener('mouseup', fireChange);
   wrapper.addEventListener('change', (e) => {
-    // if (e.target.classList.contains('content')) {
     let id = e.target.querySelector('input').value;
     let newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
     updateTextInfoOnTopboard(contentDIV.textContent);
@@ -618,7 +622,6 @@ const insertDateSeparator = () => {
   let todaySeparator = document.createElement('div');
   todaySeparator.className = 'date';
   todaySeparator.classList.add('current');
-  //  todaySeparator.textContent = currentTime + ' ' + formatDate();
   todaySeparator.textContent = formatDate() + ' ' + currentTime;
 
   stackDOM.append(todaySeparator);
@@ -630,10 +633,11 @@ const initializeEventListeners = () => {
   window.onunload = () => {
     // save state
     background.chrome.storage.local.set({
-      searchQuery: searchQueryHolder,
-      textarea: draftTextHolder,
-      tags: draftHashtagsHolder,
-      textareaIsOpen: textareaOpeningState
+      searchQuery: windowState.searchQuery,
+      textarea: windowState.draftText,
+      tags: windowState.draftHashtags,
+      scrollY: windowState.scrollY,
+      timeClosedLastTime: new Date().toJSON(),
     });
   };
 
@@ -650,12 +654,7 @@ const initializeEventListeners = () => {
       $('footer').css('opacity', 0)
     }
     // save scrollY position
-    scrollYHolder = window.scrollY;
-
-    chrome.storage.local.set({
-      timeClosedLastTime: new Date().getTime(),
-      scrollY: scrollYHolder,
-    });
+    windowState.scrollY = window.scrollY;
   }
 
   window.addEventListener('blur', () => {
@@ -692,12 +691,11 @@ const initializeEventListeners = () => {
 
   /* textarea */
   textarea.addEventListener('focus', (e) => {
-    if ($('.searchbox').val().slice(0, 1) === '#' && !draftHashtagsHolder.includes($('.searchbox').val().slice(1))) {
+    if ($('.searchbox').val().slice(0, 1) === '#'
+      && !windowState.draftHashtags.includes($('.searchbox').val().slice(1))) {
       while (tagarea.lastChild && tagarea.children.length > 1) {
         tagarea.removeChild(tagarea.lastChild);
       }
-      draftHashtagsHolder.length = [];
-
       let tag = $('.searchbox').val().slice(1).split(' ')[0]
       addHashtagToDraft(tag);
     }
@@ -807,8 +805,6 @@ const switchToolboxVisibility = (forseVisible = false) => {
 }
 
 const openAddTextItemForm = () => {
-  textareaOpeningState = true;
-
   switchToolboxVisibility(false);
   // hide
   $('.opener').addClass('hidden');
@@ -821,8 +817,6 @@ const openAddTextItemForm = () => {
 }
 
 const closeAddTextItemForm = () => {
-  textareaOpeningState = false;
-
   switchToolboxVisibility(true);
   // hide
   $('.add-textitem').addClass('hidden');
@@ -860,15 +854,13 @@ const addHashtagToDraft = (tagName) => {
       // attach remove event
       'click': (e) => {
         $(e.currentTarget).remove();
-        // to be removed from storage
-        let index = draftHashtagsHolder.indexOf(tagName);
-        draftHashtagsHolder.splice(index, 1);
+        let index = windowState.draftHashtags.indexOf(tagName);
+        windowState.draftHashtags.splice(index, 1);
       }
     }
   }).get(0))
-
   // save draft hashtags
-  draftHashtagsHolder.push(tagName);
+  windowState.draftHashtags.push(tagName)
 }
 
 /**
@@ -895,15 +887,15 @@ const renderStack = () => {
  * 
  */
 const restorePreviousState = () => {
-  chrome.storage.local.get(['searchQuery', 'textarea', 'tags', 'timeClosedLastTime', 'scrollY', 'textareaIsOpen'],
+  chrome.storage.local.get(['searchQuery', 'textarea', 'tags', 'timeClosedLastTime', 'scrollY'],
     state => {
       if (typeof state.timeClosedLastTime !== 'undefined') {
-        let timeElapsed = (new Date().getTime() - state.timeClosedLastTime);
+        let timeElapsed = (new Date() - new Date(state.timeClosedLastTime));
 
         if (timeElapsed < 30000) {
           // restore textarea
           if (typeof state.textarea !== 'undefined') {
-            draftTextHolder = state.textarea;
+            windowState.draftText = state.textarea;
             $('.add-textitem').text(state.textarea);
           }
           // restore tagarea
@@ -914,20 +906,14 @@ const restorePreviousState = () => {
           }
           // restore scrollY
           if (typeof state.scrollY !== 'undefined') {
-            scrollYHolder = state.scrollY;
-            window.scrollTo(0, scrollYHolder);
+            windowState.scrollY = state.scrollY;
+            window.scrollTo(0, state.scrollY);
           }
           // restore searchbox
           if (typeof state.searchQuery !== 'undefined') {
             fireSearchWithQuery(state.searchQuery);
-            searchQueryHolder = $('.searchbox').val();
+            windowState.searchQuery = $('.searchbox').val();
           }
-          if (typeof state.textareaIsOpen !== 'undefined') {
-            if (state.textareaIsOpen) {
-              openAddTextItemForm();
-            }
-          }
-
         }
       }
     })
