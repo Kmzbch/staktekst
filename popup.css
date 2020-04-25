@@ -722,6 +722,14 @@ input:focus {
     margin-right: 6px;
 }
 
+.removing {
+    
+}
+.removing:not(.default):hover::after {
+    content: "\00d7";
+    margin-left: 2px;
+}
+
 
 
 

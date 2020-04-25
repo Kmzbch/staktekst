@@ -418,8 +418,6 @@ function attachContentEditableEvents(wrapper) {
     let selection = window.getSelection();
     let range = document.createRange();
 
-    const p = e.target.lastChild;
-
     range.setStart(e.target.lastChild, e.target.lastChild.textContent.length);
     range.setEnd(e.target.lastChild, e.target.lastChild.textContent.length);
 
@@ -540,12 +538,43 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
       input.type = 'text';
       input.classList.add('tagadd');
       input.addEventListener('blur', (ev) => {
-        // ev.target.remove(ev.target);
+        ev.target.value = ev.target.value.trim()
+        if (ev.target.value !== '') {
+          let id = stackWrapper.querySelector('input').value;
+          // update Tag
+          let tagName = ev.target.value;
+          let index = stack.findIndex(item => item.id === id);
+          stack[index].footnote.tags.push(tagName);
+          stackStorage.set(JSON.stringify(stack));
+
+          // 
+          let newTag = document.createElement('span');
+          newTag.className = 'tag';
+          if (!isNaN(Date.parse(ev.target.value))) {
+            newTag.classList.add('duedate');
+            newTag.textContent = '~' + ev.target.value;
+            stackWrapper.querySelector('.footnote').appendChild(newTag);
+            newTag.parentNode.insertBefore(newTag, newTag.parentNode.firstChild);
+          } else {
+            newTag.textContent = '#' + ev.target.value;
+            stackWrapper.querySelector('.footnote').insertBefore(newTag, divWrap);
+          }
+          if (!tagStack.includes(ev.target.value)) {
+            tagStack.push(ev.target.value);
+          }
+          ev.target.value = '';
+          if (stackWrapper.querySelector('.footnote').childElementCount >= 6) {
+            divWrap.classList.add('hidden');
+          }
+        }
+
       })
 
       input.addEventListener('keyup', (ev) => {
         ev.preventDefault();
-        if (ev.keyCode === 13) {
+        // if (ev.keyCode === 13) {
+        if (ev.target.value[ev.target.value.length - 1] === ' ' || ev.keyCode === 13) {
+          ev.target.value = ev.target.value.trim()
           if (ev.target.value !== '') {
             let id = stackWrapper.querySelector('input').value;
             // update Tag
@@ -574,6 +603,30 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
               divWrap.classList.add('hidden');
             }
           }
+        } else if (ev.keyCode === 8 && ev.target.value === '') {
+
+          let prevTag = ev.target.parentElement.previousElementSibling
+          if (!['note', 'clip', 'bookmark'].includes(prevTag.textContent.slice(1))) {
+            // remove tag from footnote
+            let tagName = prevTag.textContent;
+            console.log(tagName);
+            let stackWrapper = prevTag.parentElement.parentElement;
+            let id = stackWrapper.querySelector('input').value;
+
+            let index = stack.findIndex(item => item.id === id);
+            let tagIndex = stack[index].footnote.tags.indexOf(tagName);
+            stack[index].footnote.tags.splice(tagIndex, 1);
+
+            stackStorage.set(JSON.stringify(stack));
+
+            prevTag.parentElement.removeChild(prevTag);
+
+            ev.target.value = tagName.slice(1);
+            ev.target.focus();
+          }
+
+
+
         }
       })
       // stackWrapper.querySelector('.footnote').appendChild(input);
@@ -706,8 +759,31 @@ const initializeEventListeners = () => {
   // text stack
   stackDOM.addEventListener('click', (e) => {
     if (e.target.classList.contains('tag')) {
-      // when hashtag clicked
-      fireSearchWithQuery(e.target.innerHTML);
+      if (e.ctrlKey && e.target.classList.contains('removing')) {
+        if (!['note', 'clip', 'bookmark'].includes(e.target.textContent.slice(1))) {
+          // remove tag from footnote
+          let tagName = e.target.textContent;
+          console.log(tagName);
+          let stackWrapper = e.target.parentElement.parentElement;
+          let id = stackWrapper.querySelector('input').value;
+
+          let index = stack.findIndex(item => item.id === id);
+          let tagIndex = stack[index].footnote.tags.indexOf(tagName);
+          stack[index].footnote.tags.splice(tagIndex, 1);
+
+          stackStorage.set(JSON.stringify(stack));
+
+          e.target.parentElement.removeChild(e.target);
+
+          //
+          stackWrapper.querySelector('.footnote')
+            .querySelector('.divWrap').classList.remove('hidden');
+
+        }
+      } else {
+        // when hashtag clicked
+        fireSearchWithQuery(e.target.innerHTML);
+      }
     } else if (e.target.classList.contains('checkbox')) {
       // when checkbox clicked
       e.target.style = 'color: white !important;';
@@ -717,6 +793,34 @@ const initializeEventListeners = () => {
       closeAddTextItemForm();
     }
   });
+
+  // // select removing tag by pressing ctrl key
+  // stackDOM.addEventListener('keyup', (e) => {
+  //   console.log("!!");
+  //   if (e.target.classList.contains('tag')) {
+  //     if (e.keyCode === 17) {
+  //       e.target.classList.add('removing');
+  //     }
+  //   }
+  // })
+
+  stackDOM.addEventListener('mouseover', (e) => {
+    if (e.target.classList.contains('tag')) {
+      if (!['note', 'clip', 'bookmark'].includes(e.target.textContent.slice(1))) {
+        if (e.ctrlKey && !e.target.classList.contains('removing')) {
+          e.target.classList.add('removing');
+        }
+      }
+    }
+  })
+  stackDOM.addEventListener('mouseout', (e) => {
+    if (!['note', 'clip', 'bookmark'].includes(e.target.textContent.slice(1))) {
+      if (e.target.classList.contains('tag')) {
+        e.target.classList.remove('removing');
+      }
+    }
+  })
+
 
   /* clear stack button */
   $('.clear-button').click(showClearStackWindow);
