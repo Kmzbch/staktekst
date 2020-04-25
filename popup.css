@@ -723,6 +723,7 @@ input:focus {
 }
 
 .removing {
+    text-decoration: underline;
     
 }
 .removing:not(.default):hover::after {

@@ -733,6 +733,7 @@ const initializeEventListeners = () => {
 
   /* textarea */
   textarea.addEventListener('focus', (e) => {
+
     if ($('.searchbox').val().slice(0, 1) === '#'
       && !windowState.draftHashtags.includes($('.searchbox').val().slice(1))) {
       while (tagarea.lastChild && tagarea.children.length > 1) {
@@ -741,8 +742,9 @@ const initializeEventListeners = () => {
       let tag = $('.searchbox').val().slice(1).split(' ')[0]
       addHashtagToDraft(tag);
     }
+
     fitHeightToContent(e.target);
-    updateTextInfoOnTopboard(e.target.textContent);
+    updateTextInfoOnTopboard(e.target.value);
   })
 
   $('.add-textitem').on({
@@ -998,11 +1000,6 @@ const restorePreviousState = () => {
               addHashtagToDraft(t);
             })
           }
-          // restore scrollY
-          if (typeof state.scrollY !== 'undefined') {
-            windowState.scrollY = state.scrollY;
-            window.scrollTo(0, state.scrollY);
-          }
           // restore searchbox
           if (typeof state.searchQuery !== 'undefined') {
             fireSearchWithQuery(state.searchQuery);
@@ -1012,6 +1009,11 @@ const restorePreviousState = () => {
           if (typeof state.sortedByNew !== 'undefined') {
             //            fireSearchWithQuery(state.searchQuery);
             switchSortOrder(state.sortedByNew ? false : true)
+          }
+          // restore scrollY
+          if (typeof state.scrollY !== 'undefined') {
+            windowState.scrollY = state.scrollY;
+            window.scrollTo(0, state.scrollY);
           }
 
         }
