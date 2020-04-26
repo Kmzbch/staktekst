@@ -84,10 +84,11 @@ function filterTextItems(term) {
     .filter(textItem => !textItem.classList.contains('filtered'))
     .forEach(textItem => {
       let contentDIV = textItem.firstElementChild;
+      console.log(contentDIV.innerText);
 
       // add highlight when searching
       if (term.length >= 1) {
-        contentDIV.innerHTML = contentDIV.textContent.replace(termRegex, "<span class='highlighted'>$1</span>$2");
+        contentDIV.innerHTML = contentDIV.innerText.replace(termRegex, "<span class='highlighted'>$1</span>$2");
       } else {
         // contentDIV.innerHTML = contentDIV.textContent;
         termRegex = /<span class="highlighted">(.*?)<\/span>/g
@@ -96,14 +97,14 @@ function filterTextItems(term) {
       contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/ig, '');
 
       // check if the urls are made up of ascii
-      if (contentDIV.textContent.match(/(https?:\/\/[\x01-\x7E]+)/g)) {
-        contentDIV.innerHTML = enableURLEmbededInText(contentDIV.textContent);
+      if (contentDIV.innerText.match(/(https?:\/\/[\x01-\x7E]+)/g)) {
+        contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
         // restore '\n'
         let nodes = contentDIV.querySelectorAll('.pseudolink');
 
         if (nodes.length !== 0) {
           let last = nodes[nodes.length - 1];
-          contentDIV.childNodes[contentDIV.childNodes.length - 2].textContent += '\n'
+          contentDIV.childNodes[contentDIV.childNodes.length - 2].nodeValue += '\n'
         }
 
         contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
@@ -244,8 +245,8 @@ const clearAllItems = () => {
 
 const selectOnDropdownList = (e) => {
   let liSelected = $('#dropdownlist').find('.selected');
-  let unfiltered = Array.from($('#dropdownlist').children()).filter(tagItem => !tagItem.hasClass('filtered'));
-  let index = unfiltered.findIndex(item => item === liSelected);
+  let unfiltered = $('li').filter(tagItem => !$(tagItem).hasClass('filtered'));
+  let index = unfiltered.index(liSelected);
 
   if (e.keyCode === 13) {
     // Enter
@@ -261,7 +262,7 @@ const selectOnDropdownList = (e) => {
         if (index - 1 >= 0) {
           // move up
           liSelected.removeClass('selected');
-          unfiltered[index - 1].addClass('selected');
+          $(unfiltered[index - 1]).addClass('selected');
         } else {
           // if no item to select at the top
           hideDropdownList()
@@ -276,8 +277,8 @@ const selectOnDropdownList = (e) => {
       if (liSelected) {
         if (unfiltered.length > index + 1) {
           // move down
-          liSelected.classList.remove('selected');
-          unfiltered[index + 1].classList.add('selected');
+          liSelected.removeClass('selected');
+          $(unfiltered[index + 1]).addClass('selected');
         }
       } else {
         // if no item to select at the bottom
