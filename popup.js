@@ -94,7 +94,7 @@ function filterTextItems(term) {
         termRegex = /<span class="highlighted">(.*?)<\/span>/g
         contentDIV.innerHTML = contentDIV.innerHTML.replace(termRegex, '$1');
       }
-      contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/ig, '');
+      contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/ig, '<br>');
 
       // check if the urls are made up of ascii
       if (contentDIV.innerText.match(/(https?:\/\/[\x01-\x7E]+)/g)) {
@@ -102,12 +102,10 @@ function filterTextItems(term) {
         // restore '\n'
         let nodes = contentDIV.querySelectorAll('.pseudolink');
 
-        if (nodes.length !== 0) {
+        if (nodes.length !== 1) {
           let last = nodes[nodes.length - 1];
-          contentDIV.childNodes[contentDIV.childNodes.length - 2].nodeValue += '\n'
+          $('<BR>').insertBefore(last);
         }
-
-        contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
       }
 
     });
@@ -500,7 +498,9 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   stackWrapper.id = id;
   stackWrapper.classList.add(type);
 
-  stackWrapper.innerHTML = `<div class='content'>${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><input type='hidden' value="${date}"><div class="spacer"></div><div class="footnote"></div>`;
+
+
+  stackWrapper.innerHTML = `<div class='content'>${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><input class='itemDate' type='hidden' value="${date}"><div class="spacer"></div><div class="footnote"></div>`;
 
   $('#textstack').append(stackWrapper);
 
@@ -648,27 +648,26 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   }
 }
 
-
-
-
 /**
- * 
+ * insert date as a separator
  */
 const insertDateSeparator = () => {
-  Array.from(stackDOM.children).forEach(wrapper => {
-    let dateSeparator = document.createElement('div');
-    dateSeparator.className = 'date';
-
-    let date = wrapper.querySelectorAll('input')[1].value;
+  $(stackDOM.children).each((index, wrapper) => {
+    let date = $(wrapper).find('.itemDate').val();
 
     if (dateStack.length === 0) {
-      dateSeparator.innerHTML = date;
-      stackDOM.insertBefore(dateSeparator, wrapper);
+      $('<div>', {
+        addClass: 'date',
+        text: date
+      }).insertBefore(wrapper)
       dateStack.push(date);
     } else {
+      // insert only between the date and the previous date
       if (dateStack[dateStack.length - 1] !== date) {
-        dateSeparator.innerHTML = date;
-        stackDOM.insertBefore(dateSeparator, wrapper);
+        $('<div>', {
+          addClass: 'date',
+          text: date
+        }).insertBefore(wrapper)
         dateStack.push(date);
       }
     }
@@ -681,14 +680,9 @@ const insertDateSeparator = () => {
   $('<div>', {
     addClass: 'date current',
     text: formatDate() + ' ' + hours + ':' + minutes
-  }).appendTo(stackDOM)
+  }).appendTo(stackDOM);
+
 }
-
-
-
-
-
-
 
 /**
  * Initialize events listners
