@@ -566,11 +566,15 @@ input:focus {
 
 
 .bookmark:hover {
-    border-left: 6px solid goldenrod !important;
+    /* border-left: 6px solid goldenrod !important;
     border-right: 1px solid gray !important;
     margin-left: 10px !important;
     margin-right: 15px;
-    background-color: lemonchiffon !important;
+    background-color: lemonchiffon !important; */
+    background: azure !important;
+    border-right: solid 8px teal;
+    margin-right: 8px;
+
 }
 
 .bookmark {
@@ -603,7 +607,7 @@ input:focus {
 }
 
 .clip a:hover {
-    color: rgb(32, 123, 156) !important;
+    /* color: rgb(32, 123, 156) !important; */
     text-decoration: underline !important;
 }
 
@@ -657,10 +661,50 @@ input:focus {
 }
 
 .clip .footnote {
+    position: absolute;
+
+    text-align: right;
+    /* right: 0; */
+    width: 100%;
+    
+    left: 0;
+    margin-left: 0px !important;
+    right: 0;
+    margin-right: 30px !important;
+    color: rgba(0, 0, 0, 0.5);
+
+    
+}
+.clip .footnote a {
+    /* color: rgba(32, 123, 156, 0.6) !important; */
+
+}
+
+.clip a {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    margin-right: 10px;
+    float: right;
+    width: 60%;
+}
+.clip a:hover {
+    /* font-weight: bold; */
+        color: rgba(32, 123, 156, 1) !important;
 
+}
+.clip span {
+    border-right: none !important;
+
+    margin-left: 15px !important;
+    clear: right !important;
+    float: left !important;
+
+    color: rgba(0, 0, 0, 0.2);
+
+}
+.clip span:hover {
+    color: rgba(0, 0, 0, 0.5);
 }
 
 .divWrap::before {
@@ -710,17 +754,20 @@ input:focus {
 
 }
 
-.footnote:hover {
+/* .footnote:hover {
     color: rgb(32, 123, 156) !important;
-}
+} */
 
 .tag:hover {
+    /* color: rgb(32, 123, 156) !important; */
     font-weight: bold;
 }
 
 .tag {
     margin-right: 6px;
 }
+
+
 
 .removing {
     text-decoration: underline;

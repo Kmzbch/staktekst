@@ -88,19 +88,26 @@ function filterTextItems(term) {
 
       // add highlight when searching
       if (term.length >= 1) {
-        contentDIV.innerHTML = contentDIV.innerHTML.replace(/<br>/ig, '\n');
         contentDIV.innerHTML = contentDIV.textContent.replace(termRegex, "<span class='highlighted'>$1</span>$2");
-        contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/ig, '<br>');
-
       } else {
         // contentDIV.innerHTML = contentDIV.textContent;
         termRegex = /<span class="highlighted">(.*?)<\/span>/g
         contentDIV.innerHTML = contentDIV.innerHTML.replace(termRegex, '$1');
       }
+      contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/ig, '');
 
       // check if the urls are made up of ascii
       if (contentDIV.textContent.match(/(https?:\/\/[\x01-\x7E]+)/g)) {
         contentDIV.innerHTML = enableURLEmbededInText(contentDIV.textContent);
+        // restore '\n'
+        let nodes = contentDIV.querySelectorAll('a');
+        if (nodes.length !== 0) {
+          let last = nodes[nodes.length - 1];
+          console.log(contentDIV.childNodes[0])
+          contentDIV.childNodes[0].textContent += '\n'
+        }
+
+        contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
       }
 
     });
@@ -494,17 +501,20 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
 
   // enable URL link
   let contentDIV = stackWrapper.firstElementChild;
-  contentDIV.innerHTML = enableURLEmbededInText(contentDIV.textContent);
+  contentDIV.innerHTML = enableURLEmbededInText(content);
+  contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
+
+  //
 
   if (type === 'clip') {
-    stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag hidden">#clip</span><a href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</a>`;
+    // stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag clip">#clip</span><a href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</a>`;
+    stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag clip hidden">#clip</span><a href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</a>`;
   } else {
     stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag">#${type}</span>`;
     if (type === 'note') {
       attachContentEditableEvents(stackWrapper);
     }
   }
-  contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
 
   if (typeof footnote.tags !== 'undefined') {
     footnote.tags.forEach(item => {
@@ -976,6 +986,7 @@ const renderStack = () => {
       insertDateSeparator();
     }
   });
+
 };
 
 /**
