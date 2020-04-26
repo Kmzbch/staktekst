@@ -17,7 +17,6 @@ let windowState = {
 }
 
 /* switches */
-
 const updateSearchResult = () => {
 
   let term = $('.searchbox').val().trim().toLowerCase();
@@ -150,25 +149,23 @@ const setDropdownListItems = () => {
     .filter(item => isNaN(Date.parse(item))) // filter duedate tag
     .forEach(tag => {
       if (tag !== '') {
-        let li = document.createElement('li');
-        li.textContent = tag;
-
-        $('#dropdownlist').append(li);
-
-        // attach events
-        li.addEventListener('mouseover', (e) => {
-          // work as hover
-          let liSelected = $('#dropdownlist').find('.selected');
-          if (liSelected) {
-            liSelected.removeClass('selected');
+        $('<li>', {
+          text: tag,
+          on: {
+            mouseover: (e) => {
+              // work as hover
+              let liSelected = $('#dropdownlist').find('.selected');
+              if (liSelected) {
+                liSelected.removeClass('selected');
+              }
+              $(e.target).addClass('selected');
+            },
+            click: (e) => {
+              fireSearchWithQuery('#' + $(e.target).text());
+              hideDropdownList();
+            }
           }
-          e.target.classList.add('selected');
-        });
-
-        li.addEventListener('click', (e) => {
-          fireSearchWithQuery('#' + e.target.textContent);
-          hideDropdownList();
-        });
+        }).appendTo($('#dropdownlist'))
       }
     })
 }
@@ -380,6 +377,8 @@ function updateInputForm(e) {
   updateTextInfoMessage();
 }
 
+
+
 function removeTextItem(textitemDOM) {
   // apply visual effects and display Message
   textitemDOM.classList.add('removed')
@@ -399,6 +398,8 @@ function removeTextItem(textitemDOM) {
     switchToolboxVisibility(true);
   }, 450);
 }
+
+
 
 function attachContentEditableEvents(wrapper) {
   // create and insert
@@ -490,6 +491,8 @@ function attachContentEditableEvents(wrapper) {
   }
 }
 
+
+
 const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   let stackWrapper = document.createElement('div');
   stackWrapper.className = 'stackwrapper';
@@ -498,7 +501,6 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
 
   stackWrapper.innerHTML = `<div class='content'>${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><input type='hidden' value="${date}"><div class="spacer"></div><div class="footnote"></div>`;
 
-
   $('#textstack').append(stackWrapper);
 
   // enable URL link
@@ -506,11 +508,7 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   contentDIV.innerHTML = enableURLEmbededInText(content);
   contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
 
-  console.log(contentDIV.innerHTML);
-  //
-
   if (type === 'clip') {
-    // stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag clip">#clip</span><a href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</a>`;
     stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag clip hidden">#clip</span><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span>`;
   } else {
     stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag">#${type}</span>`;
@@ -637,9 +635,6 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
             ev.target.value = tagName.slice(1);
             ev.target.focus();
           }
-
-
-
         }
       })
       // stackWrapper.querySelector('.footnote').appendChild(input);
@@ -647,6 +642,9 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
     }
   }
 }
+
+
+
 
 /**
  * 
@@ -681,25 +679,17 @@ const insertDateSeparator = () => {
   }).appendTo(stackDOM)
 }
 
+
+
+
+
+
+
 /**
  * Initialize events listners
  */
 const initializeEventListeners = () => {
   /* window events */
-  window.onload = () => {
-    // use span tag as a link
-    $(".pseudolink").each((index, element) => {
-      $(element).click(e => {
-        // open url in a background with Ctrl key
-        chrome.tabs.create({
-          url: $(element).attr('href'),
-          active: e.ctrlKey ? false : true
-        })
-        return false;
-      })
-    });
-  }
-
   window.onscroll = () => {
     // show header and footer when scrolling to the top/bottom
     if (window.pageYOffset == 0) {
@@ -768,62 +758,74 @@ const initializeEventListeners = () => {
   })
   $('.size-changer').click(switchTextareaSize);
 
-
-  /* content */
-  /* text stack */
-  stackDOM.addEventListener('click', (e) => {
-    if (e.target.classList.contains('tag')) {
-      if (e.ctrlKey && e.target.classList.contains('removing')) {
-        if (!['note', 'clip', 'bookmark'].includes(e.target.textContent.slice(1))) {
+  /**
+   * the text stack dynamically changes
+   */
+  $('#textstack').click((e) => {
+    let targetElem = e.target;
+    // TAG
+    if ($(targetElem).hasClass('tag')) {
+      if (e.ctrlKey && $(targetElem).hasClass('removing')) {
+        if (!['note', 'clip', 'bookmark'].includes($(targetElem).text().slice(1))) {
           // remove tag from footnote
-          let tagName = e.target.textContent;
-          console.log(tagName);
-          let stackWrapper = e.target.parentElement.parentElement;
-          let id = stackWrapper.querySelector('input').value;
+          let tagName = $(targetElem).text();
+          let stackWrapper = $(targetElem).parent().parent();
+          let id = stackWrapper.find('input').val();
 
           let index = stack.findIndex(item => item.id === id);
           let tagIndex = stack[index].footnote.tags.indexOf(tagName);
           stack[index].footnote.tags.splice(tagIndex, 1);
-
           stackStorage.set(JSON.stringify(stack));
 
-          e.target.parentElement.removeChild(e.target);
-
-          //
-          stackWrapper.querySelector('.footnote')
-            .querySelector('.divWrap').classList.remove('hidden');
-
+          // remove item in the UI
+          $(targetElem).remove();
+          stackWrapper.find('.footnote')
+            .find('.divWrap').removeClass('hidden');
         }
       } else {
         // when hashtag clicked
-        fireSearchWithQuery(e.target.innerHTML);
+        fireSearchWithQuery($(targetElem).html());
       }
-    } else if (e.target.classList.contains('checkbox')) {
+      // CHECKBOX
+    } else if ($(targetElem).hasClass('checkbox')) {
       // when checkbox clicked
-      e.target.style = 'color: white !important;';
-      let textItem = e.target.parentElement;
+      $(targetElem).css('color', 'white !important')
+      let textItem = $(targetElem).parent().get(0);
       removeTextItem(textItem);
-    } else {
+      // PSEUDOLINK
+    } else if ($(targetElem).hasClass('pseudolink')) {
+      // use span tag as a link
+      // open url in a background with Ctrl key
+      chrome.tabs.create({
+        url: $(targetElem).attr('href'),
+        active: e.ctrlKey ? false : true
+      })
+      return false;
+    }
+    else {
       closeAddTextItemForm();
     }
   });
 
-  stackDOM.addEventListener('mouseover', (e) => {
-    if (e.target.classList.contains('tag')) {
-      if (!['note', 'clip', 'bookmark'].includes(e.target.textContent.slice(1))) {
-        if (e.ctrlKey && !e.target.classList.contains('removing')) {
-          e.target.classList.add('removing');
+  $('#textstack').on({
+    mouseover: (e) => {
+      if ($(e.target).hasClass('tag')) {
+        if (!['note', 'clip', 'bookmark'].includes($(e.target).text().slice(1))) {
+          if (e.ctrlKey && !$(e.target).hasClass('removing')) {
+            $(e.target).addClass('removing');
+          }
         }
       }
-    }
-  })
-  stackDOM.addEventListener('mouseout', (e) => {
-    if (!['note', 'clip', 'bookmark'].includes(e.target.textContent.slice(1))) {
-      if (e.target.classList.contains('tag')) {
-        e.target.classList.remove('removing');
+    },
+    mouseout: (e) => {
+      if ($(e.target).hasClass('tag')) {
+        if (!['note', 'clip', 'bookmark'].includes(e.target.textContent.slice(1))) {
+          $(e.target).removeClass('removing');
+        }
       }
-    }
+    },
   })
+
 
   /* footer & modal */
   $('.clear-button').click(showClearStackWindow);
@@ -834,6 +836,7 @@ const initializeEventListeners = () => {
   });
   $('.cancel').click(hideClearStackWindow);
 }
+
 
 /* search */
 function fireSearchWithQuery(query) {
@@ -897,9 +900,11 @@ const updateTextInfoMessage = () => {
 }
 
 const sortTextItems = (sortingByNew) => {
+  // NEW
   if (sortingByNew) {
     $('.sort-by').html('New <i class="material-icons">arrow_upward</i>');
     $('#textstack').css('flexDirection', 'column-reverse')
+    // OLD
   } else {
     $('.sort-by').html('Old <i class="material-icons">arrow_downward</i>');
     $('#textstack').css('flexDirection', 'column')
@@ -909,10 +914,10 @@ const sortTextItems = (sortingByNew) => {
 
 const openAddTextItemForm = () => {
   switchToolboxVisibility(false);
-  // hide
+  // HIDE
   $('.opener').addClass('hidden');
   $('.sort-by').addClass('hidden');
-  // show
+  // SHOW
   $('.add-textitem').removeClass('hidden');
   $('.tagarea').removeClass('hidden');
   // focus
@@ -921,10 +926,10 @@ const openAddTextItemForm = () => {
 
 const closeAddTextItemForm = () => {
   switchToolboxVisibility(true);
-  // hide
+  // HIDE
   $('.add-textitem').addClass('hidden');
   $('.tagarea').addClass('hidden');
-  // show
+  // SHOW
   $('.opener').removeClass('hidden');
   $('.sort-by').removeClass('hidden');
   // turn off overlay
