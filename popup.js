@@ -10,7 +10,7 @@ let tagStack = ['bookmark', 'clip', 'note'];
 let dateStack = [];
 let windowState = {
   draftText: '',
-  draftHashtags: [],
+  draftTags: [],
   searchQuery: '',
   scrollY: 0,
   sortedByNew: true
@@ -332,19 +332,21 @@ const submitForm = (e) => {
 
       renderTextItem(id, type, content, footnote, date);
 
-      // display system message
-      displayMessageOnTopboard('Item Added!');
-      setTimeout(() => {
-        updateTextInfoOnTopboard($('.add-textitem').val());
-      }, 700);
 
       // clear form and holders to the initial state
       $('.add-textitem').val('');
 
       windowState.draftText = '';
-      windowState.draftHashtags = [];
+      // windowState.draftHashtags = [];
+      windowState.draftTags = [];
 
       switchTextareaSize(e, true);
+
+      // display system message
+      displayMessage('Item Added!');
+      setTimeout(() => {
+        updateTextInfoMessage();
+      }, 700);
 
       return false;
     }
@@ -367,22 +369,22 @@ function updateInputForm(e) {
       }).appendTo(tagarea)
     } else {
       e.target.value = e.target.value.replace(regex, '')
-      addHashtagToDraft(hashtags[2].slice(1))
+      addDraftTag(hashtags[2].slice(1))
+      windowState.draftTags.push(hashtags[2].slice(1));
     }
   }
 
   windowState.draftText = e.target.value.trim();
 
   fitHeightToContent(textarea);
-  updateTextInfoOnTopboard($('.add-textitem').val());
+  updateTextInfoMessage();
 }
 
 function removeTextItem(textitemDOM) {
   // apply visual effects and display Message
   textitemDOM.classList.add('removed')
 
-  displayMessageOnTopboard("Item Removed!");
-
+  displayMessage("Item Removed!");
   setTimeout(() => {
     // remove the item
     let id = textitemDOM.querySelector('input').value;
@@ -471,7 +473,7 @@ function attachContentEditableEvents(wrapper) {
   wrapper.addEventListener('change', (e) => {
     let id = e.target.querySelector('input').value;
     let newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
-    updateTextInfoOnTopboard(contentDIV.textContent);
+    updateTextInfoMessage();
 
     // update teext item
     let index = stack.findIndex(item => item.id === id);
@@ -679,27 +681,31 @@ const insertDateSeparator = () => {
   }).appendTo(stackDOM)
 }
 
+/**
+ * Initialize events listners
+ */
 const initializeEventListeners = () => {
-
   /* window events */
-  window.onunload = () => {
-    // save state in background.js
-    chrome.extension.getBackgroundPage().chrome.storage.local.set({
-      searchQuery: windowState.searchQuery,
-      textarea: windowState.draftText,
-      tags: windowState.draftHashtags,
-      scrollY: windowState.scrollY,
-      timeClosedLastTime: new Date().toJSON(),
-      sortedByNew: windowState.sortedByNew
+  window.onload = () => {
+    // use span tag as a link
+    $(".pseudolink").each((index, element) => {
+      $(element).click(e => {
+        // open url in a background with Ctrl key
+        chrome.tabs.create({
+          url: $(element).attr('href'),
+          active: e.ctrlKey ? false : true
+        })
+        return false;
+      })
     });
-  };
+  }
 
   window.onscroll = () => {
-    // show header and footer when scroll to the top/bottom
+    // show header and footer when scrolling to the top/bottom
     if (window.pageYOffset == 0) {
       $('header').css('opacity', 1)
       $('footer').css('opacity', 1)
-    } else if (document.body.offsetHeight + window.scrollY >= document.body.scrollHeight) {
+    } else if ($('body').offsetHeight + window.scrollY >= $('body').scrollHeight) {
       $('header').css('opacity', 1)
       $('footer').css('opacity', 1)
     } else {
@@ -710,18 +716,17 @@ const initializeEventListeners = () => {
     windowState.scrollY = window.scrollY;
   }
 
-  window.addEventListener('blur', () => {
+  $(window).on('unload blur', () => {
+    windowState.closedDateTime = new Date().toJSON();
+    chrome.extension.getBackgroundPage().chrome.storage.local.set(windowState);
     chrome.runtime.sendMessage({
       command: 'OVERLAY_OFF'
-    },
-      null
-    );
+    });
   })
 
+  /* header */
   /* dropdown list */
-  $('#dropdownlist').on('mouseleave', hideDropdownList);
-
-  $('header').on('mouseleave', hideDropdownList);
+  $('#dropdownlist, header').on('mouseleave', hideDropdownList);
 
   /* searchbox  */
   $('.searchbox').on({
@@ -731,33 +736,15 @@ const initializeEventListeners = () => {
     keyup: selectOnDropdownList,
     input: updateSearchResult
   })
-
   $('.searchcancel-button').click(cancelSearch);
 
-  /* toolbox */
+  /* toolbox & text area*/
   $('.opener-top').click(openAddTextItemForm);
   $('.fileexport').click(exportTextItems);
 
-  /* add-sort container */
-  $('.opener').click(openAddTextItemForm);
-  $('.sort-by').click(switchSortOrder);
-
   /* textarea */
-  textarea.addEventListener('focus', (e) => {
-
-    if ($('.searchbox').val().slice(0, 1) === '#'
-      && !windowState.draftHashtags.includes($('.searchbox').val().slice(1))) {
-      while (tagarea.lastChild && tagarea.children.length > 1) {
-        tagarea.removeChild(tagarea.lastChild);
-      }
-      let tag = $('.searchbox').val().slice(1).split(' ')[0]
-      addHashtagToDraft(tag);
-    }
-
-    fitHeightToContent(e.target);
-    updateTextInfoOnTopboard(e.target.value);
-  })
-
+  $('.opener').click(openAddTextItemForm);
+  $('.sort-by').click(() => { sortTextItems(!windowState.sortedByNew) });
   $('.add-textitem').on({
     keyup: submitForm,
     input: updateInputForm,
@@ -765,11 +752,25 @@ const initializeEventListeners = () => {
       $('.header-board').removeClass('entering');
       $('.header-board').text('')
     },
-  })
+    focus: (e) => {
+      // add draft tag when searchbox having tag query
+      if ($('.searchbox').val().slice(0, 1) === '#'
+        && !windowState.draftTags.includes($('.searchbox').val().slice(1))) {
+        while (tagarea.lastChild && tagarea.children.length > 1) {
+          tagarea.removeChild(tagarea.lastChild);
+        }
+        addDraftTag($('.searchbox').val());
 
+      }
+      fitHeightToContent(e.currentTarget);
+      updateTextInfoMessage();
+    }
+  })
   $('.size-changer').click(switchTextareaSize);
 
-  // text stack
+
+  /* content */
+  /* text stack */
   stackDOM.addEventListener('click', (e) => {
     if (e.target.classList.contains('tag')) {
       if (e.ctrlKey && e.target.classList.contains('removing')) {
@@ -807,16 +808,6 @@ const initializeEventListeners = () => {
     }
   });
 
-  // // select removing tag by pressing ctrl key
-  // stackDOM.addEventListener('keyup', (e) => {
-  //   console.log("!!");
-  //   if (e.target.classList.contains('tag')) {
-  //     if (e.keyCode === 17) {
-  //       e.target.classList.add('removing');
-  //     }
-  //   }
-  // })
-
   stackDOM.addEventListener('mouseover', (e) => {
     if (e.target.classList.contains('tag')) {
       if (!['note', 'clip', 'bookmark'].includes(e.target.textContent.slice(1))) {
@@ -834,21 +825,14 @@ const initializeEventListeners = () => {
     }
   })
 
-
-  /* clear stack button */
+  /* footer & modal */
   $('.clear-button').click(showClearStackWindow);
-
-  /* clear stack window modal */
   $('.overlay').click(hideClearStackWindow);
-
-  // clear stack dialog
   $('.ok').click(() => {
     clearAllItems();
     hideClearStackWindow();
   });
-
   $('.cancel').click(hideClearStackWindow);
-
 }
 
 /* search */
@@ -881,7 +865,16 @@ function hideClearStackWindow() {
   $('#clear-window').addClass('hidden');
 }
 
-function displayMessageOnTopboard(message) {
+const switchToolboxVisibility = (forseVisible = false) => {
+  if (forseVisible) {
+    $('.header-board').text('');
+    $('#toolbox').removeClass('hidden');
+  } else {
+    $('#toolbox').addClass('hidden');
+  }
+}
+
+const displayMessage = (message) => {
   if ($('.header-board').hasClass('entering')) {
     $('.header-board').removeClass('entering');
   }
@@ -890,8 +883,20 @@ function displayMessageOnTopboard(message) {
   switchToolboxVisibility(false);
 }
 
-const switchSortOrder = (forceByNew = false) => {
-  let sortingByNew = !$('.sort-by').html().includes('New') || !forceByNew;
+const updateTextInfoMessage = () => {
+  switchToolboxVisibility(false);
+
+  let info = extractTextInfo($('.add-textitem').val());
+  $('.header-board').html(
+    `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`
+  );
+
+  if (!$('.header-board').hasClass('entering')) {
+    $('.header-board').addClass('entering');
+  }
+}
+
+const sortTextItems = (sortingByNew) => {
   if (sortingByNew) {
     $('.sort-by').html('New <i class="material-icons">arrow_upward</i>');
     $('#textstack').css('flexDirection', 'column-reverse')
@@ -900,15 +905,6 @@ const switchSortOrder = (forceByNew = false) => {
     $('#textstack').css('flexDirection', 'column')
   }
   windowState.sortedByNew = sortingByNew;
-}
-
-const switchToolboxVisibility = (forseVisible = false) => {
-  if (forseVisible) {
-    $('.header-board').text('');
-    $('#toolbox').removeClass('hidden');
-  } else {
-    $('#toolbox').addClass('hidden');
-  }
 }
 
 const openAddTextItemForm = () => {
@@ -934,40 +930,25 @@ const closeAddTextItemForm = () => {
   // turn off overlay
   chrome.runtime.sendMessage({
     command: 'OVERLAY_OFF'
-  },
-    null);
+  });
 }
 
-const updateTextInfoOnTopboard = (text) => {
-  switchToolboxVisibility(false);
-
-  let info = extractTextInfo(text);
-
-  $('.header-board').html(
-    `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`
-  );
-
-  if (!$('.header-board').hasClass('entering')) {
-    $('.header-board').addClass('entering');
-  }
-}
-
-const addHashtagToDraft = (tagName) => {
+const addDraftTag = (tagName) => {
+  // sanitize tag
+  tagName = tagName.replace(/^#|\s+$/g, '');
   // create tag
-  tagarea.append($('<span>', {
+  $(tagarea).append($('<span>', {
     addClass: 'hashtag',
     text: tagName,
     on: {
       // attach remove event
       'click': (e) => {
         $(e.currentTarget).remove();
-        let index = windowState.draftHashtags.indexOf(tagName);
-        windowState.draftHashtags.splice(index, 1);
+        let index = windowState.draftTags.indexOf(tagName);
+        windowState.draftTags.splice(index, 1);
       }
     }
-  }).get(0))
-  // save draft hashtags
-  windowState.draftHashtags.push(tagName)
+  }))
 }
 
 /**
@@ -990,49 +971,6 @@ const renderStack = () => {
 
 };
 
-/**
- * Restore the previous popup window state
- * 
- */
-const restorePreviousState = () => {
-  chrome.storage.local.get(['searchQuery', 'textarea', 'tags', 'timeClosedLastTime', 'scrollY', 'sortedByNew'],
-    state => {
-      if (typeof state.timeClosedLastTime !== 'undefined') {
-        let timeElapsed = (new Date() - new Date(state.timeClosedLastTime));
-
-        if (timeElapsed < 30000) {
-          // restore textarea
-          if (typeof state.textarea !== 'undefined') {
-            windowState.draftText = state.textarea;
-            $('.add-textitem').text(state.textarea);
-          }
-          // restore tagarea
-          if (typeof state.tags !== 'undefined') {
-            state.tags.forEach(t => {
-              addHashtagToDraft(t);
-            })
-          }
-          // restore searchbox
-          if (typeof state.searchQuery !== 'undefined') {
-            fireSearchWithQuery(state.searchQuery);
-            windowState.searchQuery = $('.searchbox').val();
-          }
-          // restore sort order
-          if (typeof state.sortedByNew !== 'undefined') {
-            //            fireSearchWithQuery(state.searchQuery);
-            switchSortOrder(state.sortedByNew ? false : true)
-          }
-          // restore scrollY
-          if (typeof state.scrollY !== 'undefined') {
-            windowState.scrollY = state.scrollY;
-            window.scrollTo(0, state.scrollY);
-          }
-
-        }
-      }
-    })
-}
-
 const switchTextareaSize = (e, forceExpandLess = false) => {
   let sizeChangerIcon = $('.size-changer').find('i');
 
@@ -1049,6 +987,8 @@ const switchTextareaSize = (e, forceExpandLess = false) => {
       command: 'OVERLAY_ON'
     }
 
+  updateTextInfoMessage()
+
   // change textarea size and icon
   $('.add-textitem').css({
     height: config.height,
@@ -1059,43 +999,52 @@ const switchTextareaSize = (e, forceExpandLess = false) => {
   // turn on/off overlay of the current tab
   chrome.runtime.sendMessage({
     command: config.command
-  },
-    null
-  );
+  });
 }
 
+/**
+ * Restore the previous popup window state
+ * 
+ */
+const restorePreviousState = () => {
+  chrome.storage.local.get(['searchQuery', 'draftText', 'draftTags', 'scrollY', 'closedDateTime', 'sortedByNew'],
+    state => {
+      windowState = state;
 
+      let timeElapsed = typeof state.closedDateTime !== 'undefined'
+        ? (new Date() - new Date(state.closedDateTime)) : 30000;
+
+      if (timeElapsed < 30000) {
+        // restore textarea
+        if (typeof state.draftText !== 'undefined') {
+          $('.add-textitem').text(state.draftText);
+        }
+        // restore tagarea
+        if (typeof state.draftTags !== 'undefined') {
+          state.draftTags.forEach(tag => {
+            addDraftTag(tag);
+          })
+        }
+        // restore searchbox
+        if (typeof state.searchQuery !== 'undefined') {
+          fireSearchWithQuery(state.searchQuery);
+        }
+        // restore sort order
+        if (typeof state.sortedByNew !== 'undefined') {
+          sortTextItems(state.sortedByNew)
+        }
+        // restore scrollY
+        if (typeof state.scrollY !== 'undefined') {
+          window.scrollTo(0, state.scrollY);
+        }
+      }
+    })
+}
 
 // initialize
 document.addEventListener('DOMContentLoaded', () => {
   initializeEventListeners();
   renderStack();
   restorePreviousState();
-
 });
-
-window.addEventListener('load', () => {
-  const overrideAnchorTagBehaviour = () => {
-    $(".pseudolink").each((index, element) => {
-      element.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-
-
-        let url = element.getAttribute('href');
-
-        if (e.ctrlKey) {
-          chrome.tabs.create({ url: url, active: false })
-        } else {
-          chrome.tabs.create({ url: url, active: true })
-        }
-
-
-        return false;
-      })
-
-    });
-  }
-  overrideAnchorTagBehaviour();
-})
 
