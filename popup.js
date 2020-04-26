@@ -100,11 +100,11 @@ function filterTextItems(term) {
       if (contentDIV.textContent.match(/(https?:\/\/[\x01-\x7E]+)/g)) {
         contentDIV.innerHTML = enableURLEmbededInText(contentDIV.textContent);
         // restore '\n'
-        let nodes = contentDIV.querySelectorAll('a');
+        let nodes = contentDIV.querySelectorAll('.pseudolink');
+
         if (nodes.length !== 0) {
           let last = nodes[nodes.length - 1];
-          console.log(contentDIV.childNodes[0])
-          contentDIV.childNodes[0].textContent += '\n'
+          contentDIV.childNodes[contentDIV.childNodes.length - 2].textContent += '\n'
         }
 
         contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
@@ -504,11 +504,12 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   contentDIV.innerHTML = enableURLEmbededInText(content);
   contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
 
+  console.log(contentDIV.innerHTML);
   //
 
   if (type === 'clip') {
     // stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag clip">#clip</span><a href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</a>`;
-    stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag clip hidden">#clip</span><a href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</a>`;
+    stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag clip hidden">#clip</span><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span>`;
   } else {
     stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag">#${type}</span>`;
     if (type === 'note') {
@@ -1064,9 +1065,31 @@ const switchTextareaSize = (e, forceExpandLess = false) => {
 }
 
 
+
 // initialize
 document.addEventListener('DOMContentLoaded', () => {
   initializeEventListeners();
   renderStack();
   restorePreviousState();
+
 });
+
+window.addEventListener('load', () => {
+  const overrideAnchorTagBehaviour = () => {
+    $(".pseudolink").each((index, element) => {
+      element.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        let url = element.getAttribute('href');
+
+        // chrome.tabs.create({ url: url, active: true })
+        chrome.tabs.create({ url: url, active: false })
+
+        return false;
+      })
+
+    });
+  }
+  overrideAnchorTagBehaviour();
+})
+
