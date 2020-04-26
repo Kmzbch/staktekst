@@ -503,6 +503,10 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
 
   $('#textstack').append(stackWrapper);
 
+  content = $('<div>', {
+    html: content
+  }).text();
+
   // enable URL link
   let contentDIV = stackWrapper.firstElementChild;
   contentDIV.innerHTML = enableURLEmbededInText(content);
