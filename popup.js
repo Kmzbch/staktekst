@@ -1080,10 +1080,16 @@ window.addEventListener('load', () => {
       element.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopImmediatePropagation();
+
+
         let url = element.getAttribute('href');
 
-        // chrome.tabs.create({ url: url, active: true })
-        chrome.tabs.create({ url: url, active: false })
+        if (e.ctrlKey) {
+          chrome.tabs.create({ url: url, active: false })
+        } else {
+          chrome.tabs.create({ url: url, active: true })
+        }
+
 
         return false;
       })
