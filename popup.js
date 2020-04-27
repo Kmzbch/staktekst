@@ -94,6 +94,8 @@ function filterTextItems(term) {
         // add highlight when searching
         if (term.length >= 1) {
           contentDIV.innerHTML = contentDIV.innerText.replace(termRegex, "<span class='highlighted'>$1</span>$2");
+          contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/ig, "<br>");
+
         } else {
           // contentDIV.innerHTML = contentDIV.textContent;
           termRegex = /<span class="highlighted">(.*?)<\/span>/g
