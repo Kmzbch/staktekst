@@ -85,7 +85,6 @@ function filterTextItems(term) {
     .forEach(textItem => {
       let contentDIV = textItem.firstElementChild;
 
-      // 
       contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
       contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
 
@@ -165,30 +164,32 @@ const setDropdownListItems = () => {
 }
 
 const exportTextItems = () => {
-  let content = '';
-
   // get text items to export
-  let textitemIDs = Array.from(stackDOM.children)
-    .filter(textItem => !textItem.classList.contains('date'))
-    .filter(textItem => !textItem.classList.contains('filtered'))
-    .map(textItem => {
-      return textItem.querySelector('input').value;
-    });
+  let textitemIDs = $.map(
+    $(stackDOM.children).not('.date, .filtered'),
+    (item, index) => {
+      return $(item).attr('id')
+    })
 
-  let filteredItems = stack.filter(item => textitemIDs.includes(item.id));
+  // create exporting content
+  let content = Array.from(stack)
+    .filter(item => textitemIDs.includes(item.id))
+    .reduce((accm, item) => {
 
-  // concatenate contents
-  Array.from(filteredItems)
-    .forEach(item => {
-      content += `${item.content}\n`;
+      // for urls
+      let sanitizedContent = $('<div>', {
+        html: item.content
+      }).text();
+
+      accm += `${sanitizedContent}\n`;
       if (typeof item.footnote.pageTitle !== 'undefined') {
-        content += item.footnote.pageTitle + '\n';
+        accm += item.footnote.pageTitle + '\n';
       }
       if (typeof item.footnote.url !== 'undefined') {
-        content += item.footnote.url + "\n";
+        accm += item.footnote.url + "\n";
       }
-      content += '\n';
-    })
+      return accm += '\n';
+    }, "")
 
   // create url to download
   const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
@@ -414,16 +415,10 @@ function attachContentEditableEvents(wrapper) {
     // editing mode styles
     wrapper.classList.add('editing');
 
-    // remove html tags
-    let sanitizedText = Array.from(contentDIV.childNodes).reduce((accm, item) => {
-      if (item.innerHTML == "") {
-        accm += "<br>";
-      } else {
-        accm += item.textContent;
-      }
-      return accm;
-    }, "")
-    contentDIV.innerHTML = sanitizedText || contentDIV.innerHTML;
+    // remove a tag
+    Array.from(contentDIV.childNodes).forEach((item) => {
+      $(item).contents().unwrap()
+    }, '')
 
     // move caret to the text tail
     let selection = window.getSelection();
