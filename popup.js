@@ -91,7 +91,10 @@ function filterTextItems(term) {
       contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
 
       // highlight
-      if (!contentDIV.innerText.match(/(https?:[\.\/\w-%]+)/g)) {
+      let expression = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
+      let regex = new RegExp(expression);
+
+      if (!contentDIV.innerText.match(regex)) {
         // add highlight when searching
         if (term.length >= 1) {
           contentDIV.innerHTML = contentDIV.innerText.replace(termRegex, "<span class='highlighted'>$1</span>$2");
