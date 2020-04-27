@@ -604,8 +604,8 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
           } else if (ev.keyCode === 8 && tagName === '') {
             let tagInput = ev.target;
             let prevTag = $(tagInput).parent().prev();
-
-            if (!['note', 'clip', 'bookmark'].includes(prevTag.text().slice(1))) {
+            // if (!['note', 'clip', 'bookmark'].includes(prevTag.text().slice(1))) {
+            if ($(stackWrapper).find('.tag').length > 1) {
               // remove tag from footnote
               let prevTagName = prevTag.text();
               let prevStackWrapper = prevTag.parent().parent();
@@ -746,17 +746,17 @@ const initializeEventListeners = () => {
     // TAG
     if ($(targetElem).hasClass('tag')) {
       if (e.ctrlKey && $(targetElem).hasClass('removing')) {
-        if (!['note', 'clip', 'bookmark'].includes($(targetElem).text().slice(1))) {
-          // remove tag from footnote
-          let tagName = $(targetElem).text();
-          let stackWrapper = $(targetElem).parent().parent();
-          let id = stackWrapper.find('input').val();
+        let tagName = $(targetElem).text();
+        let stackWrapper = $(targetElem).parent().parent();
 
+        if (stackWrapper.find('.tag').length > 1) {
+          // remove tag from footnote
+          let id = stackWrapper.find('input').val();
           let index = stack.findIndex(item => item.id === id);
           let tagIndex = stack[index].footnote.tags.indexOf(tagName);
+          // remove the tag
           stack[index].footnote.tags.splice(tagIndex, 1);
           stackStorage.set(JSON.stringify(stack));
-
           // remove item in the UI
           $(targetElem).remove();
           stackWrapper.find('.footnote')
