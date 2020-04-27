@@ -238,7 +238,7 @@ const clearAllItems = () => {
 
 const selectOnDropdownList = (e) => {
   let liSelected = $('#dropdownlist').find('.selected');
-  let unfiltered = $('li').filter(tagItem => !$(tagItem).hasClass('filtered'));
+  let unfiltered = $('li').not('.filtered');
   let index = unfiltered.index(liSelected);
 
   if (e.keyCode === 13) {
@@ -271,6 +271,7 @@ const selectOnDropdownList = (e) => {
         if (unfiltered.length > index + 1) {
           // move down
           liSelected.removeClass('selected');
+          console.log(index);
           $(unfiltered[index + 1]).addClass('selected');
         }
       } else {
