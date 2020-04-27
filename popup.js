@@ -343,7 +343,7 @@ const submitForm = (e) => {
 
 
 function updateInputForm(e) {
-  $('.tagarea').find('.error').remove();
+  $('.error').remove();
 
   let hashtags = e.target.value.match(/(^|\s)((#|＃)[^\s]+)(\s$|\n)/);
 
@@ -410,6 +410,7 @@ function attachContentEditableEvents(wrapper) {
     // editing mode styles
     wrapper.classList.add('editing');
 
+    // remove html tags
     let sanitizedText = Array.from(contentDIV.childNodes).reduce((accm, item) => {
       if (item.innerHTML == "") {
         accm += "<br>";
