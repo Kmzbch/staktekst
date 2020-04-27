@@ -58,7 +58,7 @@ function filterTextItems(term) {
   let termRegex;
   let hits = 0;
 
-  
+
 
   // Search in Japanese/English
   if (containsJapanese(term)) {
@@ -195,9 +195,9 @@ const setDropdownListItems = () => {
               // work as hover
               let liSelected = $('#dropdownlist').find('.selected');
               if (liSelected) {
-                liSelected.classList.remove('selected');
+                liSelected.removeClass('selected');
               }
-              $(e.target).classList.add('selected');
+              $(e.target).addClass('selected');
             },
             click: (e) => {
               fireSearchWithQuery('#' + $(e.target).text());
