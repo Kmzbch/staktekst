@@ -1,13 +1,7 @@
 {
-  "name": "my-oddcast",
+  "name": "staktekst",
   "version": "0.1.0",
-  "description": "My Chrome Extension",
+  "description": "Paragraph-based learning aid for ESL learners",
   "private": true,
-  "scripts": {
-    "watch": "webpack --mode=development --watch --config config/webpack.config.js",
-    "build": "webpack --mode=production --config config/webpack.config.js"
-  },
-  "dependencies": {
-    "normalize.css": "^8.0.1"
-  }
+  "dependencies": {}
 }
