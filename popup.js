@@ -433,6 +433,9 @@ function attachContentEditableEvents(wrapper) {
     // enable URL
     contentDIV.contentEditable = false;
     contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
+
+    // replace new lines with br tag
+    contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n+$/i, '');
     contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
 
     // leave edit mode
@@ -470,7 +473,7 @@ function attachContentEditableEvents(wrapper) {
   wrapper.addEventListener('change', (e) => {
     let id = $(e.target).attr('id');
 
-    let newHTML = contentDIV.innerHTML.replace(/<br>$/, ''); // remove e
+    let newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
     updateTextInfoMessage();
 
     // update teext item
@@ -600,7 +603,6 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
           } else if (ev.keyCode === 8 && tagName === '') {
             let tagInput = ev.target;
             let prevTag = $(tagInput).parent().prev();
-            // if (!['note', 'clip', 'bookmark'].includes(prevTag.text().slice(1))) {
             if ($(stackWrapper).find('.tag').length > 1) {
               // remove tag from footnote
               let prevTagName = prevTag.text();
