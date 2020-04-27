@@ -62,9 +62,9 @@ function filterTextItems(term) {
   if (containsJapanese(term)) {
     termRegex = new RegExp(`(${escapeRegExp(term)})(.*?)`, 'ig');
   } else {
-    termRegex = new RegExp(`\\b(${escapeRegExp(term)})(.*?)\\b`, 'ig');
+    // termRegex = new RegExp(`\\b(${escapeRegExp(term)})(.*?)\\b`, 'ig');
+    termRegex = new RegExp(`(?!<span .+? target="_blank"/>)(${escapeRegExp(term)})(.*?)(?!</span>)`, 'ig');
   }
-
 
   Array.from(stackDOM.children)
     .map(textItem => {
@@ -84,27 +84,20 @@ function filterTextItems(term) {
     .filter(textItem => !textItem.classList.contains('filtered'))
     .forEach(textItem => {
       let contentDIV = textItem.firstElementChild;
-      console.log(contentDIV.innerText);
 
-      // add highlight when searching
-      if (term.length >= 1) {
-        contentDIV.innerHTML = contentDIV.innerText.replace(termRegex, "<span class='highlighted'>$1</span>$2");
-      } else {
-        // contentDIV.innerHTML = contentDIV.textContent;
-        termRegex = /<span class="highlighted">(.*?)<\/span>/g
-        contentDIV.innerHTML = contentDIV.innerHTML.replace(termRegex, '$1');
-      }
-      contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/ig, '<br>');
+      // 
+      contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
+      contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
 
-      // check if the urls are made up of ascii
-      if (contentDIV.innerText.match(/(https?:\/\/[\x01-\x7E]+)/g)) {
-        contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
-        // restore '\n'
-        let nodes = contentDIV.querySelectorAll('.pseudolink');
-
-        if (nodes.length !== 1) {
-          let last = nodes[nodes.length - 1];
-          $('<BR>').insertBefore(last);
+      // highlight
+      if (!contentDIV.innerText.match(/(https?:[\.\/\w-%]+)/g)) {
+        // add highlight when searching
+        if (term.length >= 1) {
+          contentDIV.innerHTML = contentDIV.innerText.replace(termRegex, "<span class='highlighted'>$1</span>$2");
+        } else {
+          // contentDIV.innerHTML = contentDIV.textContent;
+          termRegex = /<span class="highlighted">(.*?)<\/span>/g
+          contentDIV.innerHTML = contentDIV.innerHTML.replace(termRegex, '$1');
         }
       }
 
@@ -328,7 +321,6 @@ const submitForm = (e) => {
 
       renderTextItem(id, type, content, footnote, date);
 
-
       // clear form and holders to the initial state
       $('.add-textitem').val('');
 
@@ -376,8 +368,6 @@ function updateInputForm(e) {
   updateTextInfoMessage();
 }
 
-
-
 function removeTextItem(textitemDOM) {
   // apply visual effects and display Message
   textitemDOM.classList.add('removed')
@@ -392,13 +382,9 @@ function removeTextItem(textitemDOM) {
 
     // remove DOM
     textitemDOM.remove();
-
-
     switchToolboxVisibility(true);
   }, 450);
 }
-
-
 
 function attachContentEditableEvents(wrapper) {
   // create and insert
@@ -421,7 +407,18 @@ function attachContentEditableEvents(wrapper) {
 
   // add to content DIV
   contentDIV.addEventListener('focus', (e) => {
+    // editing mode styles
     wrapper.classList.add('editing');
+
+    let sanitizedText = Array.from(contentDIV.childNodes).reduce((accm, item) => {
+      if (item.innerHTML == "") {
+        accm += "<br>";
+      } else {
+        accm += item.textContent;
+      }
+      return accm;
+    }, "")
+    contentDIV.innerHTML = sanitizedText || contentDIV.innerHTML;
 
     // move caret to the text tail
     let selection = window.getSelection();
@@ -435,9 +432,12 @@ function attachContentEditableEvents(wrapper) {
   })
 
   wrapper.addEventListener('focusout', (e) => {
+    // enable URL
     contentDIV.contentEditable = false;
-    contentDIV.innerHTML = contentDIV.innerHTML.replace(/<br>$/, '');
+    contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
+    contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
 
+    // leave edit mode
     wrapper.classList.remove('editing');
     editIcon.classList.remove('hidden');
   });
@@ -465,14 +465,13 @@ function attachContentEditableEvents(wrapper) {
   // detect changes on content editable
   wrapper.addEventListener('blur', fireChange);
   wrapper.addEventListener('keyup', fireChange);
-
   wrapper.addEventListener('paste', fireChange);
   wrapper.addEventListener('copy', fireChange);
   wrapper.addEventListener('cut', fireChange);
   wrapper.addEventListener('mouseup', fireChange);
   wrapper.addEventListener('change', (e) => {
     let id = e.target.querySelector('input').value;
-    let newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
+    let newHTML = contentDIV.innerHTML.replace(/<br>$/, ''); // remove e
     updateTextInfoMessage();
 
     // update teext item
@@ -498,8 +497,6 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   stackWrapper.id = id;
   stackWrapper.classList.add(type);
 
-
-
   stackWrapper.innerHTML = `<div class='content'>${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><input class='itemDate' type='hidden' value="${date}"><div class="spacer"></div><div class="footnote"></div>`;
 
   $('#textstack').append(stackWrapper);
@@ -507,6 +504,7 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   content = $('<div>', {
     html: content
   }).text();
+  console.log(content);
 
   // enable URL link
   let contentDIV = stackWrapper.firstElementChild;

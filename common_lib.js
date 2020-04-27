@@ -134,5 +134,5 @@ function fitHeightToContent(textarea) {
 }
 
 function enableURLEmbededInText(text) {
-    return text.replace(/(https?:\/\/[\x01-\x7E]+)/g, "<span class='pseudolink' href='$1' target='_blank'>$1</span>");
+    return text.replace(/(https?:[\.\/\w-%]+)/g, "<span class='pseudolink' href='$1' target='_blank'>$1</span>");
 }
