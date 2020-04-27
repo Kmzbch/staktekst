@@ -366,6 +366,7 @@ function updateInputForm(e) {
 
   fitHeightToContent(textarea);
   updateTextInfoMessage();
+
 }
 
 function removeTextItem(textitemDOM) {
@@ -471,7 +472,8 @@ function attachContentEditableEvents(wrapper) {
   wrapper.addEventListener('cut', fireChange);
   wrapper.addEventListener('mouseup', fireChange);
   wrapper.addEventListener('change', (e) => {
-    let id = e.target.querySelector('input').value;
+    let id = $(e.target).attr('id');
+
     let newHTML = contentDIV.innerHTML.replace(/<br>$/, ''); // remove e
     updateTextInfoMessage();
 
@@ -490,8 +492,6 @@ function attachContentEditableEvents(wrapper) {
   }
 }
 
-
-
 const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   let stackWrapper = document.createElement('div');
   stackWrapper.className = 'stackwrapper';
@@ -505,13 +505,14 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   content = $('<div>', {
     html: content
   }).text();
-  console.log(content);
 
+  // content
   // enable URL link
   let contentDIV = stackWrapper.firstElementChild;
   contentDIV.innerHTML = enableURLEmbededInText(content);
   contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
 
+  // foot note
   if (type === 'clip') {
     stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag clip hidden">#clip</span><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span>`;
   } else {
@@ -521,23 +522,12 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
     }
   }
 
+  // TAGS
   if (typeof footnote.tags !== 'undefined') {
     footnote.tags.forEach(item => {
       if (!['note', 'clip', 'bookmark'].includes(item)) {
-        let tag = document.createElement('span');
-        tag.className = 'tag';
-        if (!isNaN(Date.parse(item))) {
-          tag.classList.add('duedate');
-          tag.textContent = '~' + item;
-
-          stackWrapper.querySelector('.footnote').appendChild(tag);
-
-          tag.parentNode.insertBefore(tag, tag.parentNode.firstChild);
-
-        } else {
-          tag.textContent = '#' + item;
-          stackWrapper.querySelector('.footnote').appendChild(tag);
-        }
+        $('<span>', { addClass: 'tag', text: '#' + item })
+          .appendTo($(stackWrapper).find('.footnote'));
         if (!tagStack.includes(item)) {
           tagStack.push(item);
         }
@@ -545,104 +535,96 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
     })
 
     if (stackWrapper.querySelector('.footnote').childNodes.length < 5) {
-      let divWrap = document.createElement('div');
-      divWrap.classList.add('divWrap');
-      stackWrapper.querySelector('.footnote').appendChild(divWrap)
+      let divWrap = $('<div>', { addClass: 'divWrap' })
+      divWrap.appendTo($(stackWrapper).find('.footnote'));
 
-      let input = document.createElement('input');
-      input.type = 'text';
-      input.classList.add('tagadd');
-      input.addEventListener('blur', (ev) => {
-        ev.target.value = ev.target.value.trim()
-        if (ev.target.value !== '') {
-          let id = stackWrapper.querySelector('input').value;
+
+      let input = $('<input>', {
+        type: 'text',
+        addClass: 'tagadd',
+      });
+      divWrap.append(input);
+
+      // attach events
+      input.blur((ev) => {
+        let tagName = ev.target.value.trim();
+        if (tagName !== '') {
+          // find the index of the text item
+          let index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
           // update Tag
-          let tagName = ev.target.value;
-          let index = stack.findIndex(item => item.id === id);
           stack[index].footnote.tags.push(tagName);
           stackStorage.set(JSON.stringify(stack));
+          // 
+          $('<span>', {
+            addClass: 'tag',
+            text: '#' + tagName
+          }).insertBefore(divWrap);
 
           // 
-          let newTag = document.createElement('span');
-          newTag.className = 'tag';
-          if (!isNaN(Date.parse(ev.target.value))) {
-            newTag.classList.add('duedate');
-            newTag.textContent = '~' + ev.target.value;
-            stackWrapper.querySelector('.footnote').appendChild(newTag);
-            newTag.parentNode.insertBefore(newTag, newTag.parentNode.firstChild);
-          } else {
-            newTag.textContent = '#' + ev.target.value;
-            stackWrapper.querySelector('.footnote').insertBefore(newTag, divWrap);
-          }
-          if (!tagStack.includes(ev.target.value)) {
-            tagStack.push(ev.target.value);
+          if (!tagStack.includes(tagName)) {
+            tagStack.push(tagName);
           }
           ev.target.value = '';
-          if (stackWrapper.querySelector('.footnote').childElementCount >= 6) {
-            divWrap.classList.add('hidden');
+          if ($(stackWrapper).find('.tag').length >= 6) {
+            divWrap.addClass('hidden');
           }
         }
+      });
 
-      })
+      input.keyup(
+        (ev) => {
+          ev.preventDefault();
 
-      input.addEventListener('keyup', (ev) => {
-        ev.preventDefault();
-        // if (ev.keyCode === 13) {
-        if (ev.target.value[ev.target.value.length - 1] === ' ' || ev.keyCode === 13) {
-          ev.target.value = ev.target.value.trim()
-          if (ev.target.value !== '') {
-            let id = stackWrapper.querySelector('input').value;
-            // update Tag
-            let tagName = ev.target.value;
-            let index = stack.findIndex(item => item.id === id);
-            stack[index].footnote.tags.push(tagName);
-            stackStorage.set(JSON.stringify(stack));
+          let tagName = ev.target.value;
+          if (tagName.slice(tagName.length - 1) === ' ' || ev.keyCode === 13) {
+            tagName = ev.target.value.trim();
+            if (tagName !== '') {
+              // find the index of the text item
+              let index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
 
-            // 
-            let newTag = document.createElement('span');
-            newTag.className = 'tag';
-            if (!isNaN(Date.parse(ev.target.value))) {
-              newTag.classList.add('duedate');
-              newTag.textContent = '~' + ev.target.value;
-              stackWrapper.querySelector('.footnote').appendChild(newTag);
-              newTag.parentNode.insertBefore(newTag, newTag.parentNode.firstChild);
-            } else {
-              newTag.textContent = '#' + ev.target.value;
-              stackWrapper.querySelector('.footnote').insertBefore(newTag, divWrap);
+              // update Tag
+              stack[index].footnote.tags.push(tagName);
+              stackStorage.set(JSON.stringify(stack));
+
+              // 
+              $('<span>', {
+                addClass: 'tag',
+                text: '#' + tagName
+              }).insertBefore(divWrap);
+
+              // 
+              if (!tagStack.includes(tagName)) {
+                tagStack.push(tagName);
+              }
+              ev.target.value = '';
+              if ($(stackWrapper).find('.tag').length >= 6) {
+                divWrap.addClass('hidden');
+              }
             }
-            if (!tagStack.includes(ev.target.value)) {
-              tagStack.push(ev.target.value);
-            }
-            ev.target.value = '';
-            if (stackWrapper.querySelector('.footnote').childElementCount >= 6) {
-              divWrap.classList.add('hidden');
+          } else if (ev.keyCode === 8 && tagName === '') {
+            let tagInput = ev.target;
+            let prevTag = $(tagInput).parent().prev();
+
+            if (!['note', 'clip', 'bookmark'].includes(prevTag.text().slice(1))) {
+              // remove tag from footnote
+              let prevTagName = prevTag.text();
+              let prevStackWrapper = prevTag.parent().parent();
+
+              // find the id of the previous tag
+              let index = stack.findIndex(item => item.id === $(prevStackWrapper).attr('id'));
+              let tagIndex = stack[index].footnote.tags.indexOf(prevTagName);
+
+              // remove the previous tag
+              stack[index].footnote.tags.splice(tagIndex, 1);
+              stackStorage.set(JSON.stringify(stack));
+              prevTag.remove();
+
+              // set
+              $(tagInput).val(prevTagName.slice(1));
+              $(tagInput).trigger('focus');
             }
           }
-        } else if (ev.keyCode === 8 && ev.target.value === '') {
-
-          let prevTag = ev.target.parentElement.previousElementSibling
-          if (!['note', 'clip', 'bookmark'].includes(prevTag.textContent.slice(1))) {
-            // remove tag from footnote
-            let tagName = prevTag.textContent;
-            console.log(tagName);
-            let stackWrapper = prevTag.parentElement.parentElement;
-            let id = stackWrapper.querySelector('input').value;
-
-            let index = stack.findIndex(item => item.id === id);
-            let tagIndex = stack[index].footnote.tags.indexOf(tagName);
-            stack[index].footnote.tags.splice(tagIndex, 1);
-
-            stackStorage.set(JSON.stringify(stack));
-
-            prevTag.parentElement.removeChild(prevTag);
-
-            ev.target.value = tagName.slice(1);
-            ev.target.focus();
-          }
-        }
-      })
-      // stackWrapper.querySelector('.footnote').appendChild(input);
-      divWrap.appendChild(input);
+        });
     }
   }
 }

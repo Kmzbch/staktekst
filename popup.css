@@ -179,6 +179,9 @@
     margin-left: 2px;
 }
 
+.hashtag:after {
+    content: " ";
+}
 .hashtag::before {
     content: "#";
 }
@@ -193,8 +196,8 @@
 
 .error {
     color: red;
-    float: right;
-    right: 6px;
+    /* float: right; */
+    margin-right: 15px;
 }
 
 
