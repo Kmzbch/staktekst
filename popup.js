@@ -96,7 +96,6 @@ function filterTextItems(term) {
           contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/ig, "<br>");
 
         } else {
-          // contentDIV.innerHTML = contentDIV.textContent;
           termRegex = /<span class="highlighted">(.*?)<\/span>/g
           contentDIV.innerHTML = contentDIV.innerHTML.replace(termRegex, '$1');
         }
@@ -106,12 +105,56 @@ function filterTextItems(term) {
   return hits;
 };
 
-const filterDropdownListItems = (tag) => {
-  let tagName = tag.trim().toLowerCase();
-  tagName = tagName.slice(1);
 
+const selectOnDropdownList = (e) => {
+  let liSelected = $('#dropdownlist').find('.selected');
+  let unfiltered = $('li').not('.filtered');
+  let index = unfiltered.index(liSelected);
+
+  if (e.keyCode === 13) {
+    // ENTER
+    if (liSelected) {
+      liSelected.removeClass('selected');
+      fireSearchWithQuery('#' + liSelected.text());
+    }
+    hideDropdownList()
+  } else if (e.keyCode === 38) {
+    // UP
+    if (!$('#dropdownlist').hasClass('hidden')) {
+      if (liSelected) {
+        if (index - 1 >= 0) {
+          // move up
+          liSelected.removeClass('selected');
+          $(unfiltered[index - 1]).addClass('selected');
+        } else {
+          // if no item to select at the top
+          hideDropdownList()
+        }
+      }
+    }
+  } else if (e.keyCode === 40) {
+    // DOWN
+    if ($('#dropdownlist').hasClass('hidden')) {
+      showDropdownList()
+    } else {
+      if (liSelected) {
+        if (unfiltered.length > index + 1) {
+          // move down
+          liSelected.removeClass('selected');
+          console.log(index);
+          $(unfiltered[index + 1]).addClass('selected');
+        }
+      } else {
+        // if no item to select at the bottom
+        unfiltered[0].classList.add('selected');
+      }
+    }
+  }
+}
+
+const filterDropdownListItems = (tag) => {
+  let tagName = tag.trim().toLowerCase().slice(1);
   let termRegex;
-  let hits = 0;
 
   // Search in Japanese/English
   if (containsJapanese(tagName)) {
@@ -120,9 +163,9 @@ const filterDropdownListItems = (tag) => {
     termRegex = new RegExp(`^(${escapeRegExp(tagName)})(.*?)`, 'i');
   }
 
-  Array.from($('#dropdownlist').children())
-    .map(tagItem => {
-      if (tagItem.textContent.match(termRegex)) {
+  $.map($('#dropdownlist').children(),
+    (tagItem) => {
+      if ($(tagItem).text().match(termRegex)) {
         tagItem.classList.remove('filtered');
       } else {
         tagItem.classList.add('filtered');
@@ -132,6 +175,7 @@ const filterDropdownListItems = (tag) => {
 }
 
 const setDropdownListItems = () => {
+  // empty selections
   $('#dropdownlist').empty();
 
   tagStack = tagStack.slice(0, 3).concat(tagStack.slice(3).sort());
@@ -149,9 +193,9 @@ const setDropdownListItems = () => {
               // work as hover
               let liSelected = $('#dropdownlist').find('.selected');
               if (liSelected) {
-                liSelected.removeClass('selected');
+                liSelected.classList.remove('selected');
               }
-              $(e.target).addClass('selected');
+              $(e.target).classList.add('selected');
             },
             click: (e) => {
               fireSearchWithQuery('#' + $(e.target).text());
@@ -234,52 +278,6 @@ const clearAllItems = () => {
     searchQuery: '',
     scrollY: 0,
     sortedByNew: true
-  }
-}
-
-const selectOnDropdownList = (e) => {
-  let liSelected = $('#dropdownlist').find('.selected');
-  let unfiltered = $('li').not('.filtered');
-  let index = unfiltered.index(liSelected);
-
-  if (e.keyCode === 13) {
-    // Enter
-    if (liSelected) {
-      liSelected.removeClass('selected');
-      fireSearchWithQuery('#' + liSelected.text());
-    }
-    hideDropdownList()
-  } else if (e.keyCode === 38) {
-    // Up
-    if (!$('#dropdownlist').hasClass('hidden')) {
-      if (liSelected) {
-        if (index - 1 >= 0) {
-          // move up
-          liSelected.removeClass('selected');
-          $(unfiltered[index - 1]).addClass('selected');
-        } else {
-          // if no item to select at the top
-          hideDropdownList()
-        }
-      }
-    }
-  } else if (e.keyCode === 40) {
-    // Down
-    if ($('#dropdownlist').hasClass('hidden')) {
-      showDropdownList()
-    } else {
-      if (liSelected) {
-        if (unfiltered.length > index + 1) {
-          // move down
-          liSelected.removeClass('selected');
-          console.log(index);
-          $(unfiltered[index + 1]).addClass('selected');
-        }
-      } else {
-        // if no item to select at the bottom
-        unfiltered[0].classList.add('selected');
-      }
-    }
   }
 }
 
