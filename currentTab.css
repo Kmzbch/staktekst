@@ -13,54 +13,17 @@
     background: rgba(0, 0, 0, 0.8) !important;
 }
 
-/* button styles */
-.stackButton {
-    transform: scale(0.95);
-    flex: 1;
-    padding: 5px;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-}
-
-.stackButton:hover {
-    color: rgb(141, 223, 253) !important;
-    cursor: pointer;
-}
-
 /* bubble styles */
-.bookmark-icon:hover {
-    opacity: 1 !important;
-    color: black !important;
-}
-
-.bookmark-icon {
-    margin: 3px;
-    font-size: 20px;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-}
-
-.zoom-icon:hover {
-    opacity: 1 !important;
-    color: black;
-}
-
-.zoom-icon {
-    margin: 3px;
-    font-size: 20px;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-}
-
+/* bubble body */
 #bubble {
     display: flex;
     flex-wrap: nowrap;
     position: absolute;
-    z-index: 999999;
     width: 200px;
     height: 70px;
     top: 0px;
     left: 0px;
+    z-index: 999999;
     padding: 0px 0px;
     border-width: 0px;
     border-style: solid;
@@ -71,6 +34,7 @@
     background-color: rgba(0, 0, 0, 0.8);
 }
 
+/* bubble pointer arrow */
 #bubble::after {
     content: '';
     position: absolute;
@@ -86,6 +50,7 @@
     margin-bottom: -8px;
 }
 
+/* container for search engines */
 #leftContainer {
     display: flex;
     flex-direction: column;
@@ -94,8 +59,8 @@
     height: 100%;
 }
 
+/* container for system commands */
 #rightContainer {
-    display: flex;
     flex-direction: column;
     flex-wrap: wrap;
     width: 20%;
@@ -104,10 +69,10 @@
     border-left: 1px solid rgba(255, 255, 255, 0.4);
 }
 
+/* container for commands on the web page */
 #floatContainer {
     display: flex;
     flex-direction: column;
-
     cursor: pointer !important;
     color: rgba(0, 0, 0, 0.2);
     /* opacity: 0.2; */
@@ -119,6 +84,57 @@
     -webkit-user-select: none;
     -moz-user-select: none;
 }
+
+/* icon button styles */
+.stackButton:active {
+    transform: scale(0.85);
+}
+
+.stackButton:hover {
+    color: rgb(141, 223, 253);
+    cursor: pointer;
+}
+
+.stackButton {
+    transform: scale(0.95);
+    flex: 1;
+    padding: 5px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+
+.bookmark-icon:hover {
+    opacity: 1;
+    color: black;
+}
+
+.bookmark-icon:active {
+    transform:scale(0.85);
+}
+
+.bookmark-icon {
+    margin: 3px;
+    font-size: 20px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+
+.zoom-icon:hover {
+    opacity: 1;
+    color: black;
+}
+.zoom-icon:active {
+    transform:scale(0.85);
+}
+
+.zoom-icon {
+    margin: 3px;
+    font-size: 20px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+
+
 
 /* modification on font awesome */
 .fab {

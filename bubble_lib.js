@@ -91,7 +91,7 @@ const createIconDOM = ({
         title: title,
         text: innerText,
         on: {
-            mousedown: () => {
+            mouseup: () => {
                 sendCommandMessage(command);
                 window.getSelection().removeAllRanges();
                 renderBubble();
@@ -102,10 +102,11 @@ const createIconDOM = ({
 
 const createBubbleDOM = () => {
 
-    let bubble = $('<div id="bubble" class="hidden"></div>')
+    let bubble = $('<div id="bubble"></div>')
         .append($('<div id="leftContainer"></div>'))
         .append($('<div id="rightContainer"></div>'))
         .append($('<div id="floatContainer"></div>'))
+    $(bubble).hide();
 
     // append icons on the bubble left
     SEARCH_ENGINE_ICONS.forEach(icon => {
@@ -135,39 +136,40 @@ const createBubbleDOM = () => {
 const renderBubble = () => {
     let bubble = $('#bubble');
 
-    setTimeout(() => {
-        let selection = window.getSelection();
+    // setTimeout(() => {
+    let selection = window.getSelection();
 
-        if (selection.toString() === '') {
-            bubble.addClass('hidden');
-        } else {
-            bubble.removeClass('hidden');
+    if (selection.toString() === '') {
+        $(bubble).fadeOut(70, () => {
+            $(bubble).hide();
+        })
+    } else {
+        $(bubble).show();
 
-            // switch zoom icons
-            chrome.runtime.sendMessage({
-                command: 'GET_ZOOMFACTOR'
-            }, response => {
-                if (response.zoomFactor === 1) {
-                    $('.zoom-icon').text('zoom_in');
-                    $('.zoom-icon').title = 'ページを拡大';
-                } else {
-                    $('.zoom-icon').text('zoom_out')
-                    $('.zoom-icon').title = 'ページ倍率をリセット'
-                }
-            });
+        // switch zoom icons
+        chrome.runtime.sendMessage({
+            command: 'GET_ZOOMFACTOR'
+        }, response => {
+            if (response.zoomFactor === 1) {
+                $('.zoom-icon').text('zoom_in');
+                $('.zoom-icon').title = 'ページを拡大';
+            } else {
+                $('.zoom-icon').text('zoom_out')
+                $('.zoom-icon').title = 'ページ倍率をリセット'
+            }
+        });
 
-            // set the bubble position based on selection
-            let boundingCR = selection.getRangeAt(0).getBoundingClientRect();
-            bubble.css('top', (boundingCR.top - 80) + window.scrollY + 'px')
-            bubble.css('left', Math.floor((boundingCR.left + boundingCR.right) / 2) - 50 + window.scrollX + 'px');
-        }
-    }, 30)
+        // set the bubble position based on selection
+        let boundingCR = selection.getRangeAt(0).getBoundingClientRect();
+        bubble.css('top', (boundingCR.top - 80) + window.scrollY + 'px')
+        bubble.css('left', Math.floor((boundingCR.left + boundingCR.right) / 2) - 50 + window.scrollX + 'px');
+    }
 }
 
 const hideBubble = () => {
-    if ($('#bubble').css('display') !== 'none') {
-        $('#bubble').addClass('hidden');
-    }
+    $(bubble).fadeOut(70, () => {
+        $(bubble).hide();
+    })
 }
 
 const sendCommandMessage = (command) => {
