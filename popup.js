@@ -58,6 +58,8 @@ function filterTextItems(term) {
   let termRegex;
   let hits = 0;
 
+  
+
   // Search in Japanese/English
   if (containsJapanese(term)) {
     termRegex = new RegExp(`(${escapeRegExp(term)})(.*?)`, 'ig');
@@ -910,6 +912,7 @@ const closeAddTextItemForm = () => {
   // SHOW
   $('.opener').removeClass('hidden');
   $('.sort-by').removeClass('hidden');
+  $('.header-board').removeClass('entering');
   // turn off overlay
   chrome.runtime.sendMessage({
     command: 'OVERLAY_OFF'
