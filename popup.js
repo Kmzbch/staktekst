@@ -338,7 +338,7 @@ const submitForm = (e) => {
       // display system message
       displayMessage('Item Added!');
       setTimeout(() => {
-        updateTextInfoMessage();
+        updateTextInfoMessage($('.add-textitem').val());
       }, 700);
 
       return false;
@@ -370,7 +370,7 @@ function updateInputForm(e) {
   windowState.draftText = e.target.value.trim();
 
   fitHeightToContent(textarea);
-  updateTextInfoMessage();
+  updateTextInfoMessage($('.add-textitem').val());
 
 }
 
@@ -421,15 +421,14 @@ function attachContentEditableEvents(wrapper) {
       $(item).contents().unwrap()
     }, '')
 
-    // move caret to the text tail
-    let selection = window.getSelection();
-    let range = document.createRange();
-
-    range.setStart(e.target.lastChild, e.target.lastChild.textContent.length);
-    range.setEnd(e.target.lastChild, e.target.lastChild.textContent.length);
-
-    selection.removeAllRanges();
-    selection.addRange(range);
+    // move caret to the end of the text
+    const node = contentDIV.childNodes[contentDIV.childNodes.length - 1]
+    const editorRange = document.createRange()
+    const editorSel = window.getSelection()
+    editorRange.setStart(node, node.length)
+    editorRange.collapse(true)
+    editorSel.removeAllRanges()
+    editorSel.addRange(editorRange)
   })
 
   wrapper.addEventListener('focusout', (e) => {
@@ -477,7 +476,7 @@ function attachContentEditableEvents(wrapper) {
     let id = $(e.target).attr('id');
 
     let newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
-    updateTextInfoMessage();
+    updateTextInfoMessage(newHTML);
 
     // update teext item
     let index = stack.findIndex(item => item.id === id);
@@ -710,7 +709,32 @@ const initializeEventListeners = () => {
   $('.searchcancel-button').click(cancelSearch);
 
   /* toolbox & text area*/
-  $('.opener-top').click(openAddTextItemForm);
+  // $('.opener-top').click(openAddTextItemForm);
+  // create empty note for testing
+  $('.opener-top').click(() => {
+    //
+    let id = uuidv4();
+    let type = 'note';
+    let footnote = {
+      tags: []
+    };
+    let date = formatDate();
+
+    // add item to stack
+    stack.push({
+      id: id,
+      type: type,
+      content: "",
+      date: date,
+      footnote: {
+        tags: []
+      },
+    });
+    stackStorage.set(JSON.stringify(stack));
+
+    renderTextItem(id, type, "", footnote, date);
+  });
+
   $('.fileexport').click(exportTextItems);
 
   /* textarea */
@@ -734,7 +758,7 @@ const initializeEventListeners = () => {
 
       }
       fitHeightToContent(e.currentTarget);
-      updateTextInfoMessage();
+      updateTextInfoMessage($('.add-textitem').val());
     }
   })
   $('.size-changer').click(switchTextareaSize);
@@ -867,10 +891,10 @@ const displayMessage = (message) => {
   switchToolboxVisibility(false);
 }
 
-const updateTextInfoMessage = () => {
+const updateTextInfoMessage = (text) => {
   switchToolboxVisibility(false);
 
-  let info = extractTextInfo($('.add-textitem').val());
+  let info = extractTextInfo(text);
   $('.header-board').html(
     `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`
   );
@@ -974,7 +998,7 @@ const switchTextareaSize = (e, forceExpandLess = false) => {
       command: 'OVERLAY_ON'
     }
 
-  updateTextInfoMessage()
+  updateTextInfoMessage($('.add-textitem').val())
 
   // change textarea size and icon
   $('.add-textitem').css({

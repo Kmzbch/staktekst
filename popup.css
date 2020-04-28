@@ -70,6 +70,7 @@
 }
 
 .editing {
+    min-height: 44px;
     background: azure !important;
 }
 
