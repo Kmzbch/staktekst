@@ -240,7 +240,13 @@ const setDropdownListItems = () => {
                             $(elem).text('#' + newTag)
                           }
                         })
-                        $('.searchbox').val('#' + newTag);
+                        tagStack.slice(tagStack.findIndex(t => t === tag), 1, newTag);
+                        //                        fireSearchWithQuery('#' + newTag);
+                        if ($('.searchbox').val() !== "") {
+                          $('.searchbox').val('#' + newTag);
+                          windowState.searchQuery = '#' + newTag;
+                        }
+                        tag = newTag;
                         // renderStack();
 
                       }
