@@ -501,6 +501,15 @@ function attachContentEditableEvents(wrapper) {
     stackStorage.set(JSON.stringify(stack));
   })
 
+  // ctrl + Enter to end editing
+  wrapper.addEventListener('keydown', (e) => {
+    if (e.keyCode === 13 && e.ctrlKey) {
+      fireChange(e);
+      wrapper.dispatchEvent(new Event('focusout'));
+    }
+  });
+
+
   function fireChange(e) {
     let newHTML = wrapper.innerHTML;
     if (oldHTML !== newHTML) {
@@ -509,6 +518,8 @@ function attachContentEditableEvents(wrapper) {
     }
   }
 }
+
+
 
 const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   let stackWrapper = document.createElement('div');
