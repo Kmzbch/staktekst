@@ -91,6 +91,9 @@ const createIconDOM = ({
         title: title,
         text: innerText,
         on: {
+            mousedown: () => {
+                textHolder = window.getSelection().toString();
+            },
             mouseup: () => {
                 sendCommandMessage(command);
                 window.getSelection().removeAllRanges();
@@ -172,9 +175,13 @@ const hideBubble = () => {
     })
 }
 
+let textHolder = "";
 const sendCommandMessage = (command) => {
     let text = window.getSelection().toString();
 
+    if (text == '') {
+        text = textHolder;
+    }
     // only for popup.html
     if (location.href.includes('chrome-extension://')) {
         text = text.replace(/check\s$/, '');

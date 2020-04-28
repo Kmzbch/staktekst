@@ -756,6 +756,11 @@ const initializeEventListeners = () => {
     let footnote = {
       tags: []
     };
+    // add the current tag in the seachbox
+    let searchQuery = $('.searchbox').val();
+    if (searchQuery[0] === '#' && searchQuery.length > 0) {
+      footnote.tags.push(searchQuery.substring(1))
+    }
     let date = formatDate();
 
     // add item to stack
@@ -764,9 +769,7 @@ const initializeEventListeners = () => {
       type: type,
       content: "",
       date: date,
-      footnote: {
-        tags: []
-      },
+      footnote: footnote,
     });
     stackStorage.set(JSON.stringify(stack));
 
@@ -775,6 +778,7 @@ const initializeEventListeners = () => {
 
   $('.fileexport').click(exportTextItems);
 
+  $('.header-board').click(switchToolboxVisibility)
   /* textarea */
   $('.opener').click(openAddTextItemForm);
   $('.sort-by').click(() => { sortTextItems(!windowState.sortedByNew) });
