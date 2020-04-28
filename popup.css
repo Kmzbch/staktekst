@@ -93,6 +93,27 @@
     vertical-align: baseline;
 }
 
+/*
+.pinned {
+    color: yellowgreen !important;
+}
+.pin:hover {
+    color: rgba(32, 32, 32, 0.3);
+    transform: scale(1);
+}
+
+.pin {
+    transform: scale(0.85);
+    font-size: 15px !important;
+    color: rgba(32, 32, 32, 0.1);
+    margin-left: 5px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    cursor: pointer;
+    vertical-align: baseline;
+}
+*/
+
 /* clear stack window */
 .modal {
     position: fixed;

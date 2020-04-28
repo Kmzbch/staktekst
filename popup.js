@@ -73,7 +73,8 @@ function filterTextItems(term) {
       // remove text decoration and highlight
       textItem.firstChild.innerHTML = textItem.firstChild.innerHTML;
 
-      if (textItem.textContent.match(termRegex)) {
+      // TODO: implement pinned filter
+      if (textItem.textContent.match(termRegex) || textItem.innerHTML.includes('#pinned')) {
         textItem.classList.remove('filtered');
         hits++;
       } else {
@@ -399,6 +400,22 @@ function attachContentEditableEvents(wrapper) {
   editIcon.classList.add('edit');
   editIcon.innerText = 'edit';
   wrapper.insertBefore(editIcon, wrapper.querySelector('i'));
+
+  // TODO: implment pin feature
+  // $('<i>', {
+  //   addClass: 'fas fa-thumbtack fa-lg pin',
+  //   on: {
+  //     click: (e => {
+  //       if ($(e.target).hasClass('pinned')) {
+  //         $(e.target).removeClass('pinned');
+  //       } else {
+  //         $(e.target).addClass('pinned');
+  //       }
+  //     })
+  //   }
+  // }).insertAfter(editIcon);
+
+
 
   let contentDIV = wrapper.querySelector('.content');
 
