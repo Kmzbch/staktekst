@@ -543,6 +543,7 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
 
   // foot note
   if (type === 'clip') {
+    // stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag clip hidden">#clip</span><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span>`;
     stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag clip hidden">#clip</span><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span>`;
   } else {
     stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag">#${type}</span>`;
@@ -563,98 +564,106 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
         }
       }
     })
+  }
 
-    if (stackWrapper.querySelector('.footnote').childNodes.length < 5) {
-      let divWrap = $('<div>', { addClass: 'divWrap' })
-      divWrap.appendTo($(stackWrapper).find('.footnote'));
+  if (stackWrapper.querySelector('.footnote').childNodes.length < 5 && type != 'clip') {
+    let divWrap = $('<div>', { addClass: 'divWrap' })
+    divWrap.appendTo($(stackWrapper).find('.footnote'));
 
 
-      let input = $('<input>', {
-        type: 'text',
-        addClass: 'tagadd',
-      });
-      divWrap.append(input);
+    let input = $('<input>', {
+      type: 'text',
+      addClass: 'tagadd',
+    });
 
-      // attach events
-      input.blur((ev) => {
-        let tagName = ev.target.value.trim();
-        if (tagName !== '') {
-          // find the index of the text item
-          let index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
-          // update Tag
-          stack[index].footnote.tags.push(tagName);
-          stackStorage.set(JSON.stringify(stack));
-          // 
-          $('<span>', {
-            addClass: 'tag',
-            text: '#' + tagName
-          }).insertBefore(divWrap);
+    divWrap.append(input);
 
-          // 
-          if (!tagStack.includes(tagName)) {
-            tagStack.push(tagName);
+    // attach events
+    input.blur((ev) => {
+      let tagName = ev.target.value.trim();
+      if (tagName !== '') {
+        // find the index of the text item
+        let index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
+        // update Tag
+        if (typeof stack[index].footnote.tags === 'undefined') {
+          stack[index].footnote.tags = [];
+        }
+        stack[index].footnote.tags.push(tagName);
+        stackStorage.set(JSON.stringify(stack));
+        // 
+        $('<span>', {
+          addClass: 'tag',
+          text: '#' + tagName
+        }).insertBefore(divWrap);
+
+        // 
+        if (!tagStack.includes(tagName)) {
+          tagStack.push(tagName);
+        }
+        ev.target.value = '';
+        if ($(stackWrapper).find('.tag').length >= 6) {
+          divWrap.addClass('hidden');
+        }
+      }
+    });
+
+    input.keyup(
+      (ev) => {
+        ev.preventDefault();
+
+        let tagName = ev.target.value;
+        if (tagName.slice(tagName.length - 1) === ' ' || ev.keyCode === 13) {
+          tagName = ev.target.value.trim();
+          if (tagName !== '') {
+            // find the index of the text item
+            let index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
+
+            // update Tag
+            if (typeof stack[index].footnote.tags === 'undefined') {
+              stack[index].footnote.tags = [];
+            }
+
+            stack[index].footnote.tags.push(tagName);
+            stackStorage.set(JSON.stringify(stack));
+
+            // 
+            $('<span>', {
+              addClass: 'tag',
+              text: '#' + tagName
+            }).insertBefore(divWrap);
+
+            // 
+            if (!tagStack.includes(tagName)) {
+              tagStack.push(tagName);
+            }
+            ev.target.value = '';
+            if ($(stackWrapper).find('.tag').length >= 6) {
+              divWrap.addClass('hidden');
+            }
           }
-          ev.target.value = '';
-          if ($(stackWrapper).find('.tag').length >= 6) {
-            divWrap.addClass('hidden');
+        } else if (ev.keyCode === 8 && tagName === '') {
+          let tagInput = ev.target;
+          let prevTag = $(tagInput).parent().prev();
+          if ($(stackWrapper).find('.tag').length > 1) {
+            // remove tag from footnote
+            let prevTagName = prevTag.text();
+            let prevStackWrapper = prevTag.parent().parent();
+
+            // find the id of the previous tag
+            let index = stack.findIndex(item => item.id === $(prevStackWrapper).attr('id'));
+            let tagIndex = stack[index].footnote.tags.indexOf(prevTagName);
+
+            // remove the previous tag
+            stack[index].footnote.tags.splice(tagIndex, 1);
+            stackStorage.set(JSON.stringify(stack));
+            prevTag.remove();
+
+            // set
+            $(tagInput).val(prevTagName.slice(1));
+            $(tagInput).trigger('focus');
           }
         }
       });
-
-      input.keyup(
-        (ev) => {
-          ev.preventDefault();
-
-          let tagName = ev.target.value;
-          if (tagName.slice(tagName.length - 1) === ' ' || ev.keyCode === 13) {
-            tagName = ev.target.value.trim();
-            if (tagName !== '') {
-              // find the index of the text item
-              let index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
-
-              // update Tag
-              stack[index].footnote.tags.push(tagName);
-              stackStorage.set(JSON.stringify(stack));
-
-              // 
-              $('<span>', {
-                addClass: 'tag',
-                text: '#' + tagName
-              }).insertBefore(divWrap);
-
-              // 
-              if (!tagStack.includes(tagName)) {
-                tagStack.push(tagName);
-              }
-              ev.target.value = '';
-              if ($(stackWrapper).find('.tag').length >= 6) {
-                divWrap.addClass('hidden');
-              }
-            }
-          } else if (ev.keyCode === 8 && tagName === '') {
-            let tagInput = ev.target;
-            let prevTag = $(tagInput).parent().prev();
-            if ($(stackWrapper).find('.tag').length > 1) {
-              // remove tag from footnote
-              let prevTagName = prevTag.text();
-              let prevStackWrapper = prevTag.parent().parent();
-
-              // find the id of the previous tag
-              let index = stack.findIndex(item => item.id === $(prevStackWrapper).attr('id'));
-              let tagIndex = stack[index].footnote.tags.indexOf(prevTagName);
-
-              // remove the previous tag
-              stack[index].footnote.tags.splice(tagIndex, 1);
-              stackStorage.set(JSON.stringify(stack));
-              prevTag.remove();
-
-              // set
-              $(tagInput).val(prevTagName.slice(1));
-              $(tagInput).trigger('focus');
-            }
-          }
-        });
-    }
   }
 }
 
