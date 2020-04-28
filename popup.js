@@ -551,6 +551,7 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
     }
   }
 
+
   // TAGS
   if (typeof footnote.tags !== 'undefined') {
     footnote.tags.forEach(item => {

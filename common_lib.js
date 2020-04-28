@@ -72,12 +72,17 @@ const stackStorage = {
 };
 
 function pushText(content, type, pageTitle = '', pageURL = '') {
-    console.log("aSDFASD");
     stackStorage.get(raw => {
         if (typeof raw === 'undefined') {
             stackStorage.reset();
         } else {
             let stack = JSON.parse(raw);
+            // escape &gt; &lt;
+            content = content.replace('<', '&lt;');
+            content = content.replace('>', '&gt;');
+            pageTitle = pageTitle.replace('<', '&lt;');
+            pageTitle = pageTitle.replace('>', '&gt;');
+
             stack.push({
                 id: uuidv4(),
                 type: type,
