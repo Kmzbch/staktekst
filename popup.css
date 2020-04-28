@@ -93,6 +93,7 @@
     vertical-align: baseline;
 }
 
+
 /*
 .pinned {
     color: yellowgreen !important;
@@ -358,6 +359,25 @@ footer {
     background-color: white;
     border-bottom: 1px dotted lightgray;
 }
+
+li .tag-edit:hover {
+    color: rgba(32, 32, 32, 0.8);
+}
+
+
+li .tag-edit {
+    background:none !important;
+    position: 1;
+    font-size: 15px !important;
+    color: rgba(32, 32, 32, 0.2);
+    margin-left: 5px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    cursor: pointer;
+    vertical-align: baseline;
+    float: right;
+}
+
 
 #dropdownlist li::before {
     content: '#'
@@ -776,6 +796,16 @@ input:focus {
     background: none;
     border: none;
     /* border-bottom: 1px solid lightgray; */
+}
+
+
+.tageditInput:focus {
+    color: rgba(0, 0, 0, 0.6);
+    overflow: visible;
+    width: 90%;
+    background: none;
+    border: none;
+    font-weight: bold !important;
 }
 
 .footnote {

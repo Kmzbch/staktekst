@@ -186,29 +186,115 @@ const setDropdownListItems = () => {
 
   // create list from tagStack
   tagStack
-    .sort()
     .filter(item => isNaN(Date.parse(item))) // filter duedate tag
     .forEach(tag => {
       if (tag !== '') {
-        $('<li>', {
+        let liItem = $('<li>', {
           text: tag,
+          // text: tag,
           on: {
             mouseover: (e) => {
+              // work as hover
+              let liSelected = $('#dropdownlist').find('.selected');
+              $(e.target).addClass('selected');
+            },
+            mouseleave: (e) => {
               // work as hover
               let liSelected = $('#dropdownlist').find('.selected');
               if (liSelected) {
                 liSelected.removeClass('selected');
               }
-              $(e.target).addClass('selected');
             },
             click: (e) => {
-              fireSearchWithQuery('#' + $(e.target).text());
-              hideDropdownList();
-            }
+
+              if (e.target.classList.contains('tag-editIcon')) {
+                e.preventDefault();
+                let liSelected = $('#dropdownlist').find('.selected');
+                let orgHTML = liSelected.html();
+                $(liSelected).empty();
+                let editTagInput = $('<input>', {
+                  type: 'text',
+                  addClass: 'tageditInput tagadd',
+                  on: {
+                    keyup: (e) => {
+                      if (e.keyCode === 13) {
+                        if (e.target.value !== '') {
+                          //ESC
+                          e.target.blur();
+                        }
+                      }
+                    },
+                    blur: (e) => {
+                      if (e.target.value === '') {
+                        $(liSelected).empty();
+                        $(liSelected).html(orgHTML);
+                      } else {
+                        // replace with new tag
+                        let newTag = e.target.value;
+                        orgHTML = orgHTML.replace(tag, newTag)
+                        $(liSelected).empty();
+                        $(liSelected).html(orgHTML);
+                        replaceTagName(tag, newTag);
+                        $('.tag').each((index, elem) => {
+                          if ($(elem).text() === '#' + tag) {
+                            $(elem).text('#' + newTag)
+                          }
+                        })
+                        $('.searchbox').val('#' + newTag);
+                        // renderStack();
+
+                      }
+                    }
+                  }
+                });
+                editTagInput.appendTo(liSelected);
+
+                $('.tageditInput').val(tag);
+                $('.tageditInput').focus();
+
+
+
+                return false;
+              } else if (e.target.classList.contains('tageditInput')) {
+                e.preventDefault();
+                return false;
+              } else {
+                fireSearchWithQuery('#' + $(e.target).text().replace(/edit$/, ''));
+                hideDropdownList();
+
+              }
+
+            },
           }
-        }).appendTo($('#dropdownlist'))
+        });
+
+        if (!['note', 'bookmark', 'clip'].includes(tag)) {
+          let editIcon = document.createElement('i');
+          editIcon.classList.add('material-icons');
+          editIcon.classList.add('tag-edit');
+          editIcon.classList.add('tag-editIcon');
+          editIcon.innerText = 'edit';
+          liItem.append(editIcon);
+        }
+
+        $('#dropdownlist').append(liItem)
+
       }
     })
+}
+
+const replaceTagName = (oldTag, newTag) => {
+  // add item to stack
+  stack.forEach(item => {
+    if (item.type != 'clip') {
+      if (item.footnote.tags.includes(oldTag)) {
+        item.footnote.tags.splice(item.footnote.tags.findIndex(tag => tag == oldTag), 1, newTag)
+      }
+    }
+  })
+
+  stackStorage.set(JSON.stringify(stack));
+
 }
 
 const exportTextItems = () => {
@@ -1028,6 +1114,9 @@ const renderStack = () => {
       stack = JSON.parse(raw);
       stack.forEach(res => {
         let type = res.hasOwnProperty('type') ? res.type : 'note';
+        if (typeof res.footnote.tags === 'undefined') {
+          res.footnote["tags"] = [];
+        }
         renderTextItem(res.id, type, res.content, res.footnote, res.date);
       });
       insertDateSeparator();
