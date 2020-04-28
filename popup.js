@@ -832,6 +832,18 @@ const initializeEventListeners = () => {
       } else {
         // when hashtag clicked
         fireSearchWithQuery($(targetElem).html());
+        // stay at the position
+        let stackWrapper = $(targetElem).parent().parent();
+        let id = stackWrapper.find('input').val();
+        let prevYOffset = window.pageYOffset;
+        location.href = '#' + id;
+        if (window.pageYOffset < window.offsetHeight) {
+          window.scrollTo(0, 0);
+
+        } else {
+          window.scrollTo(0, prevYOffset);
+        }
+
       }
       // CHECKBOX
     } else if ($(targetElem).hasClass('checkbox')) {

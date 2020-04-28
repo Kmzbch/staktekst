@@ -801,12 +801,16 @@ input:focus {
     color: rgb(32, 123, 156) !important;
 } */
 
+.tag:active {
+    transform: scale(0.95) !important;
+}
 .tag:hover {
     /* color: rgb(32, 123, 156) !important; */
     font-weight: bold;
 }
 
 .tag {
+    display: inline-block;
     margin-right: 6px;
 }
 
