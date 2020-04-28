@@ -87,25 +87,23 @@ function filterTextItems(term) {
     .forEach(textItem => {
       let contentDIV = textItem.firstElementChild;
 
+      // enable URL link
       contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
       contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
 
-      // highlight
-      let expression = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
-      let regex = new RegExp(expression);
-
-      if (!contentDIV.innerText.match(regex)) {
-        // add highlight when searching
-        if (term.length >= 1) {
-          contentDIV.innerHTML = contentDIV.innerText.replace(termRegex, "<span class='highlighted'>$1</span>$2");
-          contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/ig, "<br>");
-
-        } else {
-          termRegex = /<span class="highlighted">(.*?)<\/span>/g
-          contentDIV.innerHTML = contentDIV.innerHTML.replace(termRegex, '$1');
-        }
+      if (term.length >= 1) {
+        // highlight text except those of pseudo anchor tag
+        let linkRegex = new RegExp(`(<span .+? target="_blank">.*?</span>)`, 'i');
+        let splitText = contentDIV.innerHTML.split(linkRegex);
+        splitText = splitText.map(item => {
+          return item.match(linkRegex) ? item : (item.replace(termRegex, "<span class='highlighted'>$1</span>$2"));
+        })
+        contentDIV.innerHTML = splitText.join('');
+      } else {
+        // get the text back to the initial state
+        contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
+        contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
       }
-
     });
   return hits;
 };
