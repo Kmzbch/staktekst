@@ -130,6 +130,17 @@ const selectOnDropdownList = (e) => {
           // move up
           liSelected.removeClass('selected');
           $(unfiltered[index - 1]).addClass('selected');
+
+          // scroll
+          const newLiSelectedY = $(unfiltered[index - 1]).position().top;
+          const newLiSelectedHeight = $(unfiltered[index - 1]).innerHeight();
+          const innerHeight = $('#dropdownlist').position().top;
+          const scrollTop = $('#dropdownlist').scrollTop();
+
+          if (newLiSelectedY <= (innerHeight) - newLiSelectedHeight) {
+            $('#dropdownlist').animate({ scrollTop: scrollTop - (scrollTop % newLiSelectedHeight) - newLiSelectedHeight }, 20);
+          }
+
         } else {
           // if no item to select at the top
           hideDropdownList()
@@ -147,23 +158,15 @@ const selectOnDropdownList = (e) => {
           liSelected.removeClass('selected');
           $(unfiltered[index + 1]).addClass('selected');
 
-          // const newLiSelectedY = $(unfiltered[index + 1]).offset().top;
-          // const newLiSelectedHeight = $(unfiltered[index + 1]).height();
+          // scroll
+          const newLiSelectedY = $(unfiltered[index + 1]).position().top;
+          const newLiSelectedHeight = $(unfiltered[index + 1]).height();
+          const innerHeight = $('#dropdownlist').innerHeight();
+          const scrollTop = $('#dropdownlist').scrollTop();
 
-          // const scrollHeight = $('#dropdownlist').prop('scrollHeight')
-          // const innerHeight = $('#dropdownlist').innerHeight();
-          // const scrollTop = $('#dropdownlist').scrollTop();
-          // console.log(newLiSelectedY);
-          // console.log(innerHeight);
-          // console.log(scrollHeight);
-          // console.log(scrollTop);
-          // if (newLiSelectedY - (innerHeight + scrollTop) >= (innerHeight)) {
-          //   $('#dropdownlist').animate({ scrollTop: $('#dropdownlist').offset().top }, newLiSelectedHeight);
-          //   console.log('BOO');
-
-          // }
-
-
+          if (newLiSelectedY > (innerHeight) - newLiSelectedHeight) {
+            $('#dropdownlist').animate({ scrollTop: $('#dropdownlist').position().top + scrollTop + ((scrollTop % newLiSelectedHeight) + newLiSelectedHeight) }, 0);
+          }
 
         }
       } else {
@@ -883,7 +886,7 @@ const initializeEventListeners = () => {
     click: hideDropdownList,
     dblclick: showDropdownList,
     focus: closeAddTextItemForm,
-    keyup: selectOnDropdownList,
+    keydown: selectOnDropdownList,
     input: updateSearchResult
   })
   $('.searchcancel-button').click(cancelSearch);
@@ -1059,6 +1062,8 @@ function showDropdownList() {
 
 function hideDropdownList() {
   $('#dropdownlist').addClass('hidden');
+  $('#dropdownlist').animate({ scrollTop: 0 }, 20);
+
 }
 
 function cancelSearch() {
