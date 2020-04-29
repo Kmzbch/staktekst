@@ -73,8 +73,13 @@ function filterTextItems(term) {
       // remove text decoration and highlight
       textItem.firstChild.innerHTML = textItem.firstChild.innerHTML;
 
-      // TODO: implement pinned filter
-      if (textItem.textContent.match(termRegex) || textItem.innerHTML.includes('#pinned')) {
+      // if (textItem.textContent.match(termRegex) || textItem.innerHTML.includes('#pinned')) {
+      //   textItem.classList.remove('filtered');
+      //   hits++;
+      // } else {
+      //   textItem.classList.add('filtered');
+      // }
+      if (textItem.textContent.match(termRegex)) {
         textItem.classList.remove('filtered');
         hits++;
       } else {
