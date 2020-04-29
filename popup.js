@@ -660,7 +660,6 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
 
   // foot note
-  console.log("!!!:" + type);
   if (type === 'clip') {
     // stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag clip hidden">#clip</span><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span>`;
     stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag clip hidden">#clip</span><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span>`;
@@ -675,16 +674,16 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   // TAGS
   if (typeof footnote.tags !== 'undefined') {
     footnote.tags.forEach(item => {
-      if (!['note', 'clip', 'bookmark'].includes(item)) {
-        $('<span>', { addClass: 'tag', text: '#' + item })
-          .appendTo($(stackWrapper).find('.footnote'));
-        if (!tagStack.includes(item)) {
-          tagStack.push(item);
-        }
-        if (item === 'pinned') {
-          $(stackWrapper).addClass('pinned');
-        }
+      // if (!['note', 'clip', 'bookmark'].includes(item)) {
+      $('<span>', { addClass: 'tag', text: '#' + item })
+        .appendTo($(stackWrapper).find('.footnote'));
+      if (!tagStack.includes(item)) {
+        tagStack.push(item);
       }
+      if (item === 'pinned') {
+        $(stackWrapper).addClass('pinned');
+      }
+      // }
     })
   }
 
@@ -789,6 +788,18 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
             stackStorage.set(JSON.stringify(stack));
             prevTag.remove();
 
+            // remove the tag from tagStack if there is no item with the tag
+            tagStack.splice(tagStack.findIndex(t => t === prevTagName.slice(1)), 1);
+            $('.tag').each((index, item) => {
+              let tagRegex = new RegExp(`${escapeRegExp(prevTagName)}$`, 'i');
+
+              if ($(item).text().match(tagRegex)) {
+                tagStack.push(prevTagName.slice(1));
+                return false;
+              }
+            })
+
+            // remove pinned styles
             if (prevTagName.slice(1) === 'pinned') {
               $(stackWrapper).removeClass('pinned');
             }
@@ -961,18 +972,21 @@ const initializeEventListeners = () => {
    */
   $('#textstack').click((e) => {
     let targetElem = e.target;
+    let stackWrapper = $(e.target).parent().parent();
+
     // TAG
     if ($(targetElem).hasClass('tag')) {
       if (e.ctrlKey && $(targetElem).hasClass('removing')) {
         let tagName = $(targetElem).text();
         let stackWrapper = $(targetElem).parent().parent();
 
+        // remove pinned styles
         if (tagName.slice(1) === 'pinned') {
           $(stackWrapper).removeClass('pinned');
 
         }
 
-        if (stackWrapper.find('.tag').length > 1) {
+        if (stackWrapper.find('.tag').length > 1 && $(targetElem).prev().length != 0) {
           // remove tag from footnote
           let id = stackWrapper.find('input').val();
           let index = stack.findIndex(item => item.id === id);
@@ -980,8 +994,23 @@ const initializeEventListeners = () => {
           // remove the tag
           stack[index].footnote.tags.splice(tagIndex, 1);
           stackStorage.set(JSON.stringify(stack));
+
           // remove item in the UI
           $(targetElem).remove();
+
+          // remove the tag from tagstack if there's no item with the tag
+          tagStack.splice(tagStack.findIndex(t => t === tagName.slice(1)), 1);
+
+          $('.tag').each((index, item) => {
+            let tagRegex = new RegExp(`${escapeRegExp(tagName)}`, 'i');
+            console.log($(item).text());
+
+            if ($(item).text().match(tagRegex)) {
+              tagStack.push(tagName.slice(1));
+              return false;
+            }
+          })
+
           stackWrapper.find('.footnote')
             .find('.divWrap').removeClass('hidden');
         }
@@ -1025,11 +1054,18 @@ const initializeEventListeners = () => {
   $('#textstack').on({
     mouseover: (e) => {
       if ($(e.target).hasClass('tag')) {
-        if (!['note', 'clip', 'bookmark'].includes($(e.target).text().slice(1))) {
+        // if (!['note', 'clip', 'bookmark'].includes($(e.target).text().slice(1))) {
+        //   if (e.ctrlKey && !$(e.target).hasClass('removing')) {
+        //     $(e.target).addClass('removing');
+        //   }
+        // }
+        let stackWrapper = $(e.target).parent().parent();
+        if ($(stackWrapper).find('.tag').length > 1 && $(e.target).prev().length != 0) {
           if (e.ctrlKey && !$(e.target).hasClass('removing')) {
             $(e.target).addClass('removing');
           }
         }
+
       }
     },
     mouseout: (e) => {
@@ -1188,7 +1224,6 @@ const renderStack = () => {
       stack = JSON.parse(raw);
       stack.forEach(res => {
         let type = res.hasOwnProperty('type') ? res.type : 'note';
-        console.log(res);
         if (typeof res.footnote.tags === 'undefined') {
           res.footnote["tags"] = [];
         }
