@@ -145,8 +145,26 @@ const selectOnDropdownList = (e) => {
         if (unfiltered.length > index + 1) {
           // move down
           liSelected.removeClass('selected');
-          console.log(index);
           $(unfiltered[index + 1]).addClass('selected');
+
+          // const newLiSelectedY = $(unfiltered[index + 1]).offset().top;
+          // const newLiSelectedHeight = $(unfiltered[index + 1]).height();
+
+          // const scrollHeight = $('#dropdownlist').prop('scrollHeight')
+          // const innerHeight = $('#dropdownlist').innerHeight();
+          // const scrollTop = $('#dropdownlist').scrollTop();
+          // console.log(newLiSelectedY);
+          // console.log(innerHeight);
+          // console.log(scrollHeight);
+          // console.log(scrollTop);
+          // if (newLiSelectedY - (innerHeight + scrollTop) >= (innerHeight)) {
+          //   $('#dropdownlist').animate({ scrollTop: $('#dropdownlist').offset().top }, newLiSelectedHeight);
+          //   console.log('BOO');
+
+          // }
+
+
+
         }
       } else {
         // if no item to select at the bottom
@@ -816,7 +834,8 @@ const insertDateSeparator = () => {
  */
 const initializeEventListeners = () => {
   /* window events */
-  window.onscroll = () => {
+  window.onscroll = (e) => {
+
     // show header and footer when scrolling to the top/bottom
     if (window.pageYOffset == 0) {
       $('header').css('opacity', 1)
@@ -843,6 +862,21 @@ const initializeEventListeners = () => {
   /* header */
   /* dropdown list */
   $('#dropdownlist, header').on('mouseleave', hideDropdownList);
+
+
+
+
+  $('#dropdownlist').on('scroll', (e) => {
+    const clientHeight = $('#dropdownlist').innerHeight();
+    const scrollHeight = $('#dropdownlist').prop('scrollHeight')
+    if (scrollHeight - (clientHeight + $('#dropdownlist').scrollTop()) <= 0) {
+      $('#dropdownlist').addClass('dropdownlistBottom');
+    } else {
+      $('#dropdownlist').removeClass('dropdownlistBottom');
+    }
+  });
+
+
 
   /* searchbox  */
   $('.searchbox').on({
@@ -1020,6 +1054,7 @@ function showDropdownList() {
   setDropdownListItems();
   filterDropdownListItems($('.searchbox').val());
   $('#dropdownlist').removeClass('hidden');
+
 }
 
 function hideDropdownList() {

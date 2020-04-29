@@ -324,15 +324,33 @@ footer {
 }
 
 /* searchbox styles */
+#dropdownlist::-webkit-scrollbar{
+    display: none;
+}
+
+/* #dropdownlist:after {
+    content: '\1f893';
+    font-size: 20pt;
+} */
+
+.dropdownlistBottom {
+    border-bottom: 3px solid lightgray;
+
+    /* border-bottom: slategray 3px solid; */
+}
+
 #dropdownlist {
     display: block;
     position: absolute;
     /* width: 255px;
     top: 30px;
     left: 40px; */
-    width: 285px;
+    /* max-height: 480px; */
+    max-height: 480px;
+    overflow: scroll;
+    width: 287px;
     top: 30px;
-    left: 12px;
+    left: 10px;
 
     background-color: white;
     border-radius: 1px;
