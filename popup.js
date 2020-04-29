@@ -662,7 +662,7 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   // foot note
   if (type === 'clip') {
     // stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag clip hidden">#clip</span><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span>`;
-    stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag clip hidden">#clip</span><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span>`;
+    stackWrapper.querySelector('.footnote').innerHTML = `<span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span><span class="tag clip">#clip</span>`;
   } else {
     stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag">#${type}</span>`;
     if (type === 'note') {
@@ -687,7 +687,7 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
     })
   }
 
-  if (stackWrapper.querySelector('.footnote').childNodes.length < 5 && type != 'clip') {
+  if (stackWrapper.querySelector('.footnote').childNodes.length < 5) {
     let divWrap = $('<div>', { addClass: 'divWrap' })
     divWrap.appendTo($(stackWrapper).find('.footnote'));
 
@@ -766,9 +766,18 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
               tagStack.push(tagName);
             }
             ev.target.value = '';
-            if ($(stackWrapper).find('.tag').length >= 6) {
-              divWrap.addClass('hidden');
+
+            if ($(stackWrapper).hasClass('clip')) {
+              if ($(stackWrapper).find('.tag').length >= 4) {
+                divWrap.addClass('hidden');
+              }
+
+            } else {
+              if ($(stackWrapper).find('.tag').length >= 5) {
+                divWrap.addClass('hidden');
+              }
             }
+
           }
         } else if (ev.keyCode === 8 && tagName === '') {
           let tagInput = ev.target;
@@ -810,6 +819,10 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
           }
         }
       });
+
+
+
+
   }
 }
 

@@ -741,11 +741,10 @@ input:focus {
     display: block;
 }
 
-.clip .footnote {
+/* .clip .footnote {
     position: absolute;
 
     text-align: right;
-    /* right: 0; */
     width: 100%;
     
     left: 0;
@@ -755,53 +754,40 @@ input:focus {
     color: rgba(0, 0, 0, 0.5);
 
     
-}
-.clip .footnote a {
-    /* color: rgba(32, 123, 156, 0.6) !important; */
+} */
 
-}
-
-.clip a {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    margin-right: 10px;
-    float: right;
-    width: 60%;
-}
-.clip a:hover {
-        color: rgba(32, 123, 156, 1) !important;
-
+.clip .spacer {
+    height: 32px;
 }
 
+.clip .footnote {
+    position: absolute;
 
+    text-align: left;
+    width: 100%;
+    
+    left: 15px;
+    margin-left: 0px !important;
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.clip .tag {
+    border: none !important;
+    display: inline-block;
+    margin-top: 0;
+}
 .clip .pseudolink {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    margin-right: 10px;
+    margin-right: 25px;
     float: right;
-    width: 60%;
+    width: 45%;
 }
 .clip .pseudolink:hover {
         color: rgba(32, 123, 156, 1) !important;
 
 }
-
-
-/* .clip span {
-    border-right: none !important;
-
-    margin-left: 15px !important;
-    clear: right !important;
-    float: left !important;
-
-    color: rgba(0, 0, 0, 0.2);
-
-}
-.clip span:hover {
-    color: rgba(0, 0, 0, 0.5);
-} */
 
 .divWrap::before {
     content: '#' !important;
