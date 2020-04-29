@@ -78,6 +78,7 @@ const executeUserCommand = (commandId, text, tabTitle, tabUrl, tabId) => {
   console.log(commandId);
 
   switch (commandId) {
+
     // system features
     case 'extendedcopy':
       copyTextWithTitleUrl(text, tabTitle, tabUrl);

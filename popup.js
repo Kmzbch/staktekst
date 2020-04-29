@@ -660,6 +660,7 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
   contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
 
   // foot note
+  console.log("!!!:" + type);
   if (type === 'clip') {
     // stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag clip hidden">#clip</span><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span>`;
     stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag clip hidden">#clip</span><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span>`;
@@ -1187,21 +1188,21 @@ const renderStack = () => {
       stack = JSON.parse(raw);
       stack.forEach(res => {
         let type = res.hasOwnProperty('type') ? res.type : 'note';
+        console.log(res);
         if (typeof res.footnote.tags === 'undefined') {
           res.footnote["tags"] = [];
+        }
+        if (res.footnote.tags.includes('pinned')) {
+          pinnedStack.push(res);
         } else {
-          if (res.footnote.tags.includes('pinned')) {
-            pinnedStack.push(res);
-          } else {
-            renderTextItem(res.id, type, res.content, res.footnote, res.date);
+          renderTextItem(res.id, type, res.content, res.footnote, res.date);
 
-          }
         }
       });
       insertDateSeparator();
       pinnedStack.forEach(res => {
-        let type = res.hasOwnProperty('type') ? res.type : 'note';
-        renderTextItem(res.id, type, res.content, res.footnote, res.date);
+        // let type = res.hasOwnProperty('type') ? res.type : 'note';
+        renderTextItem(res.id, res.type, res.content, res.footnote, res.date);
       });
 
     }

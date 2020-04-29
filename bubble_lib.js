@@ -179,6 +179,8 @@ let textHolder = "";
 const sendCommandMessage = (command) => {
     let text = window.getSelection().toString();
 
+    console.log(text);
+
     if (text == '') {
         text = textHolder;
     }
@@ -188,6 +190,8 @@ const sendCommandMessage = (command) => {
         // // get url and title from footnote
         // let textitem = window.getSelection().getRangeAt(0).commonAncestorContainer.parentElement;
     }
+
+    console.log(text);
 
     chrome.runtime.sendMessage({
         command: command,
