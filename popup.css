@@ -690,6 +690,22 @@ input:focus {
     margin-right: 15px;
     background-color: lemonchiffon !important;
 } */
+
+.bookmark.pinned{
+    background: azure !important;
+    border-right: solid 8px teal;
+    margin-right: 8px;
+
+}
+
+.note.pinned {
+    border-left: 6px solid goldenrod;
+    border-right: 1px solid gray;
+    margin-left: 10px;
+    margin-right: 15px;
+    background-color: lemonchiffon;
+}
+
 .note:hover {
     border-left: 6px solid goldenrod;
     border-right: 1px solid gray;

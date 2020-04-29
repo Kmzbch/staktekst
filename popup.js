@@ -654,6 +654,9 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
         if (!tagStack.includes(item)) {
           tagStack.push(item);
         }
+        if (item === 'pinned') {
+          $(stackWrapper).addClass('pinned');
+        }
       }
     })
   }
@@ -682,7 +685,11 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
         }
         stack[index].footnote.tags.push(tagName);
         stackStorage.set(JSON.stringify(stack));
-        // 
+
+        if (tagName === 'pinned') {
+          $(stackWrapper).addClass('pinned');
+        }
+
         $('<span>', {
           addClass: 'tag',
           text: '#' + tagName
@@ -718,6 +725,10 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
             stack[index].footnote.tags.push(tagName);
             stackStorage.set(JSON.stringify(stack));
 
+            if (tagName === 'pinned') {
+              $(stackWrapper).addClass('pinned');
+            }
+
             // 
             $('<span>', {
               addClass: 'tag',
@@ -737,6 +748,7 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
           let tagInput = ev.target;
           let prevTag = $(tagInput).parent().prev();
           if ($(stackWrapper).find('.tag').length > 1) {
+
             // remove tag from footnote
             let prevTagName = prevTag.text();
             let prevStackWrapper = prevTag.parent().parent();
@@ -749,6 +761,10 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
             stack[index].footnote.tags.splice(tagIndex, 1);
             stackStorage.set(JSON.stringify(stack));
             prevTag.remove();
+
+            if (prevTagName.slice(1) === 'pinned') {
+              $(stackWrapper).removeClass('pinned');
+            }
 
             // set
             $(tagInput).val(prevTagName.slice(1));
@@ -907,6 +923,11 @@ const initializeEventListeners = () => {
       if (e.ctrlKey && $(targetElem).hasClass('removing')) {
         let tagName = $(targetElem).text();
         let stackWrapper = $(targetElem).parent().parent();
+
+        if (tagName.slice(1) === 'pinned') {
+          $(stackWrapper).removeClass('pinned');
+
+        }
 
         if (stackWrapper.find('.tag').length > 1) {
           // remove tag from footnote
@@ -1117,15 +1138,27 @@ const renderStack = () => {
     if (typeof raw === 'undefined') {
       stackStorage.reset();
     } else {
+      let pinnedStack = [];
       stack = JSON.parse(raw);
       stack.forEach(res => {
         let type = res.hasOwnProperty('type') ? res.type : 'note';
         if (typeof res.footnote.tags === 'undefined') {
           res.footnote["tags"] = [];
+        } else {
+          if (res.footnote.tags.includes('pinned')) {
+            pinnedStack.push(res);
+          } else {
+            renderTextItem(res.id, type, res.content, res.footnote, res.date);
+
+          }
         }
-        renderTextItem(res.id, type, res.content, res.footnote, res.date);
       });
       insertDateSeparator();
+      pinnedStack.forEach(res => {
+        let type = res.hasOwnProperty('type') ? res.type : 'note';
+        renderTextItem(res.id, type, res.content, res.footnote, res.date);
+      });
+
     }
   });
 
