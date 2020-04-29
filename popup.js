@@ -119,7 +119,7 @@ const selectOnDropdownList = (e) => {
     // ENTER
     if (liSelected) {
       liSelected.removeClass('selected');
-      fireSearchWithQuery('#' + liSelected.text());
+      fireSearchWithQuery('#' + liSelected.text().replace(/edit$/, ''));
     }
     hideDropdownList()
   } else if (e.keyCode === 38) {
