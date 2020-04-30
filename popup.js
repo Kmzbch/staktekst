@@ -1353,3 +1353,9 @@ document.addEventListener('DOMContentLoaded', () => {
   restorePreviousState();
 });
 
+document.addEventListener('keyup', (e) => {
+  // refresh with F5
+  if (e.keyCode === 116) {
+    renderStack();
+  }
+})
