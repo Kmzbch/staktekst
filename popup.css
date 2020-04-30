@@ -76,6 +76,7 @@
 
 .content {
     display: inline;
+    /* cursor: auto; */
 }
 
 .edit:hover {
@@ -605,6 +606,7 @@ input:focus {
 } */
 
 .stackwrapper {
+    /* cursor: pointer; */
     position: relative;
     /* display: inline; */
     padding: 15px;
@@ -709,11 +711,18 @@ input:focus {
     background-color: lemonchiffon !important;
 } */
 
+
+
+.clip.pinned{
+    background: azure !important;
+    border-right: solid 8px teal;
+    margin-right: 8px;
+}
+
 .bookmark.pinned{
     background: azure !important;
     border-right: solid 8px teal;
     margin-right: 8px;
-
 }
 
 .note.pinned {
@@ -724,7 +733,33 @@ input:focus {
     background-color: lemonchiffon;
 }
 
+.clip.fav{
+    background: azure !important;
+    border-right: solid 8px teal;
+    margin-right: 8px;
+}
+
+.bookmark.fav{
+    background: azure !important;
+    border-right: solid 8px teal;
+    margin-right: 8px;
+}
+
+.note.fav {
+    border-left: 6px solid goldenrod;
+    border-right: 1px solid gray;
+    margin-left: 10px;
+    margin-right: 15px;
+    background-color: lemonchiffon;
+}
+
+
+
 .note:hover {
+    /* background: lemonchiffon !important;
+    border-right: solid 8px goldenrod;
+    margin-right: 8px; */
+
     border-left: 6px solid goldenrod;
     border-right: 1px solid gray;
     margin-left: 10px;
@@ -860,6 +895,7 @@ input:focus {
 }
 
 .tag {
+    cursor: pointer;
     display: inline-block;
     margin-right: 6px;
 }

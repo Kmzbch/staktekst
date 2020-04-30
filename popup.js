@@ -683,6 +683,10 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
       if (item === 'pinned') {
         $(stackWrapper).addClass('pinned');
       }
+      if (item.match(/(fav|favourite|favorite)/i)) {
+
+        $(stackWrapper).addClass('fav');
+      }
       // }
     })
   }
@@ -715,6 +719,10 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
         if (tagName === 'pinned') {
           $(stackWrapper).addClass('pinned');
         }
+        if (tagName.match(/(fav|favourite|favorite)/i)) {
+          $(stackWrapper).addClass('fav');
+        }
+
 
         $('<span>', {
           addClass: 'tag',
@@ -753,6 +761,9 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
 
             if (tagName === 'pinned') {
               $(stackWrapper).addClass('pinned');
+            }
+            if (tagName.match(/(fav|favourite|favorite)/i)) {
+              $(stackWrapper).addClass('fav');
             }
 
             // 
@@ -811,6 +822,9 @@ const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
             // remove pinned styles
             if (prevTagName.slice(1) === 'pinned') {
               $(stackWrapper).removeClass('pinned');
+            }
+            if (prevTagName.slice(1).match(/(fav|favourite|favorite)/i)) {
+              $(stackWrapper).removeClass('fav');
             }
 
             // set
@@ -996,6 +1010,10 @@ const initializeEventListeners = () => {
         // remove pinned styles
         if (tagName.slice(1) === 'pinned') {
           $(stackWrapper).removeClass('pinned');
+
+        }
+        if (tagName.slice(1).match(/(fav|favourite|favorite)/i)) {
+          $(stackWrapper).removeClass('fav');
 
         }
 
