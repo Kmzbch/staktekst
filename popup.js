@@ -17,25 +17,22 @@ let windowState = {
  */
 const updateSearchResult = () => {
 
-  let term = $('.searchbox').val().trim().toLowerCase();
+  let query = $('.searchbox').val().trim().toLowerCase();
   let hits;
 
   // save when the search result updated
-  windowState.searchQuery = term;
+  windowState.searchQuery = query;
 
-  // 
-  if (term.split(' ').length > 1 && term.split(' ')[0].slice(0, 1) === '#') {
-    let tagQuery = term.split(' ')[0]
-    let query = term.split(' ')[1];
-    hits = filterTextItems(query);
-    filterDropdownListItems(tagQuery);
+  // if the query is a tag
+  if (query[0] === '#') {
+    hits = filterTextItemsByTag(query)
   } else {
-    hits = filterTextItems(term);
-    filterDropdownListItems(term);
+    hits = filterTextItems(query);
   }
+  filterDropdownListItems(query);
 
   // change styles on search
-  if (term) {
+  if (query) {
     // set text
     $('.header-board').text(hits === 0 ? 'No Results' : `${hits} of ${stack.length}`)
     // show/hide
@@ -56,7 +53,38 @@ const updateSearchResult = () => {
 /**
  * 
  */
-function filterTextItems(term) {
+const filterTextItemsByTag = (tagName) => {
+  if (tagName[0] === '#') {
+    tagName = tagName.substring(1);
+  }
+
+  let hits = 0;
+  const tagRegex = new RegExp(`^${escapeRegExp(tagName)}`, 'i');
+
+  Array.from(stackDOM.children)
+    .map(textItem => {
+      if ($(textItem).hasClass('date')) {
+        textItem.classList.add('filtered');
+      } else {
+        $(textItem).find('.tag').each((index, tag) => {
+          if ($(tag).text().match(tagRegex)) {
+            textItem.classList.remove('filtered');
+            hits++;
+          } else {
+            textItem.classList.add('filtered');
+          }
+        })
+
+      }
+      return textItem;
+    })
+  return hits;
+}
+
+/**
+ * 
+ */
+const filterTextItems = (term) => {
   let termRegex;
   let hits = 0;
 
@@ -181,7 +209,7 @@ const selectOnDropdownList = (e) => {
  * 
  */
 const filterDropdownListItems = (query) => {
-  const tagName = query.trim().toLowerCase().slice(1);
+  const tagName = query.trim()[0] === "#" ? query.trim().toLowerCase().slice(1) : query.trim().toLowerCase();
   const termRegex = new RegExp(`^(${escapeRegExp(tagName)})(.*?)`, 'i');
   $.map($('#dropdownlist').children(),
     (listItem) => {
@@ -230,10 +258,12 @@ const setDropdownListItems = () => {
                 e.preventDefault();
                 let liSelected = $('#dropdownlist').find('.selected');
                 let orgHTML = liSelected.html();
+                let orgTag = liSelected.text();
                 $(liSelected).empty();
                 let editTagInput = $('<input>', {
                   type: 'text',
                   addClass: 'tageditInput tagadd',
+                  tag: orgTag,
                   on: {
                     keyup: (e) => {
                       if (e.keyCode === 13) {
@@ -255,17 +285,20 @@ const setDropdownListItems = () => {
                         $(liSelected).html(orgHTML);
                         replaceTagName(tag, newTag);
                         $('.tag').each((index, elem) => {
-                          if ($(elem).text() === '#' + tag) {
-                            $(elem).text('#' + newTag)
+                          if ($(elem).text() === tag) {
+                            $(elem).text(newTag)
                           }
                         })
-                        tagStack.slice(tagStack.findIndex(t => t === tag), 1, newTag);
+                        tagStack.splice(tagStack.findIndex(t => t === tag), 1, newTag);
+
+                        $('.tageditInput').val(newTag);
+                        $(liSelected).text(newTag);
                         //                        fireSearchWithQuery('#' + newTag);
-                        if ($('.searchbox').val() !== "") {
+                        if ($('.searchbox').val() !== '') {
                           $('.searchbox').val('#' + newTag);
                           windowState.searchQuery = '#' + newTag;
                         }
-                        tag = newTag;
+                        // tag = newTag;
                         // renderStack();
 
                       }
@@ -372,36 +405,6 @@ function attachContentEditableEvents(wrapper) {
           contentDIV.contentEditable = true;
           toggleContentEditable(contentDIV, true)
           $(editIcon).hide();
-
-          // const index = stack.findIndex(item => {
-          //   console.log(item.id);
-          //   return item.id === $(wrapper).attr('id')
-          // });
-          // if ($(wrapper).hasClass('pinned')) {
-          //   stack[index].footnote.tags.splice(
-          //     stack[index].footnote.tags.findIndex(tag => tag === 'pinned'), 1);
-
-          //   $(wrapper).find('.tag').each((index, item) => {
-          //     console.log(item);
-          //     if ($(item).text() === '#pinned') {
-          //       $(item).remove();
-          //     }
-          //   })
-
-          //   // $(wrapper).find('.tag')
-          //   $(wrapper).removeClass('pinned');
-          // } else {
-          //   // add item to stack
-          //   stack.forEach((item, index) => {
-          //     if (item.id === $(wrapper).attr('id')) {
-          //       $(wrapper).find('.tagadd').val('pinned');
-          //       $(wrapper).find('.tagadd').trigger('blur')
-          //     }
-          //   })
-          //   $(wrapper).addClass('pinned');
-          // }
-          // stackStorage.set(JSON.stringify(stack));
-
         }, 100)
       }
     }
@@ -470,9 +473,9 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
 
   // foot note
   if (type === 'clip') {
-    stackWrapper.querySelector('.footnote').innerHTML = `<span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span><span class="tag type clip">#clip</span>`;
+    stackWrapper.querySelector('.footnote').innerHTML = `<span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span><span class="tag type clip">clip</span>`;
   } else {
-    stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag type">#${type}</span>`;
+    stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag type">${type}</span>`;
     if (type === 'note') {
       attachContentEditableEvents(stackWrapper);
     }
@@ -482,12 +485,13 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
   if (typeof footnote.tags !== 'undefined') {
     footnote.tags.forEach(item => {
       // if (!['note', 'clip', 'bookmark'].includes(item)) {
-      const tagElem = $('<span>', { addClass: 'tag', text: '#' + item });
+      const tagElem = $('<span>', { addClass: 'tag', text: item });
       $(stackWrapper).find('.footnote').append(tagElem);
 
       if (!tagStack.includes(item)) {
         tagStack.push(item);
       }
+      // reserved tags
       if (item === 'pinned') {
         $(stackWrapper).addClass('pinned');
       }
@@ -496,6 +500,11 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
         // $(stackWrapper).addClass('fav');
         tagElem.addClass('fav');
       }
+      if (item.match(/(♡|💛|♥|❤)/i)) {
+        // $(stackWrapper).addClass('fav');
+        tagElem.addClass('like');
+      }
+
       // }
     })
   }
@@ -515,6 +524,7 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
     // attach events
     input.blur((ev) => {
       let tagName = ev.target.value.trim();
+      console.log('input.blur:' + tagName);
       if (tagName !== '') {
         // find the index of the text item
         let index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
@@ -531,13 +541,17 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
 
         const tagElem = $('<span>', {
           addClass: 'tag',
-          text: '#' + tagName
+          text: tagName
         });
 
         // if (tagName.match(/(fav|favourite|favorite)/i)) {
         if (tagName.match(/(★|☆|✭|⭐)/i)) {
           tagElem.addClass('fav');
         }
+        if (tagName.match(/(♡|💛|♥|❤)/i)) {
+          tagElem.addClass('like');
+        }
+
 
         tagElem.insertBefore(divWrap);
 
@@ -557,7 +571,7 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
         ev.preventDefault();
 
         let tagName = ev.target.value;
-        if (tagName.slice(tagName.length - 1) === ' ' || ev.keyCode === 13) {
+        if (tagName[tagName.length - 1] === ' ' || ev.keyCode === 13) {
           tagName = ev.target.value.trim();
           if (tagName !== '') {
             // find the index of the text item
@@ -578,11 +592,15 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
 
             const tagElem = $('<span>', {
               addClass: 'tag',
-              text: '#' + tagName
+              text: tagName
             });
             if (tagName.match(/(★|☆|✭|⭐)/i)) {
               tagElem.addClass('fav');
             }
+            if (tagName.match(/(♡|💛|♥|❤)/i)) {
+              tagElem.addClass('like');
+            }
+
             // 
             tagElem.insertBefore(divWrap);
 
@@ -623,28 +641,33 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
             prevTag.remove();
 
             // remove the tag from tagStack if there is no item with the tag
-            tagStack.splice(tagStack.findIndex(t => t === prevTagName.slice(1)), 1);
+            tagStack.splice(tagStack.findIndex(t => t === prevTagName), 1);
             $('.tag').each((index, item) => {
               let tagRegex = new RegExp(`${escapeRegExp(prevTagName)}$`, 'i');
 
               if ($(item).text().match(tagRegex)) {
-                tagStack.push(prevTagName.slice(1));
+                tagStack.push(prevTagName);
                 return false;
               }
             })
 
             // remove pinned styles
-            if (prevTagName.slice(1) === 'pinned') {
+            if (prevTagName === 'pinned') {
               $(stackWrapper).removeClass('pinned');
             }
             // if (prevTagName.slice(1).match(/(fav|favourite|favorite)/i)) {
-            if (prevTagName.slice(1).match(/(★|☆|✭|⭐)/i)) {
+            if (prevTagName.match(/(★|☆|✭|⭐)/i)) {
               prevTag.removeClass('fav');
               // $(stackWrapper).removeClass('fav');
             }
 
+            if (prevTagName.match(/(♡|💛|♥|❤)/i)) {
+              prevTag.removeClass('like');
+              // $(stackWrapper).removeClass('fav');
+            }
+
             // set
-            $(tagInput).val(prevTagName.slice(1));
+            $(tagInput).val(prevTagName);
             $(tagInput).trigger('focus');
           }
         }
@@ -739,7 +762,7 @@ const initializeEventListeners = () => {
         let stackWrapper = $(targetElem).parent().parent();
 
         // remove pinned styles
-        if (tagName.slice(1) === 'pinned') {
+        if (tagName === 'pinned') {
           $(stackWrapper).removeClass('pinned');
 
         }
@@ -762,14 +785,14 @@ const initializeEventListeners = () => {
           $(targetElem).remove();
 
           // remove the tag from tagstack if there's no item with the tag
-          tagStack.splice(tagStack.findIndex(t => t === tagName.slice(1)), 1);
+          tagStack.splice(tagStack.findIndex(t => t === tagName), 1);
 
           $('.tag').each((index, item) => {
             let tagRegex = new RegExp(`${escapeRegExp(tagName)}`, 'i');
             console.log($(item).text());
 
             if ($(item).text().match(tagRegex)) {
-              tagStack.push(tagName.slice(1));
+              tagStack.push(tagName);
               return false;
             }
           })
@@ -826,7 +849,7 @@ const initializeEventListeners = () => {
     },
     mouseout: (e) => {
       if ($(e.target).hasClass('tag')) {
-        if (!['note', 'clip', 'bookmark'].includes(e.target.textContent.slice(1))) {
+        if (!['note', 'clip', 'bookmark'].includes(e.target.textContent)) {
           $(e.target).removeClass('removing');
         }
       }

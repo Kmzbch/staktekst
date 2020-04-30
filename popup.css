@@ -679,12 +679,6 @@ input:focus {
 }
 
 
-.fav {
-    opacity: 1 !important;
-    color: goldenrod !important;
-    transform: scale(1.3);
-}
-
 .note:hover {
     /* background: lemonchiffon !important;
     border-right: solid 8px goldenrod;
@@ -826,11 +820,37 @@ input:focus {
     font-weight: bold;
 }
 
+.tag:before {
+    content: '#'
+}
+
 .tag {
     cursor: pointer;
     display: inline-block;
     margin-right: 6px;
 }
+
+
+.fav:before {
+    content: none !important;
+}
+
+.fav {
+    opacity: 1 !important;
+    color: goldenrod !important;
+    transform: scale(1.3);
+}
+.like:before {
+    content: none !important;
+}
+
+.like {
+    opacity: 1 !important;
+    color: tomato !important;
+    transform: scale(1.3);
+}
+
+/* .removing:not(.default):hover::after { */
 
 
 
