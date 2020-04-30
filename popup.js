@@ -32,7 +32,7 @@ const updateSearchResult = () => {
 
   // change styles on search
   if (term) {
-    toggleToolboxVisibility(false);
+    $('#toolbox').hide();
 
     $('.header-board').text(hits === 0 ? 'No Results' : `${hits} of ${stack.length}`)
     $('.searchcancel-button').removeClass('hidden');
@@ -40,7 +40,9 @@ const updateSearchResult = () => {
     $('footer').addClass('hidden');
 
   } else {
-    toggleToolboxVisibility(true);
+    $('#toolbox').show();
+    $('.header-board').text('');
+
 
     $('.searchcancel-button').addClass('hidden');
     $('footer').removeClass('hidden');
@@ -69,12 +71,6 @@ function filterTextItems(term) {
       // remove text decoration and highlight
       textItem.firstChild.innerHTML = textItem.firstChild.innerHTML;
 
-      // if (textItem.textContent.match(termRegex) || textItem.innerHTML.includes('#pinned')) {
-      //   textItem.classList.remove('filtered');
-      //   hits++;
-      // } else {
-      //   textItem.classList.add('filtered');
-      // }
       if (textItem.textContent.match(termRegex)) {
         textItem.classList.remove('filtered');
         hits++;
@@ -387,7 +383,10 @@ function removeTextItem(textitemDOM) {
 
     // remove DOM
     textitemDOM.remove();
-    toggleToolboxVisibility(true);
+    $('#toolbox').show();
+
+    $('.header-board').text('');
+
   }, 450);
 }
 
@@ -404,8 +403,8 @@ function attachContentEditableEvents(wrapper) {
   // add click event
   editIcon.addEventListener('click', function enableEditing() {
     setTimeout(() => {
-      toggleContentEditable(contentDIV, true)
-      editIcon.classList.add('hidden');
+      toggleContentEditable(contentDIV, true);
+      $(editIcon).hide();
     }, 100);
   })
 
@@ -433,10 +432,10 @@ function attachContentEditableEvents(wrapper) {
   wrapper.addEventListener('focusout', (e) => {
     // enable URL
     toggleContentEditable(false);
-
-    // leave edit mode
+    $('#toolbox').show();
+    $('.header-board').text('');
     wrapper.classList.remove('editing');
-    editIcon.classList.remove('hidden');
+    $(editIcon).show();
 
     contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
 
@@ -457,8 +456,8 @@ function attachContentEditableEvents(wrapper) {
         setTimeout(hideBubble, 30);
         setTimeout(() => {
           contentDIV.contentEditable = true;
-          editIcon.classList.add('hidden');
-          contentDIV.focus();
+          toggleContentEditable(contentDIV, true)
+          $(editIcon).hide();
         }, 100)
       }
     }
@@ -803,12 +802,18 @@ const initializeEventListeners = () => {
   $('.opener-top').click(() => {
     createEmptyTextItem();
     toggleContentEditable($('.content').last(), true);
+    $('i.edit').last().hide();
+
+    updateTextInfoMessage($('.content').last().html());
   });
 
 
   $('.fileexport').click(exportTextItems);
 
-  $('.header-board').click(toggleToolboxVisibility)
+  $('.header-board').click(() => {
+    $('#toolbox').show();
+    $('.header-board').text('');
+  })
   $('.sort-by').click(() => { sortTextItems(!windowState.sortedByNew) });
 
   /**
@@ -918,13 +923,13 @@ const initializeEventListeners = () => {
   })
 
   /* footer & modal */
-  $('.clear-button').click(() => { toggleDisplay($('.modal'), true) });
-  $('.overlay').click(() => { toggleDisplay($('.modal'), false) });
+  $('.clear-button').click(() => { toggleClearStackModal(true) });
+  $('.overlay').click(() => { toggleClearStackModal(false) });
   $('.ok').click(() => {
     clearAllItems();
-    toggleDisplay($('.modal'), false)
+    toggleClearStackModal(false)
   });
-  $('.cancel').click(() => { toggleDisplay($('.modal'), false) });
+  $('.cancel').click(() => { toggleClearStackModal(false) });
 }
 
 /* search */
@@ -945,16 +950,13 @@ function hideDropdownList() {
 }
 
 /* clear stack window modal*/
-const toggleDisplay = (
-  element,
-  display = $(element).hasClass('hidden') ? true : false
+const toggleClearStackModal = (
+  display = $('.modal').hasClass('hidden') ? true : false
 ) => {
-  console.log(element);
-  console.log("!!!!");
   if (display) {
-    $(element).removeClass('hidden');
+    $('.modal').removeClass('hidden');
   } else {
-    $(element).addClass('hidden');
+    $('.modal').addClass('hidden');
   }
 }
 
@@ -970,26 +972,15 @@ const toggleContentEditable = (
   }
 }
 
-const toggleToolboxVisibility = (display = false) => {
-  if (display) {
-    $('.header-board').text('');
-    $('#toolbox').removeClass('hidden');
-  } else {
-    $('#toolbox').addClass('hidden');
-  }
-}
-
 const displayMessage = (message) => {
   if ($('.header-board').hasClass('entering')) {
     $('.header-board').removeClass('entering');
   }
   $('.header-board').text(message);
-
-  toggleToolboxVisibility(false);
+  $('#toolbox').hide();
 }
-
 const updateTextInfoMessage = (text) => {
-  toggleToolboxVisibility(false);
+  $('#toolbox').hide();
 
   let info = extractTextInfo(text);
   $('.header-board').html(
