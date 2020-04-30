@@ -482,17 +482,19 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
   if (typeof footnote.tags !== 'undefined') {
     footnote.tags.forEach(item => {
       // if (!['note', 'clip', 'bookmark'].includes(item)) {
-      $('<span>', { addClass: 'tag', text: '#' + item })
-        .appendTo($(stackWrapper).find('.footnote'));
+      const tagElem = $('<span>', { addClass: 'tag', text: '#' + item });
+      $(stackWrapper).find('.footnote').append(tagElem);
+
       if (!tagStack.includes(item)) {
         tagStack.push(item);
       }
       if (item === 'pinned') {
         $(stackWrapper).addClass('pinned');
       }
-      if (item.match(/(fav|favourite|favorite)/i)) {
-
-        $(stackWrapper).addClass('fav');
+      // if (item.match(/(fav|favourite|favorite)/i)) {
+      if (item.match(/(★|☆|✭|⭐)/i)) {
+        // $(stackWrapper).addClass('fav');
+        tagElem.addClass('fav');
       }
       // }
     })
@@ -526,15 +528,18 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
         if (tagName === 'pinned') {
           $(stackWrapper).addClass('pinned');
         }
-        if (tagName.match(/(fav|favourite|favorite)/i)) {
-          $(stackWrapper).addClass('fav');
-        }
 
-
-        $('<span>', {
+        const tagElem = $('<span>', {
           addClass: 'tag',
           text: '#' + tagName
-        }).insertBefore(divWrap);
+        });
+
+        // if (tagName.match(/(fav|favourite|favorite)/i)) {
+        if (tagName.match(/(★|☆|✭|⭐)/i)) {
+          tagElem.addClass('fav');
+        }
+
+        tagElem.insertBefore(divWrap);
 
         // 
         if (!tagStack.includes(tagName)) {
@@ -569,15 +574,17 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
             if (tagName === 'pinned') {
               $(stackWrapper).addClass('pinned');
             }
-            if (tagName.match(/(fav|favourite|favorite)/i)) {
-              $(stackWrapper).addClass('fav');
-            }
+            // if (tagName.match(/(fav|favourite|favorite)/i)) {
 
-            // 
-            $('<span>', {
+            const tagElem = $('<span>', {
               addClass: 'tag',
               text: '#' + tagName
-            }).insertBefore(divWrap);
+            });
+            if (tagName.match(/(★|☆|✭|⭐)/i)) {
+              tagElem.addClass('fav');
+            }
+            // 
+            tagElem.insertBefore(divWrap);
 
             // 
             if (!tagStack.includes(tagName)) {
@@ -630,8 +637,10 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
             if (prevTagName.slice(1) === 'pinned') {
               $(stackWrapper).removeClass('pinned');
             }
-            if (prevTagName.slice(1).match(/(fav|favourite|favorite)/i)) {
-              $(stackWrapper).removeClass('fav');
+            // if (prevTagName.slice(1).match(/(fav|favourite|favorite)/i)) {
+            if (prevTagName.slice(1).match(/(★|☆|✭|⭐)/i)) {
+              prevTag.removeClass('fav');
+              // $(stackWrapper).removeClass('fav');
             }
 
             // set
@@ -734,10 +743,11 @@ const initializeEventListeners = () => {
           $(stackWrapper).removeClass('pinned');
 
         }
-        if (tagName.slice(1).match(/(fav|favourite|favorite)/i)) {
-          $(stackWrapper).removeClass('fav');
-
-        }
+        // if (tagName.slice(1).match(/(fav|favourite|favorite)/i)) {
+        // if (tagName.slice(1).match(/(★|☆|✭|⭐|)/i)) {
+        //   // $(stackWrapper).removeClass('fav');
+        //   targetElem.removeClass('fav')
+        // }
 
         if (stackWrapper.find('.tag').length > 1 && $(targetElem).prev().length != 0) {
           // remove tag from footnote
