@@ -12,14 +12,18 @@ let windowState = {
   sortedByNew: true
 }
 
-/* switches */
+/**
+ * 
+ */
 const updateSearchResult = () => {
 
   let term = $('.searchbox').val().trim().toLowerCase();
+  let hits;
 
+  // save when the search result updated
   windowState.searchQuery = term;
 
-  let hits;
+  // 
   if (term.split(' ').length > 1 && term.split(' ')[0].slice(0, 1) === '#') {
     let tagQuery = term.split(' ')[0]
     let query = term.split(' ')[1];
@@ -32,31 +36,29 @@ const updateSearchResult = () => {
 
   // change styles on search
   if (term) {
-    $('#toolbox').hide();
-
+    // set text
     $('.header-board').text(hits === 0 ? 'No Results' : `${hits} of ${stack.length}`)
-    $('.searchcancel-button').removeClass('hidden');
-
-    $('footer').addClass('hidden');
-
+    // show/hide
+    $('#toolbox').hide();
+    $('.searchcancel-button').show();
+    $('footer').hide();
   } else {
-    $('#toolbox').show();
+    // reset
     $('.header-board').text('');
-
-
-    $('.searchcancel-button').addClass('hidden');
-    $('footer').removeClass('hidden');
-
+    // show/hide
+    $('#toolbox').show();
+    $('.searchcancel-button').hide();
+    $('footer').show();
     hideDropdownList();
   }
 }
 
-
+/**
+ * 
+ */
 function filterTextItems(term) {
   let termRegex;
   let hits = 0;
-
-
 
   // Search in Japanese/English
   if (containsJapanese(term)) {
@@ -106,7 +108,9 @@ function filterTextItems(term) {
   return hits;
 };
 
-
+/**
+ * 
+ */
 const selectOnDropdownList = (e) => {
   let liSelected = $('#dropdownlist').find('.selected');
   let unfiltered = $('li').not('.filtered');
@@ -121,7 +125,7 @@ const selectOnDropdownList = (e) => {
     hideDropdownList()
   } else if (e.keyCode === 38) {
     // UP
-    if (!$('#dropdownlist').hasClass('hidden')) {
+    if (!$('#dropdownlist').is(":hidden")) {
       if (liSelected) {
         if (index - 1 >= 0) {
           // move up
@@ -146,7 +150,7 @@ const selectOnDropdownList = (e) => {
     }
   } else if (e.keyCode === 40) {
     // DOWN
-    if ($('#dropdownlist').hasClass('hidden')) {
+    if ($('#dropdownlist').is(":hidden")) {
       showDropdownList()
     } else {
       if (liSelected) {
@@ -174,28 +178,26 @@ const selectOnDropdownList = (e) => {
   }
 }
 
-const filterDropdownListItems = (tag) => {
-  let tagName = tag.trim().toLowerCase().slice(1);
-  let termRegex;
-
-  // Search in Japanese/English
-  if (containsJapanese(tagName)) {
-    termRegex = new RegExp(`^(${escapeRegExp(tagName)})(.*?)`, 'i');
-  } else {
-    termRegex = new RegExp(`^(${escapeRegExp(tagName)})(.*?)`, 'i');
-  }
-
+/**
+ * 
+ */
+const filterDropdownListItems = (query) => {
+  const tagName = query.trim().toLowerCase().slice(1);
+  const termRegex = new RegExp(`^(${escapeRegExp(tagName)})(.*?)`, 'i');
   $.map($('#dropdownlist').children(),
-    (tagItem) => {
-      if ($(tagItem).text().match(termRegex)) {
-        tagItem.classList.remove('filtered');
+    (listItem) => {
+      if ($(listItem).text().match(termRegex)) {
+        listItem.classList.remove('filtered');
       } else {
-        tagItem.classList.add('filtered');
+        listItem.classList.add('filtered');
       }
-      return tagItem;
+      return listItem;
     })
 }
 
+/**
+ * 
+ */
 const setDropdownListItems = () => {
   // empty selections
   $('#dropdownlist').empty();
@@ -275,9 +277,6 @@ const setDropdownListItems = () => {
 
                 $('.tageditInput').val(tag);
                 $('.tageditInput').focus();
-
-
-
                 return false;
               } else if (e.target.classList.contains('tageditInput')) {
                 e.preventDefault();
@@ -285,9 +284,7 @@ const setDropdownListItems = () => {
               } else {
                 fireSearchWithQuery('#' + $(e.target).text().replace(/edit$/, ''));
                 hideDropdownList();
-
               }
-
             },
           }
         });
@@ -300,96 +297,14 @@ const setDropdownListItems = () => {
           editIcon.innerText = 'edit';
           liItem.append(editIcon);
         }
-
         $('#dropdownlist').append(liItem)
-
       }
     })
 }
 
-const replaceTagName = (oldTag, newTag) => {
-  // add item to stack
-  stack.forEach(item => {
-    if (item.type != 'clip') {
-      if (item.footnote.tags.includes(oldTag)) {
-        item.footnote.tags.splice(item.footnote.tags.findIndex(tag => tag == oldTag), 1, newTag)
-      }
-    }
-  })
-
-  stackStorage.set(JSON.stringify(stack));
-
-}
-
-const exportTextItems = () => {
-  // get text items to export
-  let textitemIDs = $.map(
-    $(stackDOM.children).not('.date, .filtered'),
-    (item, index) => {
-      return $(item).attr('id')
-    })
-
-  // create exporting content
-  let content = Array.from(stack)
-    .filter(item => textitemIDs.includes(item.id))
-    .reduce((accm, item) => {
-
-      // for urls
-      let sanitizedContent = $('<div>', {
-        html: item.content
-      }).text();
-
-      accm += `${sanitizedContent}\n`;
-      if (typeof item.footnote.pageTitle !== 'undefined') {
-        accm += item.footnote.pageTitle + '\n';
-      }
-      if (typeof item.footnote.url !== 'undefined') {
-        accm += item.footnote.url + "\n";
-      }
-      return accm += '\n';
-    }, "")
-
-  // create url to download
-  const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-
-  let blob = new Blob([bom, content], {
-    type: 'data:text/plain'
-  });
-
-  window.URL = window.URL || window.webkitURL;
-
-  const url = window.URL.createObjectURL(blob);
-
-  // download
-  chrome.downloads.download({
-    url: url,
-    filename: formatDate() + '.txt',
-    saveAs: true
-  });
-}
-
-
-function removeTextItem(textitemDOM) {
-  // apply visual effects and display Message
-  textitemDOM.classList.add('removed')
-
-  displayMessage("Item Removed!");
-  setTimeout(() => {
-    // remove the item
-    let id = textitemDOM.querySelector('input').value;
-    stack = stack.filter(item => item.id !== id);
-
-    stackStorage.set(JSON.stringify(stack));
-
-    // remove DOM
-    textitemDOM.remove();
-    $('#toolbox').show();
-
-    $('.header-board').text('');
-
-  }, 450);
-}
-
+/**
+ * 
+ */
 function attachContentEditableEvents(wrapper) {
   // create and insert
   let editIcon = document.createElement('i');
@@ -492,7 +407,6 @@ function attachContentEditableEvents(wrapper) {
     }
   });
 
-
   function fireChange(e) {
     let newHTML = wrapper.innerHTML;
     if (oldHTML !== newHTML) {
@@ -502,10 +416,10 @@ function attachContentEditableEvents(wrapper) {
   }
 }
 
-
-
-// const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
-const renderTextItem = ({ id, type, content, footnote, date = formatDate() }) => {
+/**
+ * 
+ */
+const renderTextItem = ({ id, type, content, footnote, date }) => {
   let stackWrapper = document.createElement('div');
   stackWrapper.className = 'stackwrapper';
   stackWrapper.id = id;
@@ -527,7 +441,6 @@ const renderTextItem = ({ id, type, content, footnote, date = formatDate() }) =>
 
   // foot note
   if (type === 'clip') {
-    // stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag clip hidden">#clip</span><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span>`;
     stackWrapper.querySelector('.footnote').innerHTML = `<span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span><span class="tag clip">#clip</span>`;
   } else {
     stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag">#${type}</span>`;
@@ -600,7 +513,7 @@ const renderTextItem = ({ id, type, content, footnote, date = formatDate() }) =>
         }
         ev.target.value = '';
         if ($(stackWrapper).find('.tag').length >= 6) {
-          divWrap.addClass('hidden');
+          divWrap.hide();
         }
       }
     });
@@ -645,12 +558,12 @@ const renderTextItem = ({ id, type, content, footnote, date = formatDate() }) =>
 
             if ($(stackWrapper).hasClass('clip')) {
               if ($(stackWrapper).find('.tag').length >= 4) {
-                divWrap.addClass('hidden');
+                divWrap.hide();
               }
 
             } else {
               if ($(stackWrapper).find('.tag').length >= 5) {
-                divWrap.addClass('hidden');
+                divWrap.hide();
               }
             }
 
@@ -698,47 +611,7 @@ const renderTextItem = ({ id, type, content, footnote, date = formatDate() }) =>
           }
         }
       });
-
-
-
-
   }
-}
-
-/**
- * insert date as a separator
- */
-const insertDateSeparator = () => {
-  $(stackDOM.children).each((wrapper) => {
-    const date = $(wrapper).find('.itemDate').val();
-
-    if (dateStack.length === 0) {
-      $('<div>', {
-        addClass: 'date',
-        text: date
-      }).insertBefore(wrapper)
-      dateStack.push(date);
-    } else {
-      // insert only between the date and the previous date
-      if (dateStack[dateStack.length - 1] !== date) {
-        $('<div>', {
-          addClass: 'date',
-          text: date
-        }).insertBefore(wrapper)
-        dateStack.push(date);
-      }
-    }
-  })
-
-  // insert current time
-  let now = new Date();
-  let hours = ('0' + now.getHours()).slice(-2);
-  let minutes = ('0' + now.getMinutes()).slice(-2);
-
-  $('<div>', {
-    addClass: 'date current',
-    text: formatDate() + ' ' + hours + ':' + minutes
-  }).appendTo(stackDOM);
 }
 
 /**
@@ -807,9 +680,7 @@ const initializeEventListeners = () => {
     updateTextInfoMessage($('.content').last().html());
   });
 
-
   $('.fileexport').click(exportTextItems);
-
   $('.header-board').click(() => {
     $('#toolbox').show();
     $('.header-board').text('');
@@ -865,7 +736,7 @@ const initializeEventListeners = () => {
           })
 
           stackWrapper.find('.footnote')
-            .find('.divWrap').removeClass('hidden');
+            .find('.divWrap').show();
         }
       } else {
         // when hashtag clicked
@@ -933,23 +804,34 @@ const initializeEventListeners = () => {
 }
 
 /* search */
-function fireSearchWithQuery(query) {
+const fireSearchWithQuery = (query) => {
   $('.searchbox').val(query);
   $('.searchbox').trigger('input')
 };
 
-function showDropdownList() {
+// ========== DISPLAY ==========
+/**
+ * 
+ */
+const showDropdownList = () => {
   setDropdownListItems();
   filterDropdownListItems($('.searchbox').val());
-  $('#dropdownlist').removeClass('hidden');
+  $('#dropdownlist').animate({ scrollTop: 0 }, 20);
+
+  $('#dropdownlist').show();
 }
 
-function hideDropdownList() {
-  $('#dropdownlist').addClass('hidden');
-  $('#dropdownlist').animate({ scrollTop: 0 }, 20);
+/**
+ * 
+ */
+const hideDropdownList = () => {
+  $('#dropdownlist').hide();
 }
 
 /* clear stack window modal*/
+/**
+ * 
+ */
 const toggleClearStackModal = (
   display = $('.modal').hasClass('hidden') ? true : false
 ) => {
@@ -960,6 +842,9 @@ const toggleClearStackModal = (
   }
 }
 
+/**
+ * 
+ */
 const toggleContentEditable = (
   div,
   display = !$(div).attr('contentEditable') ? true : false
@@ -972,6 +857,9 @@ const toggleContentEditable = (
   }
 }
 
+/**
+ * 
+ */
 const displayMessage = (message) => {
   if ($('.header-board').hasClass('entering')) {
     $('.header-board').removeClass('entering');
@@ -979,6 +867,10 @@ const displayMessage = (message) => {
   $('.header-board').text(message);
   $('#toolbox').hide();
 }
+
+/**
+ * 
+ */
 const updateTextInfoMessage = (text) => {
   $('#toolbox').hide();
 
@@ -992,6 +884,9 @@ const updateTextInfoMessage = (text) => {
   }
 }
 
+/**
+ * 
+ */
 const sortTextItems = (sortingByNew) => {
   // NEW
   if (sortingByNew) {
@@ -1005,6 +900,52 @@ const sortTextItems = (sortingByNew) => {
   windowState.sortedByNew = sortingByNew;
 }
 
+// ========== EXPORT ==========
+const exportTextItems = () => {
+  // get text items to export
+  const ids = $.map(
+    $(stackDOM.children).not('.date, .filtered'),
+    (item, index) => {
+      return $(item).attr('id')
+    })
+
+  // create exporting content
+  const content = Array.from(stack)
+    .filter(item => ids.includes(item.id))
+    .reduce((accm, item) => {
+      // for urls
+      let sanitizedContent = $('<div>', {
+        html: item.content
+      }).text();
+      accm += `${sanitizedContent}\n`;
+      if (typeof item.footnote.pageTitle !== 'undefined') {
+        accm += item.footnote.pageTitle + '\n';
+      }
+      if (typeof item.footnote.url !== 'undefined') {
+        accm += item.footnote.url + "\n";
+      }
+      return accm += '\n';
+    }, '')
+
+  // create blob
+  const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+  let blob = new Blob([bom, content], {
+    type: 'data:text/plain'
+  });
+
+  // create url to download
+  window.URL = window.URL || window.webkitURL;
+  const url = window.URL.createObjectURL(blob);
+
+  // download
+  chrome.downloads.download({
+    url: url,
+    filename: formatDate() + '.txt',
+    saveAs: true
+  });
+}
+
+// ========== STORAGE ==========
 /**
  * 
  */
@@ -1033,6 +974,28 @@ const createEmptyTextItem = () => {
   renderTextItem(newItem);
 };
 
+/**
+ * 
+ */
+const removeTextItem = (textitemDOM) => {
+  // apply visual effects and display message
+  textitemDOM.classList.add('removed')
+  displayMessage("Item Removed!");
+  // actually remove after a while
+  setTimeout(() => {
+    // remove the item
+    const id = textitemDOM.querySelector('input').value;
+    stack = stack.filter(item => item.id !== id);
+    stackStorage.set(JSON.stringify(stack));
+    textitemDOM.remove();
+    // show toolbox
+    $('#toolbox').show();
+    $('.header-board').text('');
+  }, 450);
+}
+/**
+ * 
+ */
 const clearAllItems = () => {
   // clear storage
   stackStorage.reset();
@@ -1050,6 +1013,21 @@ const clearAllItems = () => {
     scrollY: 0,
     sortedByNew: true
   }
+}
+
+/**
+ * 
+ */
+const replaceTagName = (oldTag, newTag) => {
+  // add item to stack
+  stack.forEach(item => {
+    if (item.type != 'clip') {
+      if (item.footnote.tags.includes(oldTag)) {
+        item.footnote.tags.splice(item.footnote.tags.findIndex(tag => tag == oldTag), 1, newTag)
+      }
+    }
+  })
+  stackStorage.set(JSON.stringify(stack));
 }
 
 /**
@@ -1085,6 +1063,43 @@ const renderStack = () => {
 };
 
 /**
+ * insert date as a separator
+ */
+const insertDateSeparator = () => {
+  $(stackDOM.children).each((wrapper) => {
+    const date = $(wrapper).find('.itemDate').val();
+
+    if (dateStack.length === 0) {
+      $('<div>', {
+        addClass: 'date',
+        text: date
+      }).insertBefore(wrapper)
+      dateStack.push(date);
+    } else {
+      // insert only between the date and the previous date
+      if (dateStack[dateStack.length - 1] !== date) {
+        $('<div>', {
+          addClass: 'date',
+          text: date
+        }).insertBefore(wrapper)
+        dateStack.push(date);
+      }
+    }
+  })
+
+  // insert current time
+  let now = new Date();
+  let hours = ('0' + now.getHours()).slice(-2);
+  let minutes = ('0' + now.getMinutes()).slice(-2);
+
+  $('<div>', {
+    addClass: 'date current',
+    text: formatDate() + ' ' + hours + ':' + minutes
+  }).appendTo(stackDOM);
+}
+
+
+/**
  * Restore the previous popup window state
  * 
  */
@@ -1113,6 +1128,7 @@ const restorePreviousState = () => {
     })
 }
 
+// ========== INITIALIZATION ==========
 // initialize
 document.addEventListener('DOMContentLoaded', () => {
   initializeEventListeners();

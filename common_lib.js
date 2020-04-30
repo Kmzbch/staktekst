@@ -89,6 +89,7 @@ function pushText(content, type, pageTitle = '', pageURL = '') {
                 date: formatDate(),
                 content: content,
                 footnote: {
+                    tags: [],
                     pageTitle,
                     pageURL
                 }
