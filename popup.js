@@ -64,7 +64,6 @@ function filterTextItems(term) {
   if (containsJapanese(term)) {
     termRegex = new RegExp(`(${escapeRegExp(term)})(.*?)`, 'ig');
   } else {
-    // termRegex = new RegExp(`\\b(${escapeRegExp(term)})(.*?)\\b`, 'ig');
     termRegex = new RegExp(`(?!<span .+? target="_blank"/>)(${escapeRegExp(term)})(.*?)(?!</span>)`, 'ig');
   }
 
@@ -818,7 +817,9 @@ const showDropdownList = () => {
   filterDropdownListItems($('.searchbox').val());
   $('#dropdownlist').animate({ scrollTop: 0 }, 20);
 
+  // show and select the first item
   $('#dropdownlist').show();
+  $('li').first().addClass('selected');
 }
 
 /**
@@ -826,6 +827,7 @@ const showDropdownList = () => {
  */
 const hideDropdownList = () => {
   $('#dropdownlist').hide();
+  $('li.selected').removeClass('selected');
 }
 
 /* clear stack window modal*/
@@ -912,24 +914,26 @@ const exportTextItems = () => {
   // create exporting content
   const content = Array.from(stack)
     .filter(item => ids.includes(item.id))
-    .reduce((accm, item) => {
-      // for urls
-      let sanitizedContent = $('<div>', {
+    .reduce((content, item) => {
+      // remove html tags
+      const sanitizedContent = $('<div>', {
         html: item.content
       }).text();
-      accm += `${sanitizedContent}\n`;
+      // 
+      content += `${sanitizedContent}\n`;
       if (typeof item.footnote.pageTitle !== 'undefined') {
-        accm += item.footnote.pageTitle + '\n';
+        content += item.footnote.pageTitle + '\n';
       }
       if (typeof item.footnote.url !== 'undefined') {
-        accm += item.footnote.url + "\n";
+        content += item.footnote.url + "\n";
       }
-      return accm += '\n';
+
+      return content += '\n';
     }, '')
 
   // create blob
   const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-  let blob = new Blob([bom, content], {
+  const blob = new Blob([bom, content], {
     type: 'data:text/plain'
   });
 
@@ -981,7 +985,8 @@ const removeTextItem = (textitemDOM) => {
   // apply visual effects and display message
   textitemDOM.classList.add('removed')
   displayMessage("Item Removed!");
-  // actually remove after a while
+
+  // remove from stack and storage after a while
   setTimeout(() => {
     // remove the item
     const id = textitemDOM.querySelector('input').value;
