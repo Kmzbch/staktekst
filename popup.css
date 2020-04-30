@@ -436,6 +436,7 @@ input:focus {
 }
 
 .searchcancel-button {
+    display: none;
     position: absolute;
     top: 14px;
     left: 278px;
