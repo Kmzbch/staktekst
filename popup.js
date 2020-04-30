@@ -372,6 +372,36 @@ function attachContentEditableEvents(wrapper) {
           contentDIV.contentEditable = true;
           toggleContentEditable(contentDIV, true)
           $(editIcon).hide();
+
+          // const index = stack.findIndex(item => {
+          //   console.log(item.id);
+          //   return item.id === $(wrapper).attr('id')
+          // });
+          // if ($(wrapper).hasClass('pinned')) {
+          //   stack[index].footnote.tags.splice(
+          //     stack[index].footnote.tags.findIndex(tag => tag === 'pinned'), 1);
+
+          //   $(wrapper).find('.tag').each((index, item) => {
+          //     console.log(item);
+          //     if ($(item).text() === '#pinned') {
+          //       $(item).remove();
+          //     }
+          //   })
+
+          //   // $(wrapper).find('.tag')
+          //   $(wrapper).removeClass('pinned');
+          // } else {
+          //   // add item to stack
+          //   stack.forEach((item, index) => {
+          //     if (item.id === $(wrapper).attr('id')) {
+          //       $(wrapper).find('.tagadd').val('pinned');
+          //       $(wrapper).find('.tagadd').trigger('blur')
+          //     }
+          //   })
+          //   $(wrapper).addClass('pinned');
+          // }
+          // stackStorage.set(JSON.stringify(stack));
+
         }, 100)
       }
     }
@@ -440,9 +470,9 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
 
   // foot note
   if (type === 'clip') {
-    stackWrapper.querySelector('.footnote').innerHTML = `<span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span><span class="tag clip">#clip</span>`;
+    stackWrapper.querySelector('.footnote').innerHTML = `<span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span><span class="tag type clip">#clip</span>`;
   } else {
-    stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag">#${type}</span>`;
+    stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag type">#${type}</span>`;
     if (type === 'note') {
       attachContentEditableEvents(stackWrapper);
     }
@@ -775,7 +805,8 @@ const initializeEventListeners = () => {
     mouseover: (e) => {
       if ($(e.target).hasClass('tag')) {
         let stackWrapper = $(e.target).parent().parent();
-        if ($(stackWrapper).find('.tag').length > 1 && $(e.target).prev().length != 0) {
+        if ($(stackWrapper).find('.tag').length > 1
+          && !$(e.target).hasClass('type')) {
           if (e.ctrlKey && !$(e.target).hasClass('removing')) {
             $(e.target).addClass('removing');
           }
@@ -1026,10 +1057,8 @@ const clearAllItems = () => {
 const replaceTagName = (oldTag, newTag) => {
   // add item to stack
   stack.forEach(item => {
-    if (item.type != 'clip') {
-      if (item.footnote.tags.includes(oldTag)) {
-        item.footnote.tags.splice(item.footnote.tags.findIndex(tag => tag == oldTag), 1, newTag)
-      }
+    if (item.footnote.tags.includes(oldTag)) {
+      item.footnote.tags.splice(item.footnote.tags.findIndex(tag => tag == oldTag), 1, newTag)
     }
   })
   stackStorage.set(JSON.stringify(stack));
@@ -1071,7 +1100,7 @@ const renderStack = () => {
  * insert date as a separator
  */
 const insertDateSeparator = () => {
-  $(stackDOM.children).each((wrapper) => {
+  $(stackDOM.children).each((index, wrapper) => {
     const date = $(wrapper).find('.itemDate').val();
 
     if (dateStack.length === 0) {
