@@ -484,17 +484,23 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
   // TAGS
   if (typeof footnote.tags !== 'undefined') {
     footnote.tags.forEach(item => {
-      // if (!['note', 'clip', 'bookmark'].includes(item)) {
+      if (item.match(/pinned|📌/i)) {
+        item = item.replace(/pinned/i, '📌');
+        $(stackWrapper).addClass('pinned');
+      }
+
       const tagElem = $('<span>', { addClass: 'tag', text: item });
+      if (item.match(/pinned|📌/i)) {
+
+        tagElem.addClass('pinned');
+      }
+      // if (!['note', 'clip', 'bookmark'].includes(item)) {
       $(stackWrapper).find('.footnote').append(tagElem);
 
       if (!tagStack.includes(item)) {
         tagStack.push(item);
       }
       // reserved tags
-      if (item === 'pinned') {
-        $(stackWrapper).addClass('pinned');
-      }
       // if (item.match(/(fav|favourite|favorite)/i)) {
       if (item.match(/(★|☆|✭|⭐)/i)) {
         // $(stackWrapper).addClass('fav');
@@ -537,6 +543,11 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
       let tagName = ev.target.value.trim();
       console.log('input.blur:' + tagName);
       if (tagName !== '') {
+        if (tagName.match(/pinned|📌/i)) {
+          tagName = tagName.replace(/pinned/i, '📌');
+          $(stackWrapper).addClass('pinned');
+        }
+
         // find the index of the text item
         let index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
         // update Tag
@@ -546,15 +557,15 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
         stack[index].footnote.tags.push(tagName);
         stackStorage.set(JSON.stringify(stack));
 
-        if (tagName === 'pinned') {
-          $(stackWrapper).addClass('pinned');
-        }
 
         const tagElem = $('<span>', {
           addClass: 'tag',
           text: tagName
         });
+        if (tagName.match(/pinned|📌/i)) {
 
+          tagElem.addClass('pinned');
+        }
         // if (tagName.match(/(fav|favourite|favorite)/i)) {
         if (tagName.match(/(★|☆|✭|⭐)/i)) {
           tagElem.addClass('fav');
@@ -595,6 +606,20 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
         if (tagName[tagName.length - 1] === ' ' || ev.keyCode === 13) {
           tagName = ev.target.value.trim();
           if (tagName !== '') {
+            if (tagName.match(/pinned|📌/i)) {
+              tagName = tagName.replace(/pinned/i, '📌')
+              $(stackWrapper).addClass('pinned');
+            }
+
+            const tagElem = $('<span>', {
+              addClass: 'tag',
+              text: tagName
+            });
+            if (tagName.match(/pinned|📌/i)) {
+
+              tagElem.addClass('pinned');
+            }
+
             // find the index of the text item
             let index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
 
@@ -606,15 +631,9 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
             stack[index].footnote.tags.push(tagName);
             stackStorage.set(JSON.stringify(stack));
 
-            if (tagName === 'pinned') {
-              $(stackWrapper).addClass('pinned');
-            }
             // if (tagName.match(/(fav|favourite|favorite)/i)) {
 
-            const tagElem = $('<span>', {
-              addClass: 'tag',
-              text: tagName
-            });
+
             if (tagName.match(/(★|☆|✭|⭐)/i)) {
               tagElem.addClass('fav');
             }
@@ -682,8 +701,9 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
             })
 
             // remove pinned styles
-            if (prevTagName === 'pinned') {
+            if (prevTagName.match(/pinned|📌/i)) {
               $(stackWrapper).removeClass('pinned');
+              prevTag.removeClass('pinned');
             }
             // if (prevTagName.slice(1).match(/(fav|favourite|favorite)/i)) {
             if (prevTagName.match(/(★|☆|✭|⭐)/i)) {
@@ -806,9 +826,8 @@ const initializeEventListeners = () => {
         let stackWrapper = $(targetElem).parent().parent();
 
         // remove pinned styles
-        if (tagName === 'pinned') {
+        if (tagName.match(/pinned|📌/i)) {
           $(stackWrapper).removeClass('pinned');
-
         }
         // if (tagName.slice(1).match(/(fav|favourite|favorite)/i)) {
         // if (tagName.slice(1).match(/(★|☆|✭|⭐|)/i)) {
@@ -1157,7 +1176,7 @@ const renderStack = () => {
       // read and render text items
       stack = JSON.parse(rawData);
       stack.forEach(res => {
-        if (res.footnote.tags.includes('pinned')) {
+        if (res.footnote.tags.includes('pinned') || res.footnote.tags.includes('📌')) {
           pinnedItemStack.push(res);
         } else {
           renderTextItem(res);

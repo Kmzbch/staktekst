@@ -868,6 +868,9 @@ input:focus {
     padding-right:2px;
 }
 
+.tag.pinned {
+    float: left !important;
+}
 
 .tagDate:before {
     content: '!' !important;
@@ -879,6 +882,7 @@ input:focus {
     font-size: 13px;
     font-weight: bold;
     padding-right:2px;
+    float:left;
 
 }
 
