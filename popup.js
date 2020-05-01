@@ -379,18 +379,20 @@ function attachContentEditableEvents(wrapper) {
 
   let contentDIV = wrapper.querySelector('.content');
 
-  // add click event
-  editIcon.addEventListener('click', function enableEditing() {
-    setTimeout(() => {
-      toggleContentEditable(contentDIV, true);
-      $(editIcon).hide();
-    }, 100);
-  })
+  // // add click event
+  // editIcon.addEventListener('click', function enableEditing() {
+  //   setTimeout(() => {
+  //     toggleContentEditable(contentDIV, true);
+  //     $(editIcon).hide();
+  //   }, 100);
+  // })
 
 
-  wrapper.addEventListener('focusout', (e) => {
+  contentDIV.addEventListener('focusout', (e) => {
+    console.log('focusout!!!');
     // enable URL
     toggleContentEditable(false);
+    console.log('toggled to false!!!');
     $('#toolbox').show();
     $('.header-board').text('');
     $('.header-board').removeClass('entering');
@@ -405,30 +407,12 @@ function attachContentEditableEvents(wrapper) {
     contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
 
     contentDIV.innerHTML = contentDIV.innerHTML.replace(String.fromCharCode(8203), '');
+
 
   });
 
   contentDIV.addEventListener('keyup', (e) => {
     fireChange(e);
-  });
-
-  wrapper.addEventListener('mouseleave', (e) => {
-    // enable URL
-    toggleContentEditable(false);
-    $('#toolbox').show();
-    $('.header-board').text('');
-    $('.header-board').removeClass('entering');
-
-    wrapper.classList.remove('editing');
-    $(editIcon).show();
-
-    contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
-
-    // replace new lines with br tag
-    contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n+$/i, '');
-    contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
-    contentDIV.innerHTML = contentDIV.innerHTML.replace(String.fromCharCode(8203), '');
-
   });
 
   // add to wrapper
@@ -451,10 +435,9 @@ function attachContentEditableEvents(wrapper) {
           }, '')
 
           // insert decimal code as a zero-width space for displaying caret
-          // if(){
-          //   String.fromCharCode(8203)            
+          // if (!contentDIV.innerHTML.match(String.fromCharCode(8203))) {
+          //   contentDIV.innerHTML += '&#8203;';
           // }
-          contentDIV.innerHTML += '&#8203;';
 
           // move caret to the end of the text
           const node = contentDIV.childNodes[contentDIV.childNodes.length - 1]
@@ -472,6 +455,7 @@ function attachContentEditableEvents(wrapper) {
 
   // add to content DIV
   contentDIV.addEventListener('focus', (e) => {
+    console.log('focus!');
     // editing mode styles
     wrapper.classList.add('editing');
 
@@ -481,7 +465,9 @@ function attachContentEditableEvents(wrapper) {
     }, '')
 
     // insert decimal code as a zero-width space for displaying caret
-    contentDIV.innerHTML += '&#8203;';
+    if (!contentDIV.innerHTML.match(String.fromCharCode(8203))) {
+      contentDIV.innerHTML += '&#8203;';
+    }
 
     // move caret to the end of the text
     const node = contentDIV.childNodes[contentDIV.childNodes.length - 1]
@@ -491,6 +477,7 @@ function attachContentEditableEvents(wrapper) {
     editorRange.collapse(true)
     editorSel.removeAllRanges()
     editorSel.addRange(editorRange)
+
   })
 
 
@@ -504,6 +491,7 @@ function attachContentEditableEvents(wrapper) {
   wrapper.addEventListener('cut', fireChange);
   wrapper.addEventListener('mouseup', fireChange);
   wrapper.addEventListener('change', (e) => {
+
     let id = $(e.target).attr('id');
 
     let newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
@@ -516,10 +504,29 @@ function attachContentEditableEvents(wrapper) {
   })
 
   // ctrl + Enter to end editing
-  wrapper.addEventListener('keydown', (e) => {
+  contentDIV.addEventListener('keydown', (e) => {
+
+    if (contentDIV.innerHTML.match(String.fromCharCode(8203))) {
+      // contentDIV.innerHTML.replace(new Regex(`${String.fromCharCode(8203)}`, 'g'), '')
+      contentDIV.innerHTML = contentDIV.innerHTML.replace(String.fromCharCode(8203), '');
+      const node = contentDIV.childNodes[contentDIV.childNodes.length - 1]
+      const editorRange = document.createRange()
+      const editorSel = window.getSelection()
+      editorRange.setStart(node, node.length)
+      editorRange.collapse(true)
+      editorSel.removeAllRanges()
+      editorSel.addRange(editorRange)
+    }
+
+
     if (e.keyCode === 13 && e.ctrlKey) {
+      console.log('----- keydown! -----');
       fireChange(e);
-      wrapper.dispatchEvent(new Event('focusout'));
+      // contentDIV.dispatchEvent(new Event('focusout'));
+
+      toggleContentEditable(contentDIV, false);
+
+      return false;
     }
   });
 
@@ -528,6 +535,9 @@ function attachContentEditableEvents(wrapper) {
     if (oldHTML !== newHTML) {
       wrapper.dispatchEvent(new Event('change'));
       oldHTML = newHTML;
+    }
+    if (contentDIV.innerHTML.length == 0) {
+      contentDIV.innerHTML += '&#8203;';
     }
   }
 }
@@ -1090,6 +1100,7 @@ const updateTextInfoMessage = (text) => {
   $('#toolbox').hide();
 
   let info = extractTextInfo(text.replace(String.fromCharCode(8203), ''));
+  // let info = extractTextInfo(text);
   $('.header-board').html(
     `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`
   );
