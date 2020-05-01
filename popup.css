@@ -859,13 +859,27 @@ input:focus {
     content: none !important;
 }
 
-.tag.emoji {
+.emoji {
     color: rgba(0,0,0,0.8);
     opacity: 1 !important;
     font-size: 14px;
     /* transform: scale(1.25); */
     padding-left:2px;
     padding-right:2px;
+}
+
+
+.tagDate:before {
+    content: '!' !important;
+}
+
+.tagDate {
+    opacity: 1 !important;
+    color: darkblue !important;
+    font-size: 13px;
+    font-weight: bold;
+    padding-right:2px;
+
 }
 
 /* .removing:not(.default):hover::after { */

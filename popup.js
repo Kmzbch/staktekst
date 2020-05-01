@@ -505,14 +505,16 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
         tagElem.addClass('like');
       }
       // emoji
-      console.log(item);
-
       if (item.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
       )) {
-        console.log("!!!");
 
         tagElem.addClass('emoji');
       }
+
+      if (!isNaN(new Date(item))) {
+        tagElem.addClass('tagDate');
+      }
+
 
       // }
     })
@@ -561,12 +563,14 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
           tagElem.addClass('like');
         }
 
-        console.log(tagName);
         if (tagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
         )) {
-          console.log("!!!");
 
           tagElem.addClass('emoji');
+        }
+
+        if (!isNaN(new Date(tagName))) {
+          tagElem.addClass('tagDate');
         }
 
 
@@ -618,12 +622,13 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
               tagElem.addClass('like');
             }
 
-            console.log(tagName);
             if (tagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
             )) {
-              console.log("!!!");
 
               tagElem.addClass('emoji');
+            }
+            if (!isNaN(new Date(tagName))) {
+              tagElem.addClass('tagDate');
             }
 
             // 
@@ -691,12 +696,18 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
               // $(stackWrapper).removeClass('fav');
             }
 
-            console.log(prevTagName);
+            if (prevTagName.match(/(♡|💛|♥|❤)/i)) {
+              prevTag.removeClass('like');
+              // $(stackWrapper).removeClass('fav');
+            }
+
+            if (!isNaN(new Date(prevTagName))) {
+              prevTag.removeClass('tagDate');
+            }
 
             if (prevTagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
             )) {
-              console.log("!!!");
-              prevTag.addClass('emoji');
+              prevTag.removeClass('emoji');
             }
 
             // set
