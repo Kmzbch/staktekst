@@ -75,6 +75,7 @@
 }
 
 .content {
+    
     display: inline;
     /* cursor: auto; */
 }
@@ -551,6 +552,8 @@ input:focus {
 } */
 
 .stackwrapper {
+    min-height: 44px;
+
     /* cursor: pointer; */
     position: relative;
     /* display: inline; */
@@ -862,7 +865,7 @@ input:focus {
 .emoji {
     color: rgba(0,0,0,0.8);
     opacity: 1 !important;
-    font-size: 14px;
+    font-size: 13px;
     /* transform: scale(1.25); */
     padding-left:2px;
     padding-right:2px;

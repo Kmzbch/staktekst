@@ -67,9 +67,11 @@ const filterTextItemsByTag = (tagName) => {
         textItem.classList.add('filtered');
       } else {
         $(textItem).find('.tag').each((index, tag) => {
+
           if ($(tag).text().match(tagRegex)) {
             textItem.classList.remove('filtered');
             hits++;
+            return false;
           } else {
             textItem.classList.add('filtered');
           }
@@ -355,6 +357,89 @@ function attachContentEditableEvents(wrapper) {
     }, 100);
   })
 
+
+  wrapper.addEventListener('focusout', (e) => {
+    // enable URL
+    toggleContentEditable(false);
+    $('#toolbox').show();
+    $('.header-board').text('');
+    $('.header-board').removeClass('entering');
+
+    wrapper.classList.remove('editing');
+    $(editIcon).show();
+
+    contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
+
+    // replace new lines with br tag
+    contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n+$/i, '');
+    contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
+
+    contentDIV.innerHTML = contentDIV.innerHTML.replace(String.fromCharCode(8203), '');
+
+  });
+
+  contentDIV.addEventListener('keyup', (e) => {
+    fireChange(e);
+  });
+
+  wrapper.addEventListener('mouseleave', (e) => {
+    // enable URL
+    toggleContentEditable(false);
+    $('#toolbox').show();
+    $('.header-board').text('');
+    $('.header-board').removeClass('entering');
+
+    wrapper.classList.remove('editing');
+    $(editIcon).show();
+
+    contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
+
+    // replace new lines with br tag
+    contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n+$/i, '');
+    contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
+    contentDIV.innerHTML = contentDIV.innerHTML.replace(String.fromCharCode(8203), '');
+
+  });
+
+  // add to wrapper
+  wrapper.addEventListener('dblclick', (e) => {
+    if (wrapper.classList.contains('note')) {
+      if (!e.target.classList.contains('content')) {
+        setTimeout(hideBubble, 30);
+        setTimeout(() => {
+
+          // editing mode styles
+          wrapper.classList.add('editing');
+
+          contentDIV.contentEditable = true;
+          toggleContentEditable(contentDIV, true)
+          $(editIcon).hide();
+
+          // remove a tag
+          Array.from(contentDIV.childNodes).forEach((item) => {
+            $(item).contents().unwrap()
+          }, '')
+
+          // insert decimal code as a zero-width space for displaying caret
+          // if(){
+          //   String.fromCharCode(8203)            
+          // }
+          contentDIV.innerHTML += '&#8203;';
+
+          // move caret to the end of the text
+          const node = contentDIV.childNodes[contentDIV.childNodes.length - 1]
+          const editorRange = document.createRange()
+          const editorSel = window.getSelection()
+          editorRange.setStart(node, node.length)
+          editorRange.collapse(true)
+          editorSel.removeAllRanges()
+          editorSel.addRange(editorRange)
+
+        }, 100)
+      }
+    }
+  });
+
   // add to content DIV
   contentDIV.addEventListener('focus', (e) => {
     // editing mode styles
@@ -365,50 +450,19 @@ function attachContentEditableEvents(wrapper) {
       $(item).contents().unwrap()
     }, '')
 
+    // insert decimal code as a zero-width space for displaying caret
+    contentDIV.innerHTML += '&#8203;';
+
     // move caret to the end of the text
     const node = contentDIV.childNodes[contentDIV.childNodes.length - 1]
     const editorRange = document.createRange()
     const editorSel = window.getSelection()
-    // TODO: Fix selection error
     editorRange.setStart(node, node.length)
     editorRange.collapse(true)
     editorSel.removeAllRanges()
     editorSel.addRange(editorRange)
   })
 
-  wrapper.addEventListener('focusout', (e) => {
-    // enable URL
-    toggleContentEditable(false);
-    $('#toolbox').show();
-    $('.header-board').text('');
-    wrapper.classList.remove('editing');
-    $(editIcon).show();
-
-    contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
-
-    // replace new lines with br tag
-    contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n+$/i, '');
-    contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
-
-  });
-
-  contentDIV.addEventListener('keyup', (e) => {
-    fireChange(e);
-  });
-
-  // add to wrapper
-  wrapper.addEventListener('dblclick', (e) => {
-    if (wrapper.classList.contains('note')) {
-      if (!e.target.classList.contains('content')) {
-        setTimeout(hideBubble, 30);
-        setTimeout(() => {
-          contentDIV.contentEditable = true;
-          toggleContentEditable(contentDIV, true)
-          $(editIcon).hide();
-        }, 100)
-      }
-    }
-  });
 
   let oldHTML = wrapper.innerHTML;
 
@@ -457,7 +511,7 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
   stackWrapper.id = id;
   stackWrapper.classList.add(type);
 
-  stackWrapper.innerHTML = `<div class='content'>${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><input class='itemDate' type='hidden' value="${date}"><div class="spacer"></div><div class="footnote"></div>`;
+  stackWrapper.innerHTML = `<div class='content'>$#8203;${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><input class='itemDate' type='hidden' value="${date}"><div class="spacer"></div><div class="footnote"></div>`;
 
   $('#textstack').append(stackWrapper);
 
@@ -865,7 +919,9 @@ const initializeEventListeners = () => {
         }
       } else {
         // when hashtag clicked
-        fireSearchWithQuery($(targetElem).html());
+        console.log($(targetElem).html());
+        fireSearchWithQuery('#' + $(targetElem).html());
+
         // stay at the position
         let stackWrapper = $(targetElem).parent().parent();
         let id = stackWrapper.find('input').val();
@@ -1003,7 +1059,7 @@ const displayMessage = (message) => {
 const updateTextInfoMessage = (text) => {
   $('#toolbox').hide();
 
-  let info = extractTextInfo(text);
+  let info = extractTextInfo(text.replace(String.fromCharCode(8203), ''));
   $('.header-board').html(
     `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`
   );
