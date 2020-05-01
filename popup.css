@@ -838,7 +838,10 @@ input:focus {
 .fav {
     opacity: 1 !important;
     color: goldenrod !important;
-    transform: scale(1.3);
+    transform: scale(1.25);
+    padding-left:2px;
+    padding-right:2px;
+
 }
 .like:before {
     content: none !important;
@@ -847,7 +850,22 @@ input:focus {
 .like {
     opacity: 1 !important;
     color: tomato !important;
-    transform: scale(1.3);
+    transform: scale(1.25);
+    padding-left:2px;
+    padding-right:2px;
+}
+
+.emoji:before {
+    content: none !important;
+}
+
+.tag.emoji {
+    color: rgba(0,0,0,0.8);
+    opacity: 1 !important;
+    font-size: 14px;
+    /* transform: scale(1.25); */
+    padding-left:2px;
+    padding-right:2px;
 }
 
 /* .removing:not(.default):hover::after { */

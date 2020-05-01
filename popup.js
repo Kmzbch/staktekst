@@ -504,6 +504,15 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
         // $(stackWrapper).addClass('fav');
         tagElem.addClass('like');
       }
+      // emoji
+      console.log(item);
+
+      if (item.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
+      )) {
+        console.log("!!!");
+
+        tagElem.addClass('emoji');
+      }
 
       // }
     })
@@ -550,6 +559,14 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
         }
         if (tagName.match(/(♡|💛|♥|❤)/i)) {
           tagElem.addClass('like');
+        }
+
+        console.log(tagName);
+        if (tagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
+        )) {
+          console.log("!!!");
+
+          tagElem.addClass('emoji');
         }
 
 
@@ -599,6 +616,14 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
             }
             if (tagName.match(/(♡|💛|♥|❤)/i)) {
               tagElem.addClass('like');
+            }
+
+            console.log(tagName);
+            if (tagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
+            )) {
+              console.log("!!!");
+
+              tagElem.addClass('emoji');
             }
 
             // 
@@ -664,6 +689,14 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
             if (prevTagName.match(/(♡|💛|♥|❤)/i)) {
               prevTag.removeClass('like');
               // $(stackWrapper).removeClass('fav');
+            }
+
+            console.log(prevTagName);
+
+            if (prevTagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
+            )) {
+              console.log("!!!");
+              prevTag.addClass('emoji');
             }
 
             // set
