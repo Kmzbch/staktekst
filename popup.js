@@ -231,7 +231,20 @@ const setDropdownListItems = () => {
   // empty selections
   $('#dropdownlist').empty();
 
-  tagStack = tagStack.slice(0, 3).concat(tagStack.slice(3).sort());
+  // tagStack = tagStack.slice(0, 3).concat(tagStack.slice(3).sort());
+
+  let defaultTagStack = tagStack.slice(0, 3);
+  let emojiTagStack = tagStack.filter((tag) =>
+    tag.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu)
+  );
+
+  let customTagStack = tagStack.slice(3).filter((tag) =>
+    !tag.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu)
+  );
+
+  // tagStack = defaultTagStack.concat(emojiTagStack).concat(customTagStack.sort());
+  tagStack = defaultTagStack.concat(customTagStack).concat(emojiTagStack.sort());
+
 
   // create list from tagStack
   tagStack
