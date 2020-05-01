@@ -856,9 +856,6 @@ const initializeEventListeners = () => {
   $(window).on('unload blur', () => {
     windowState.closedDateTime = new Date().toJSON();
     chrome.extension.getBackgroundPage().chrome.storage.local.set(windowState);
-    chrome.runtime.sendMessage({
-      command: 'OVERLAY_OFF'
-    });
   })
 
   /* header */

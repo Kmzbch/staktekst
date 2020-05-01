@@ -777,77 +777,6 @@ footer {
     cursor: default;
 }
 
-#leftContainer {
-    width: 80%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    /* align-items: center; */
-}
-
-#rightContainer {
-    width: 20%;
-    height: 100%;
-
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    border-left: 1px solid rgba(255, 255, 255, 0.4) !important;
-    padding-left: 5px;
-    /* align-items: center; */
-
-}
-
-#bubble {
-    width: 200px !important;
-    height: 70px !important;
-
-    top: 0px;
-    left: 0px;
-    z-index: 999999 !important;
-
-    padding: 0px 0px !important;
-
-    flex-wrap: nowrap;
-
-    position: absolute !important;
-    display: flex;
-
-    opacity: 0.9 !important;
-    background-color: rgba(0, 0, 0, 0.8) !important;
-    /* background-color: darkslategray !important; */
-
-    border-width: 0px !important;
-    border-style: solid !important;
-    border-color: black !important;
-    border-radius: 4px !important;
-
-    color: white !important;
-}
-
-#bubble::after {
-    content: '';
-
-    width: 0;
-    height: 0;
-    left: 25%;
-    bottom: 0;
-
-    position: absolute;
-
-    border: 8px solid transparent;
-    border-top-color: rgba(0, 0, 0, 0.8) !important;
-    border-bottom: 0;
-    border-right: 0;
-
-    margin-left: -8px;
-    margin-bottom: -8px;
-}
-
-
-
-
 .pseudolink {
     cursor: pointer
 }
@@ -864,18 +793,20 @@ footer {
 .clip .pseudolink:hover {
     text-decoration: underline !important;
 }
+
 .clip .pseudolink {
     color: rgb(32, 123, 156) !important;
     text-decoration: none;
 }
+
 .bookmark .pseudolink:hover{
     text-decoration: underline !important;
 }
+
 .bookmark .pseudolink {
     color: rgb(32, 123, 156) !important;
     text-decoration: none;
 }
-
 
 /* ----- Customized Third-party library styles ----- */
 /* Font Awesome */
@@ -888,10 +819,6 @@ footer {
     src: url("chrome-extension://__MSG_@@extension_id__/webfonts/fa-brands-400.eot?#iefix") format("embedded-opentype"), url("chrome-extension://__MSG_@@extension_id__/webfonts/fa-brands-400.woff2") format("woff2"), url("chrome-extension://__MSG_@@extension_id__/webfonts/fa-brands-400.woff") format("woff"), url("chrome-extension://__MSG_@@extension_id__/webfonts/fa-brands-400.ttf") format("truetype"), url("chrome-extension://__MSG_@@extension_id__/webfonts/fa-brands-400.svg#fontawesome") format("svg");
 }
 
-.fab {
-    font-family: 'Font Awesome 5 Brands';
-}
-
 @font-face {
     font-family: 'Font Awesome 5 Free';
     font-style: normal;
@@ -899,26 +826,6 @@ footer {
     font-display: auto;
     src: url("chrome-extension://__MSG_@@extension_id__/webfonts/fa-solid-900.eot");
     src: url("chrome-extension://__MSG_@@extension_id__/webfonts/fa-solid-900.eot?#iefix") format("embedded-opentype"), url("chrome-extension://__MSG_@@extension_id__/webfonts/fa-solid-900.woff2") format("woff2"), url("chrome-extension://__MSG_@@extension_id__/webfonts/fa-solid-900.woff") format("woff"), url("chrome-extension://__MSG_@@extension_id__/webfonts/fa-solid-900.ttf") format("truetype"), url("chrome-extension://__MSG_@@extension_id__/webfonts/fa-solid-900.svg#fontawesome") format("svg");
-}
-
-.fa,
-.fas {
-    font-family: 'Font Awesome 5 Free';
-    font-weight: 900;
-}
-
-/* modification on font awesome */
-.fab {
-    margin-top: 5px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    font-size: 18px !important;
-}
-
-.fas {
-    margin-top: 4px !important;
-    font-size: 18px !important;
-
 }
 
 /* ----- Material Icons ----- */

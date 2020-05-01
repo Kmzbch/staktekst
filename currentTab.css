@@ -3,16 +3,6 @@
     display: none !important;
 }
 
-#staktekst_overlay {
-    position: fixed !important;
-    top: 0px !important;
-    left: 0px !important;
-    width: 100% !important;
-    height: 100% !important;
-    z-index: 9999999 !important;
-    background: rgba(0, 0, 0, 0.8) !important;
-}
-
 /* bubble styles */
 /* bubble body */
 #bubble {
@@ -134,7 +124,13 @@
     -moz-user-select: none;
 }
 
-
+/* Font Awesome and Material Icons included */
+/*
+* css/brands.min.css,
+* css/solid.min.css,
+* css/font-awesome.min.css,
+*css/material-icons.css
+*/
 
 /* modification on font awesome */
 .fab {
