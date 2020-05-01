@@ -1,5 +1,5 @@
 // seachbox
-const dropdownList = document.querySelector('#dropdownlist');
+const dropdownList = document.querySelector('#tagsearch-result');
 const stackDOM = document.querySelector('#textstack');
 
 // state variables
@@ -34,17 +34,17 @@ const updateSearchResult = () => {
   // change styles on search
   if (query) {
     // set text
-    $('.header-board').text(hits === 0 ? 'No Results' : `${hits} of ${stack.length}`)
+    $('#statusboard').text(hits === 0 ? 'No Results' : `${hits} of ${stack.length}`)
     // show/hide
     $('#toolbox').hide();
-    $('.searchcancel-button').show();
+    $('.search-cancel-button').show();
     $('footer').hide();
   } else {
     // reset
-    $('.header-board').text('');
+    $('#statusboard').text('');
     // show/hide
     $('#toolbox').show();
-    $('.searchcancel-button').hide();
+    $('.search-cancel-button').hide();
     $('footer').show();
     hideDropdownList();
   }
@@ -141,7 +141,7 @@ const filterTextItems = (term) => {
  * 
  */
 const selectOnDropdownList = (e) => {
-  let liSelected = $('#dropdownlist').find('.selected');
+  let liSelected = $('#tagsearch-result').find('.selected');
   let unfiltered = $('li').not('.filtered');
   let index = unfiltered.index(liSelected);
 
@@ -154,7 +154,7 @@ const selectOnDropdownList = (e) => {
     hideDropdownList()
   } else if (e.keyCode === 38) {
     // UP
-    if (!$('#dropdownlist').is(":hidden")) {
+    if (!$('#tagsearch-result').is(":hidden")) {
       if (liSelected) {
         if (index - 1 >= 0) {
           // move up
@@ -164,11 +164,11 @@ const selectOnDropdownList = (e) => {
           // scroll
           const newLiSelectedY = $(unfiltered[index - 1]).position().top;
           const newLiSelectedHeight = $(unfiltered[index - 1]).innerHeight();
-          const innerHeight = $('#dropdownlist').position().top;
-          const scrollTop = $('#dropdownlist').scrollTop();
+          const innerHeight = $('#tagsearch-result').position().top;
+          const scrollTop = $('#tagsearch-result').scrollTop();
 
           if (newLiSelectedY <= (innerHeight) - newLiSelectedHeight) {
-            $('#dropdownlist').animate({ scrollTop: scrollTop - (scrollTop % newLiSelectedHeight) - newLiSelectedHeight }, 20);
+            $('#tagsearch-result').animate({ scrollTop: scrollTop - (scrollTop % newLiSelectedHeight) - newLiSelectedHeight }, 20);
           }
 
         } else {
@@ -179,7 +179,7 @@ const selectOnDropdownList = (e) => {
     }
   } else if (e.keyCode === 40) {
     // DOWN
-    if ($('#dropdownlist').is(":hidden")) {
+    if ($('#tagsearch-result').is(":hidden")) {
       showDropdownList()
     } else {
       if (liSelected) {
@@ -191,11 +191,11 @@ const selectOnDropdownList = (e) => {
           // scroll
           const newLiSelectedY = $(unfiltered[index + 1]).position().top;
           const newLiSelectedHeight = $(unfiltered[index + 1]).height();
-          const innerHeight = $('#dropdownlist').innerHeight();
-          const scrollTop = $('#dropdownlist').scrollTop();
+          const innerHeight = $('#tagsearch-result').innerHeight();
+          const scrollTop = $('#tagsearch-result').scrollTop();
 
           if (newLiSelectedY > (innerHeight) - newLiSelectedHeight) {
-            $('#dropdownlist').animate({ scrollTop: $('#dropdownlist').position().top + scrollTop + ((scrollTop % newLiSelectedHeight) + newLiSelectedHeight) }, 0);
+            $('#tagsearch-result').animate({ scrollTop: $('#tagsearch-result').position().top + scrollTop + ((scrollTop % newLiSelectedHeight) + newLiSelectedHeight) }, 0);
           }
 
         }
@@ -213,7 +213,7 @@ const selectOnDropdownList = (e) => {
 const filterDropdownListItems = (query) => {
   const tagName = query.trim()[0] === "#" ? query.trim().toLowerCase().slice(1) : query.trim().toLowerCase();
   const termRegex = new RegExp(`^(${escapeRegExp(tagName)})(.*?)`, 'i');
-  $.map($('#dropdownlist').children(),
+  $.map($('#tagsearch-result').children(),
     (listItem) => {
       if ($(listItem).text().match(termRegex)) {
         listItem.classList.remove('filtered');
@@ -229,7 +229,7 @@ const filterDropdownListItems = (query) => {
  */
 const setDropdownListItems = () => {
   // empty selections
-  $('#dropdownlist').empty();
+  $('#tagsearch-result').empty();
 
   // 
   // tagStack = tagStack.slice(0, 3).concat(tagStack.slice(3).sort());
@@ -256,7 +256,7 @@ const setDropdownListItems = () => {
 
         liItem.append(
           $('<span>', {
-            text: tag
+            text: tag,
           })
         )
 
@@ -266,6 +266,7 @@ const setDropdownListItems = () => {
             type: 'text',
             addClass: 'tageditInput tagadd',
             value: tag,
+            spellCheck: 'false',
             css: {
               display: 'none'
             }
@@ -295,7 +296,7 @@ const setDropdownListItems = () => {
 
               $(e.target).parent().find('span').text(newTag);
               $(e.target).parent().find('span').show();
-              $(e.target).parent().find('.tag-editIcon').show();
+              $(e.target).parent().find('.tagedit').show();
               $(e.target).hide();
 
               if ($('.searchbox').val() !== '') {
@@ -314,11 +315,11 @@ const setDropdownListItems = () => {
 
           liItem.append(
             $('<i>', {
-              addClass: 'material-icons tag-edit tag-editIcon',
+              addClass: 'material-icons tagedit',
               text: 'edit'
             }));
         }
-        $('#dropdownlist').append(liItem)
+        $('#tagsearch-result').append(liItem)
 
         // atach events for selected item
         liItem.on({
@@ -328,7 +329,7 @@ const setDropdownListItems = () => {
           },
           mouseleave: (e) => {
             // work as hover
-            let liSelected = $('#dropdownlist').find('.selected');
+            let liSelected = $('#tagsearch-result').find('.selected');
             if (liSelected) {
               liSelected.removeClass('selected');
             }
@@ -337,10 +338,10 @@ const setDropdownListItems = () => {
 
         //
         liItem.click((e) => {
-          if (e.target.classList.contains('tag-editIcon')) {
+          if (e.target.classList.contains('tagedit')) {
             e.preventDefault();
 
-            let liSelected = $('#dropdownlist').find('.selected');
+            let liSelected = $('#tagsearch-result').find('.selected');
             let orgTag = liSelected.find('span').text();
 
             $(liSelected).find('span').hide();
@@ -379,23 +380,22 @@ function attachContentEditableEvents(wrapper) {
 
   let contentDIV = wrapper.querySelector('.content');
 
-  // // add click event
-  // editIcon.addEventListener('click', function enableEditing() {
-  //   setTimeout(() => {
-  //     toggleContentEditable(contentDIV, true);
-  //     $(editIcon).hide();
-  //   }, 100);
-  // })
+  // add click event
+  editIcon.addEventListener('click', function enableEditing() {
+    setTimeout(() => {
+      toggleContentEditable(contentDIV, true);
+      $(editIcon).hide();
+    }, 100);
+  })
 
 
   contentDIV.addEventListener('focusout', (e) => {
-    console.log('focusout!!!');
     // enable URL
     toggleContentEditable(false);
     console.log('toggled to false!!!');
     $('#toolbox').show();
-    $('.header-board').text('');
-    $('.header-board').removeClass('entering');
+    $('#statusboard').text('');
+    $('#statusboard').removeClass('entering');
 
     wrapper.classList.remove('editing');
     $(editIcon).show();
@@ -418,6 +418,7 @@ function attachContentEditableEvents(wrapper) {
   // add to wrapper
   wrapper.addEventListener('dblclick', (e) => {
     if (wrapper.classList.contains('note')) {
+      // if (wrapper.classList.contains('note') || wrapper.classList.contains('bookmark')) {
       if (!e.target.classList.contains('content')) {
         setTimeout(hideBubble, 30);
         setTimeout(() => {
@@ -520,7 +521,7 @@ function attachContentEditableEvents(wrapper) {
 
 
     if (e.keyCode === 13 && e.ctrlKey) {
-      
+
       toggleContentEditable(contentDIV, false);
 
       return false;
@@ -567,6 +568,7 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
     stackWrapper.querySelector('.footnote').innerHTML = `<span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span><span class="tag type clip">clip</span>`;
   } else {
     stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag type">${type}</span>`;
+    // if (type === 'note' || type === 'bookmark') {
     if (type === 'note') {
       attachContentEditableEvents(stackWrapper);
     }
@@ -632,7 +634,6 @@ const renderTextItem = ({ id, type, content, footnote, date }) => {
     // attach events
     input.blur((ev) => {
       let tagName = ev.target.value.trim();
-      console.log('input.blur:' + tagName);
       if (tagName !== '') {
         if (tagName.match(/pinned|📌/i)) {
           tagName = tagName.replace(/pinned/i, '📌');
@@ -862,15 +863,15 @@ const initializeEventListeners = () => {
 
   /* header */
   /* dropdown list */
-  $('#dropdownlist, header').on('mouseleave', hideDropdownList);
+  $('#tagsearch-result, header').on('mouseleave', hideDropdownList);
 
-  $('#dropdownlist').on('scroll', (e) => {
-    const clientHeight = $('#dropdownlist').innerHeight();
-    const scrollHeight = $('#dropdownlist').prop('scrollHeight')
-    if (scrollHeight - (clientHeight + $('#dropdownlist').scrollTop()) <= 0) {
-      $('#dropdownlist').addClass('dropdownlistBottom');
+  $('#tagsearch-result').on('scroll', (e) => {
+    const clientHeight = $('#tagsearch-result').innerHeight();
+    const scrollHeight = $('#tagsearch-result').prop('scrollHeight')
+    if (scrollHeight - (clientHeight + $('#tagsearch-result').scrollTop()) <= 0) {
+      $('#tagsearch-result').addClass('dropdownlistBottom');
     } else {
-      $('#dropdownlist').removeClass('dropdownlistBottom');
+      $('#tagsearch-result').removeClass('dropdownlistBottom');
     }
   });
 
@@ -882,13 +883,13 @@ const initializeEventListeners = () => {
     input: updateSearchResult
   })
 
-  $('.searchcancel-button').click((e) => {
+  $('.search-cancel-button').click((e) => {
     fireSearchWithQuery('');
     $('.searchbox').trigger('focus');
   });
 
   /* toolbox & text area*/
-  $('.opener-top').click(() => {
+  $('.create').click(() => {
     createEmptyTextItem();
     toggleContentEditable($('.content').last(), true);
     $('i.edit').last().hide();
@@ -896,12 +897,12 @@ const initializeEventListeners = () => {
     updateTextInfoMessage($('.content').last().html());
   });
 
-  $('.fileexport').click(exportTextItems);
-  $('.header-board').click(() => {
+  $('.export').click(exportTextItems);
+  $('#statusboard').click(() => {
     $('#toolbox').show();
-    $('.header-board').text('');
+    $('#statusboard').text('');
   })
-  $('.sort-by').click(() => { sortTextItems(!windowState.sortedByNew) });
+  $('#sort').click(() => { sortTextItems(!windowState.sortedByNew) });
 
   /**
    * the text stack dynamically changes
@@ -1013,7 +1014,7 @@ const initializeEventListeners = () => {
   })
 
   /* footer & modal */
-  $('.clear-button').click(() => { toggleClearStackModal(true) });
+  $('#clearstack').click(() => { toggleClearStackModal(true) });
   $('.overlay').click(() => { toggleClearStackModal(false) });
   $('.ok').click(() => {
     clearAllItems();
@@ -1035,10 +1036,10 @@ const fireSearchWithQuery = (query) => {
 const showDropdownList = () => {
   setDropdownListItems();
   filterDropdownListItems($('.searchbox').val());
-  $('#dropdownlist').animate({ scrollTop: 0 }, 20);
+  $('#tagsearch-result').animate({ scrollTop: 0 }, 20);
 
   // show and select the first item
-  $('#dropdownlist').show();
+  $('#tagsearch-result').show();
   $('li').first().addClass('selected');
 }
 
@@ -1046,7 +1047,7 @@ const showDropdownList = () => {
  * 
  */
 const hideDropdownList = () => {
-  $('#dropdownlist').hide();
+  $('#tagsearch-result').hide();
   $('li.selected').removeClass('selected');
 }
 
@@ -1083,10 +1084,10 @@ const toggleContentEditable = (
  * 
  */
 const displayMessage = (message) => {
-  if ($('.header-board').hasClass('entering')) {
-    $('.header-board').removeClass('entering');
+  if ($('#statusboard').hasClass('entering')) {
+    $('#statusboard').removeClass('entering');
   }
-  $('.header-board').text(message);
+  $('#statusboard').text(message);
   $('#toolbox').hide();
 }
 
@@ -1098,12 +1099,12 @@ const updateTextInfoMessage = (text) => {
 
   let info = extractTextInfo(text.replace(String.fromCharCode(8203), ''));
   // let info = extractTextInfo(text);
-  $('.header-board').html(
+  $('#statusboard').html(
     `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`
   );
 
-  if (!$('.header-board').hasClass('entering')) {
-    $('.header-board').addClass('entering');
+  if (!$('#statusboard').hasClass('entering')) {
+    $('#statusboard').addClass('entering');
   }
 }
 
@@ -1113,11 +1114,11 @@ const updateTextInfoMessage = (text) => {
 const sortTextItems = (sortingByNew) => {
   // NEW
   if (sortingByNew) {
-    $('.sort-by').html('New <i class="material-icons">arrow_upward</i>');
+    $('#sort').html('New <i class="material-icons">arrow_upward</i>');
     $('#textstack').css('flexDirection', 'column-reverse')
     // OLD
   } else {
-    $('.sort-by').html('Old <i class="material-icons">arrow_downward</i>');
+    $('#sort').html('Old <i class="material-icons">arrow_downward</i>');
     $('#textstack').css('flexDirection', 'column')
   }
   windowState.sortedByNew = sortingByNew;
@@ -1216,7 +1217,7 @@ const removeTextItem = (textitemDOM) => {
     textitemDOM.remove();
     // show toolbox
     $('#toolbox').show();
-    $('.header-board').text('');
+    $('#statusboard').text('');
   }, 450);
 }
 /**
