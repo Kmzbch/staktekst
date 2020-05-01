@@ -310,6 +310,8 @@ footer {
 } */
 
 #dropdownlist {
+    cursor: pointer;
+
     display: none;
     position: absolute;
     max-height: 375px;

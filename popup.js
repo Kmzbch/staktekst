@@ -520,10 +520,7 @@ function attachContentEditableEvents(wrapper) {
 
 
     if (e.keyCode === 13 && e.ctrlKey) {
-      console.log('----- keydown! -----');
-      fireChange(e);
-      // contentDIV.dispatchEvent(new Event('focusout'));
-
+      
       toggleContentEditable(contentDIV, false);
 
       return false;
