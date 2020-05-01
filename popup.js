@@ -231,8 +231,8 @@ const setDropdownListItems = () => {
   // empty selections
   $('#dropdownlist').empty();
 
+  // 
   // tagStack = tagStack.slice(0, 3).concat(tagStack.slice(3).sort());
-
   let defaultTagStack = tagStack.slice(0, 3);
   let emojiTagStack = tagStack.filter((tag) =>
     tag.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu)
@@ -243,7 +243,7 @@ const setDropdownListItems = () => {
   );
 
   // tagStack = defaultTagStack.concat(emojiTagStack).concat(customTagStack.sort());
-  tagStack = defaultTagStack.concat(customTagStack).concat(emojiTagStack.sort());
+  tagStack = defaultTagStack.concat(customTagStack.sort()).concat(emojiTagStack.sort());
 
 
   // create list from tagStack
@@ -251,100 +251,117 @@ const setDropdownListItems = () => {
     .filter(item => isNaN(Date.parse(item))) // filter duedate tag
     .forEach(tag => {
       if (tag !== '') {
-        let liItem = $('<li>', {
-          text: tag,
-          // text: tag,
-          on: {
-            mouseover: (e) => {
-              // work as hover
-              let liSelected = $('#dropdownlist').find('.selected');
-              $(e.target).addClass('selected');
-            },
-            mouseleave: (e) => {
-              // work as hover
-              let liSelected = $('#dropdownlist').find('.selected');
-              if (liSelected) {
-                liSelected.removeClass('selected');
-              }
-            },
-            click: (e) => {
+        // create list item
+        let liItem = $('<li>');
 
-              if (e.target.classList.contains('tag-editIcon')) {
-                e.preventDefault();
-                let liSelected = $('#dropdownlist').find('.selected');
-                let orgHTML = liSelected.html();
-                let orgTag = liSelected.text();
-                $(liSelected).empty();
-                let editTagInput = $('<input>', {
-                  type: 'text',
-                  addClass: 'tageditInput tagadd',
-                  tag: orgTag,
-                  on: {
-                    keyup: (e) => {
-                      if (e.keyCode === 13) {
-                        if (e.target.value !== '') {
-                          //ESC
-                          e.target.blur();
-                        }
-                      }
-                    },
-                    blur: (e) => {
-                      if (e.target.value === '') {
-                        $(liSelected).empty();
-                        $(liSelected).html(orgHTML);
-                      } else {
-                        // replace with new tag
-                        let newTag = e.target.value;
-                        orgHTML = orgHTML.replace(tag, newTag)
-                        $(liSelected).empty();
-                        $(liSelected).html(orgHTML);
-                        replaceTagName(tag, newTag);
-                        $('.tag').each((index, elem) => {
-                          if ($(elem).text() === tag) {
-                            $(elem).text(newTag)
-                          }
-                        })
-                        tagStack.splice(tagStack.findIndex(t => t === tag), 1, newTag);
+        liItem.append(
+          $('<span>', {
+            text: tag
+          })
+        )
 
-                        $('.tageditInput').val(newTag);
-                        $(liSelected).text(newTag);
-                        //                        fireSearchWithQuery('#' + newTag);
-                        if ($('.searchbox').val() !== '') {
-                          $('.searchbox').val('#' + newTag);
-                          windowState.searchQuery = '#' + newTag;
-                        }
-                        // tag = newTag;
-                        // renderStack();
-
-                      }
-                    }
-                  }
-                });
-                editTagInput.appendTo(liSelected);
-
-                $('.tageditInput').val(tag);
-                $('.tageditInput').focus();
-                return false;
-              } else if (e.target.classList.contains('tageditInput')) {
-                e.preventDefault();
-                return false;
-              } else {
-                fireSearchWithQuery('#' + $(e.target).text().replace(/edit$/, ''));
-                hideDropdownList();
-              }
-            },
-          }
-        });
-
+        // append edit Icon to list item
         if (!['note', 'bookmark', 'clip'].includes(tag)) {
-          let editIcon = document.createElement('i');
-          editIcon.classList.add('material-icons');
-          editIcon.classList.add('tag-edit');
-          editIcon.classList.add('tag-editIcon');
-          editIcon.innerText = 'edit';
-          liItem.append(editIcon);
+          let editTagInput = $('<input>', {
+            type: 'text',
+            addClass: 'tageditInput tagadd',
+            value: tag,
+            css: {
+              display: 'none'
+            }
+          });
+          //
+
+          // events
+          editTagInput.keyup((e) => {
+            if (e.keyCode === 13) {
+              // ENTER
+              let newTag = e.target.value;
+              let oldTag = e.target.defaultValue;
+              if (newTag.match(/^\s*$/)) {
+                newTag = oldTag;
+
+              } else {
+                replaceTagName(oldTag, newTag);
+                $('.tag').each((index, elem) => {
+                  if ($(elem).text() === oldTag) {
+                    $(elem).text(newTag)
+                  }
+                })
+                tagStack.splice(tagStack.findIndex(t => t === oldTag), 1, newTag);
+                e.target.defaultValue = newTag;
+
+              }
+
+              $(e.target).parent().find('span').text(newTag);
+              $(e.target).parent().find('span').show();
+              $(e.target).parent().find('.tag-editIcon').show();
+              $(e.target).hide();
+
+              if ($('.searchbox').val() !== '') {
+                $('.searchbox').val('#' + newTag);
+                windowState.searchQuery = '#' + newTag;
+              }
+
+            }
+          })
+
+
+          //
+          liItem.append(
+            editTagInput
+          );
+
+          liItem.append(
+            $('<i>', {
+              addClass: 'material-icons tag-edit tag-editIcon',
+              text: 'edit'
+            }));
         }
         $('#dropdownlist').append(liItem)
+
+        // atach events for selected item
+        liItem.on({
+          mouseover: (e) => {
+            // work as hover
+            $(e.target).addClass('selected');
+          },
+          mouseleave: (e) => {
+            // work as hover
+            let liSelected = $('#dropdownlist').find('.selected');
+            if (liSelected) {
+              liSelected.removeClass('selected');
+            }
+          },
+        })
+
+        //
+        liItem.click((e) => {
+          if (e.target.classList.contains('tag-editIcon')) {
+            e.preventDefault();
+
+            let liSelected = $('#dropdownlist').find('.selected');
+            let orgTag = liSelected.find('span').text();
+
+            $(liSelected).find('span').hide();
+            $(e.target).hide();
+            $(liSelected).find('.tageditInput').show();
+            $(liSelected).find('.tageditInput').focus();
+            let val = $(liSelected).find('.tageditInput').val();
+            $(liSelected).find('.tageditInput').val('')
+            $(liSelected).find('.tageditInput').val(val)
+
+
+            return false;
+          } else if (e.target.classList.contains('tageditInput')) {
+            e.preventDefault();
+
+            return false;
+          } else {
+            fireSearchWithQuery('#' + $(e.target).text().replace(/edit$/, ''));
+            hideDropdownList();
+          }
+        })
       }
     })
 }

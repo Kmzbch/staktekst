@@ -327,7 +327,7 @@ footer {
     border-bottom-right-radius: 5px;
 }
 
-#dropdownlist .selected {
+li.selected {
     background: rgba(0, 0, 0, 0.15) !important;
     font-weight: bold;
 }
