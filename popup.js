@@ -960,6 +960,9 @@ const initializeEventListeners = () => {
         console.log($(targetElem).html());
         fireSearchWithQuery('#' + $(targetElem).html());
 
+        $('#statusboard').removeClass('entering');
+
+
         // stay at the position
         let stackWrapper = $(targetElem).parent().parent();
         let id = stackWrapper.find('input').val();
