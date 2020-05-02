@@ -33,7 +33,9 @@ const updateSearchResult = () => {
 
   // if the query is a tag
   if (query[0] === '#') {
-    hits = filterNoteItemsByTag(query)
+    hits = filterNoteItemsByTag(query);
+  } else if (query === '::d') {
+    hits = filterNoteItemsWithDateTag(query);
   } else {
     hits = filterNoteItems(query);
   }
@@ -77,6 +79,33 @@ const filterNoteItemsByTag = (tagName) => {
         $(textItem).find('.tag').each((index, tag) => {
 
           if ($(tag).text().match(tagRegex)) {
+            textItem.classList.remove('filtered');
+            hits++;
+            return false;
+          } else {
+            textItem.classList.add('filtered');
+          }
+        })
+
+      }
+      return textItem;
+    })
+  return hits;
+}
+
+
+const filterNoteItemsWithDateTag = (dateTag) => {
+  // dateTag = dateTag.substring(2);
+
+  let hits = 0;
+
+  Array.from(stackDOM.children)
+    .map(textItem => {
+      if ($(textItem).hasClass('date')) {
+        textItem.classList.add('filtered');
+      } else {
+        $(textItem).find('.tag').each((index, tag) => {
+          if (!isNaN(Date.parse($(tag).text()))) {
             textItem.classList.remove('filtered');
             hits++;
             return false;
@@ -439,7 +468,7 @@ const attachContentEditableEvents = (wrapper) => {
     }
   });
 
-  wrapper.addEventListener('mouseout', (e) => {
+  wrapper.addEventListener('mouseleave', (e) => {
     if ($(contentDIV).attr('contentEditable')) {
       toggleEditorMode(contentDIV, false);
     }
@@ -499,7 +528,7 @@ const renderNoteItem = ({ id, type, content, footnote, date }) => {
   stackWrapper.id = id;
   stackWrapper.classList.add(type);
 
-  stackWrapper.innerHTML = `<div class='content'>$#8203;${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><input class='itemDate' type='hidden' value="${date}"><div class="spacer"></div><div class="footnote"></div>`;
+  stackWrapper.innerHTML = `<div class='content'>$#8203;${content}</div><div><i class="material-icons checkbox">check</i></div><input type="hidden" value="${id}"><input class='itemDate' type='hidden' value="${date}"><div class="spacer"></div><div class="footnote"></div>`;
 
   $('#textstack').append(stackWrapper);
 
@@ -839,7 +868,6 @@ const initializeEventListeners = () => {
   $('.create').click(() => {
     createNoteItem();
     toggleEditorMode($('.content').last(), true);
-    // $('i.edit').last().hide();
 
     updateStatusBoard($('.content').last().html());
   });
@@ -900,7 +928,15 @@ const initializeEventListeners = () => {
       } else {
         // when hashtag clicked
         console.log($(targetElem).html());
-        fireNoteSearch('#' + $(targetElem).html());
+        if (!isNaN(Date.parse($(targetElem).html()))) {
+          filterNoteItemsWithDateTag('::d');
+          $('.searchbox').val('::d');
+
+          $('#statusboard').removeClass('entering');
+        } else {
+          fireNoteSearch('#' + $(targetElem).html());
+        }
+
 
         $('#statusboard').removeClass('entering');
 
@@ -922,7 +958,7 @@ const initializeEventListeners = () => {
     } else if ($(targetElem).hasClass('checkbox')) {
       // when checkbox clicked
       $(targetElem).css('color', 'white !important')
-      let textItem = $(targetElem).parent().get(0);
+      let textItem = $(targetElem).parent().parent().get(0);
       removeNoteItem(textItem);
       // PSEUDOLINK
     } else if ($(targetElem).hasClass('pseudolink')) {
