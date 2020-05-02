@@ -12,6 +12,14 @@ let windowState = {
   sortedByNew: true
 }
 
+// configration
+const config = {
+  CACHE_DURATION: 30000
+}
+
+// background.js instance
+const background = chrome.extension.getBackgroundPage();
+
 /**
  * 
  */
@@ -855,7 +863,7 @@ const initializeEventListeners = () => {
 
   $(window).on('unload blur', () => {
     windowState.closedDateTime = new Date().toJSON();
-    chrome.extension.getBackgroundPage().chrome.storage.local.set(windowState);
+    background.chrome.storage.local.set(windowState);
   })
 
   /* header */
@@ -1323,7 +1331,6 @@ const insertDateSeparator = () => {
   }).appendTo(stackDOM);
 }
 
-
 /**
  * Restore the previous popup window state
  * 
@@ -1334,11 +1341,11 @@ const restorePreviousState = () => {
       windowState = state;
 
       const timeElapsed = typeof state.closedDateTime !== 'undefined'
-        ? (new Date() - new Date(state.closedDateTime)) : 30000;
+        ? (new Date() - new Date(state.closedDateTime)) : config.CACHE_DURATION;
 
-      if (timeElapsed < 30000) {
+      if (timeElapsed < config.CACHE_DURATION) {
         // restore searchbox
-        if (typeof state.searchQuery !== 'undefined') {
+        if (typeof state.searchQuery !== 'undefined' || !state.searchQuery.match(/^\s+$/)) {
           fireSearchWithQuery(state.searchQuery);
         }
         // restore sort order

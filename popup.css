@@ -669,13 +669,13 @@ footer {
 }
 
 .tagDate:before {
-    content: '!' !important;
+    content: '' !important;
 }
 
 .tagDate {
     opacity: 1 !important;
-    color: darkblue !important;
-    font-size: 13px;
+    color: blue !important;
+    font-size: 14px;
     font-weight: bold;
     padding-right:2px;
     float:left;
