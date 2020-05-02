@@ -876,13 +876,13 @@ const initializeEventListeners = () => {
     if ($('#textstack').hasClass('viewmode')) {
       $('#textstack').removeClass('viewmode');
       $('#toolbox').removeClass('viewmode');
-      $('.view').text('reorder');
+      $('.view').text('assignment');
       // renderStack();
     } else {
       $('#textstack').addClass('viewmode');
       $('#toolbox').addClass('viewmode');
       $('.searchbox').val('');
-      $('.view').text('format_list_bulleted');
+      $('.view').text('assignment');
       // renderStack();
     }
     //    createNoteItem();
