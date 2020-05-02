@@ -833,7 +833,7 @@ const initializeEventListeners = () => {
   }
 
   $(window).on('unload blur', () => {
-    windowState.closedDateTime = new Date().toJSON();
+    windowState.closedDateTime = new Date().toISOString();
     background.chrome.storage.local.set(windowState);
   })
 
@@ -1197,7 +1197,8 @@ const createNoteItem = () => {
     footnote: {
       tags: []
     },
-    date: formatDate()
+    // date: formatDate()
+    date: new Date().toISOString()
   }
 
   // add the current tag in the seachbox
@@ -1282,23 +1283,6 @@ const renderStack = () => {
     if (typeof rawData === 'undefined') {
       stackStorage.reset();
     } else {
-      // const pinnedItemStack = [];
-      // // read and render text items
-      // stack = JSON.parse(rawData);
-      // stack.forEach(res => {
-      //   if (res.footnote.tags.includes('pinned') || res.footnote.tags.includes('📌')) {
-      //     pinnedItemStack.push(res);
-      //   } else {
-      //     renderNoteItem(res);
-      //   }
-      // });
-      // // insert separators between items
-      // insertDateSeparator();
-      // // render pinned text item after the other items rendered
-      // pinnedItemStack.forEach(res => {
-      //   renderNoteItem(res);
-      // });
-
 
       if ($('#textstack').hasClass('viewmode')) {
 
@@ -1312,21 +1296,10 @@ const renderStack = () => {
             // renderNoteItem(res);
           }
         });
-        // insert separators between items
-        // insertDateSeparator();
-        // render pinned text item after the other items rendered
         pinnedItemStack.forEach(res => {
           renderNoteItem(res);
         });
-
-        // insert separators between items
         insertDateSeparator();
-
-        // $('<div>', {
-        //   addClass: 'date',
-        //   text: 'pinned items'
-        // }).appendTo($('#textstack'))
-
       } else {
         stack = JSON.parse(rawData);
         stack.forEach(res => {
@@ -1345,21 +1318,24 @@ const renderStack = () => {
  */
 const insertDateSeparator = () => {
   $(stackDOM.children).each((index, wrapper) => {
-    const date = $(wrapper).find('.itemDate').val();
+    const date = new Date(($(wrapper).find('.itemDate').val()));
 
     if (dateStack.length === 0) {
       $('<div>', {
         addClass: 'date',
-        text: date
+        text: formatDate(date)
       }).insertBefore(wrapper)
+
+      console.log(date);
 
       dateStack.push(date);
     } else {
       // insert only between the date and the previous date
-      if (dateStack[dateStack.length - 1] !== date) {
+      // if (dateStack[dateStack.length - 1] !== date) {
+      if (formatDate(new Date(dateStack[dateStack.length - 1])) !== formatDate(date)) {
         $('<div>', {
           addClass: 'date',
-          text: date
+          text: formatDate(date)
         }).insertBefore(wrapper)
 
         dateStack.push(date);
@@ -1406,9 +1382,28 @@ const restorePreviousState = () => {
     })
 }
 
+// utilities
+const convertDateToDateTimeFormat = () => {
+  const convertedData = [];
+
+  stackStorage.get(rawData => {
+    if (typeof rawData === 'undefined') {
+      stackStorage.reset();
+    } else {
+      stack = JSON.parse(rawData);
+      stack.forEach(res => {
+        res.date = new Date(res.date).toISOString();
+        convertedata.push(res);
+      });
+    }
+  });
+  stackStorage.set(JSON.stringify(convertedData));
+}
+
 // ========== INITIALIZATION ==========
 // initialize
 document.addEventListener('DOMContentLoaded', () => {
+  // convertDateToDateTimeFormat();
   initializeEventListeners();
   renderStack();
   restorePreviousState();

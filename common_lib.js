@@ -86,7 +86,7 @@ function pushText(content, type, pageTitle = '', pageURL = '') {
             stack.push({
                 id: uuidv4(),
                 type: type,
-                date: formatDate(),
+                date: new Date().toISOString(),
                 content: content,
                 footnote: {
                     tags: [],
