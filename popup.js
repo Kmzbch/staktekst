@@ -872,6 +872,27 @@ const initializeEventListeners = () => {
     updateStatusBoard($('.content').last().html());
   });
 
+  $('.view').click(() => {
+    if ($('#textstack').hasClass('viewmode')) {
+      $('#textstack').removeClass('viewmode');
+      $('#toolbox').removeClass('viewmode');
+      $('.view').text('format_list_bulleted');
+      renderStack();
+    } else {
+      $('#textstack').addClass('viewmode');
+      $('#toolbox').addClass('viewmode');
+      $('.searchbox').val('');
+      $('.view').text('format_list_bulleted');
+      renderStack();
+    }
+    //    createNoteItem();
+
+    //    toggleEditorMode($('.content').last(), true);
+
+    //    updateStatusBoard($('.content').last().html());
+  });
+
+
   $('.export').click(exportTextItems);
   $('#statusboard').click(() => {
     $('#toolbox').show();
@@ -1261,22 +1282,60 @@ const renderStack = () => {
     if (typeof rawData === 'undefined') {
       stackStorage.reset();
     } else {
-      const pinnedItemStack = [];
-      // read and render text items
-      stack = JSON.parse(rawData);
-      stack.forEach(res => {
-        if (res.footnote.tags.includes('pinned') || res.footnote.tags.includes('📌')) {
-          pinnedItemStack.push(res);
-        } else {
+      // const pinnedItemStack = [];
+      // // read and render text items
+      // stack = JSON.parse(rawData);
+      // stack.forEach(res => {
+      //   if (res.footnote.tags.includes('pinned') || res.footnote.tags.includes('📌')) {
+      //     pinnedItemStack.push(res);
+      //   } else {
+      //     renderNoteItem(res);
+      //   }
+      // });
+      // // insert separators between items
+      // insertDateSeparator();
+      // // render pinned text item after the other items rendered
+      // pinnedItemStack.forEach(res => {
+      //   renderNoteItem(res);
+      // });
+
+
+      if ($('#textstack').hasClass('viewmode')) {
+
+        const pinnedItemStack = [];
+        // read and render text items
+        stack = JSON.parse(rawData);
+        stack.forEach(res => {
+          if (res.footnote.tags.includes('pinned') || res.footnote.tags.includes('📌')) {
+            pinnedItemStack.push(res);
+          } else {
+            // renderNoteItem(res);
+          }
+        });
+        // insert separators between items
+        // insertDateSeparator();
+        // render pinned text item after the other items rendered
+        pinnedItemStack.forEach(res => {
           renderNoteItem(res);
-        }
-      });
-      // insert separators between items
-      insertDateSeparator();
-      // render pinned text item after the other items rendered
-      pinnedItemStack.forEach(res => {
-        renderNoteItem(res);
-      });
+        });
+
+        // insert separators between items
+        insertDateSeparator();
+
+        // $('<div>', {
+        //   addClass: 'date',
+        //   text: 'pinned items'
+        // }).appendTo($('#textstack'))
+
+      } else {
+        stack = JSON.parse(rawData);
+        stack.forEach(res => {
+          renderNoteItem(res);
+        });
+        // insert separators between items
+        insertDateSeparator();
+      }
+
     }
   });
 };

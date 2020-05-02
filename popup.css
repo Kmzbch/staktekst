@@ -363,6 +363,23 @@ footer {
     font-size: 14px;
 }
 
+.view:hover {
+    transition: 0.2s;
+    opacity: 1;
+    cursor: pointer;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+.view {
+    color: white;
+    opacity: 0.3;
+    top: 13px;
+    margin: 0px 9px;
+
+    font-size: 14px;
+}
+
 .export:hover {
     transition: 0.2s;
     opacity: 1;
@@ -500,25 +517,38 @@ footer {
 }
 
 /* */
-.clip.pinned{
+/* .viewmode .create {
+    pointer-events: none;
+}
+
+.viewmode .searchbox {
+    pointer-events: none;
+} */
+
+.viewmode .view {
+    opacity: 1 !important;
+}
+
+
+/* .viewmode .clip.pinned{
     background: azure !important;
     border-right: solid 8px teal;
     margin-right: 8px;
 }
 
-.bookmark.pinned{
+.viewmode .bookmark.pinned{
     background: azure !important;
     border-right: solid 8px teal;
     margin-right: 8px;
 }
 
-.note.pinned {
+.viewmode .note.pinned {
     border-left: 6px solid goldenrod;
     border-right: 1px solid gray;
     margin-left: 10px;
     margin-right: 15px;
     background-color: lemonchiffon;
-}
+} */
 
 .clip .spacer {
     height: 32px;
@@ -666,9 +696,18 @@ footer {
     padding-right:2px;
 }
 
+/* .viewmode .tag.pinned {
+    float: left !important;
+} */
+
 .tag.pinned {
     float: left !important;
 }
+
+
+/* .viewmode .tagDate {
+    float: left !important;
+} */
 
 .tagDate:before {
     content: '' !important;
