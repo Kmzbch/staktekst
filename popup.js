@@ -2,6 +2,14 @@
 const dropdownList = document.querySelector('#tagsearch-result');
 const stackDOM = document.querySelector('#textstack');
 
+// configration
+const config = {
+  CACHE_DURATION: 30000
+}
+
+// background.js instance
+const background = chrome.extension.getBackgroundPage();
+
 // state variables
 let stack = [];
 let tagStack = ['bookmark', 'clip', 'note'];
@@ -11,14 +19,6 @@ let windowState = {
   scrollY: 0,
   sortedByNew: true
 }
-
-// configration
-const config = {
-  CACHE_DURATION: 30000
-}
-
-// background.js instance
-const background = chrome.extension.getBackgroundPage();
 
 /**
  * 
@@ -33,9 +33,9 @@ const updateSearchResult = () => {
 
   // if the query is a tag
   if (query[0] === '#') {
-    hits = filterTextItemsByTag(query)
+    hits = filterNoteItemsByTag(query)
   } else {
-    hits = filterTextItems(query);
+    hits = filterNoteItems(query);
   }
   filterDropdownListItems(query);
 
@@ -61,7 +61,7 @@ const updateSearchResult = () => {
 /**
  * 
  */
-const filterTextItemsByTag = (tagName) => {
+const filterNoteItemsByTag = (tagName) => {
   if (tagName[0] === '#') {
     tagName = tagName.substring(1);
   }
@@ -94,7 +94,7 @@ const filterTextItemsByTag = (tagName) => {
 /**
  * 
  */
-const filterTextItems = (term) => {
+const filterNoteItems = (term) => {
   let termRegex;
   let hits = 0;
 
@@ -157,7 +157,7 @@ const selectOnDropdownList = (e) => {
     // ENTER
     if (liSelected) {
       liSelected.removeClass('selected');
-      fireSearchWithQuery('#' + liSelected.text().replace(/edit$/, ''));
+      fireNoteSearch('#' + liSelected.text().replace(/edit$/, ''));
     }
     hideDropdownList()
   } else if (e.keyCode === 38) {
@@ -367,7 +367,7 @@ const setDropdownListItems = () => {
 
             return false;
           } else {
-            fireSearchWithQuery('#' + $(e.target).text().replace(/edit$/, ''));
+            fireNoteSearch('#' + $(e.target).text().replace(/edit$/, ''));
             hideDropdownList();
           }
         })
@@ -391,7 +391,7 @@ function attachContentEditableEvents(wrapper) {
   // add click event
   editIcon.addEventListener('click', function enableEditing() {
     setTimeout(() => {
-      toggleContentEditable(contentDIV, true);
+      toggleEditorMode(contentDIV, true);
       $(editIcon).hide();
     }, 100);
   })
@@ -399,7 +399,7 @@ function attachContentEditableEvents(wrapper) {
 
   contentDIV.addEventListener('focusout', (e) => {
     // enable URL
-    toggleContentEditable(false);
+    toggleEditorMode(false);
     console.log('toggled to false!!!');
     $('#toolbox').show();
     $('#statusboard').text('');
@@ -415,8 +415,6 @@ function attachContentEditableEvents(wrapper) {
     contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
 
     contentDIV.innerHTML = contentDIV.innerHTML.replace(String.fromCharCode(8203), '');
-
-
   });
 
   contentDIV.addEventListener('keyup', (e) => {
@@ -435,18 +433,13 @@ function attachContentEditableEvents(wrapper) {
           wrapper.classList.add('editing');
 
           contentDIV.contentEditable = true;
-          toggleContentEditable(contentDIV, true)
+          toggleEditorMode(contentDIV, true)
           $(editIcon).hide();
 
           // remove a tag
           Array.from(contentDIV.childNodes).forEach((item) => {
             $(item).contents().unwrap()
           }, '')
-
-          // insert decimal code as a zero-width space for displaying caret
-          // if (!contentDIV.innerHTML.match(String.fromCharCode(8203))) {
-          //   contentDIV.innerHTML += '&#8203;';
-          // }
 
           // move caret to the end of the text
           const node = contentDIV.childNodes[contentDIV.childNodes.length - 1]
@@ -530,7 +523,7 @@ function attachContentEditableEvents(wrapper) {
 
     if (e.keyCode === 13 && e.ctrlKey) {
 
-      toggleContentEditable(contentDIV, false);
+      toggleEditorMode(contentDIV, false);
 
       return false;
     }
@@ -551,7 +544,7 @@ function attachContentEditableEvents(wrapper) {
 /**
  * 
  */
-const renderTextItem = ({ id, type, content, footnote, date }) => {
+const renderNoteItem = ({ id, type, content, footnote, date }) => {
   let stackWrapper = document.createElement('div');
   stackWrapper.className = 'stackwrapper';
   stackWrapper.id = id;
@@ -889,14 +882,14 @@ const initializeEventListeners = () => {
   })
 
   $('.search-cancel-button').click((e) => {
-    fireSearchWithQuery('');
+    fireNoteSearch('');
     $('.searchbox').trigger('focus');
   });
 
   /* toolbox & text area*/
   $('.create').click(() => {
-    createEmptyTextItem();
-    toggleContentEditable($('.content').last(), true);
+    createNoteItem();
+    toggleEditorMode($('.content').last(), true);
     $('i.edit').last().hide();
 
     updateTextInfoMessage($('.content').last().html());
@@ -907,7 +900,7 @@ const initializeEventListeners = () => {
     $('#toolbox').show();
     $('#statusboard').text('');
   })
-  $('#sort').click(() => { sortTextItems(!windowState.sortedByNew) });
+  $('#sort').click(() => { sortNotes(!windowState.sortedByNew) });
 
   /**
    * the text stack dynamically changes
@@ -926,11 +919,6 @@ const initializeEventListeners = () => {
         if (tagName.match(/pinned|📌/i)) {
           $(stackWrapper).removeClass('pinned');
         }
-        // if (tagName.slice(1).match(/(fav|favourite|favorite)/i)) {
-        // if (tagName.slice(1).match(/(★|☆|✭|⭐|)/i)) {
-        //   // $(stackWrapper).removeClass('fav');
-        //   targetElem.removeClass('fav')
-        // }
 
         if (stackWrapper.find('.tag').length > 1 && $(targetElem).prev().length != 0) {
           // remove tag from footnote
@@ -963,7 +951,7 @@ const initializeEventListeners = () => {
       } else {
         // when hashtag clicked
         console.log($(targetElem).html());
-        fireSearchWithQuery('#' + $(targetElem).html());
+        fireNoteSearch('#' + $(targetElem).html());
 
         $('#statusboard').removeClass('entering');
 
@@ -986,7 +974,7 @@ const initializeEventListeners = () => {
       // when checkbox clicked
       $(targetElem).css('color', 'white !important')
       let textItem = $(targetElem).parent().get(0);
-      removeTextItem(textItem);
+      removeNoteItem(textItem);
       // PSEUDOLINK
     } else if ($(targetElem).hasClass('pseudolink')) {
       // use span tag as a link
@@ -1009,7 +997,6 @@ const initializeEventListeners = () => {
             $(e.target).addClass('removing');
           }
         }
-
       }
     },
     mouseout: (e) => {
@@ -1032,7 +1019,7 @@ const initializeEventListeners = () => {
 }
 
 /* search */
-const fireSearchWithQuery = (query) => {
+const fireNoteSearch = (query) => {
   $('.searchbox').val(query);
   $('.searchbox').trigger('input')
 };
@@ -1076,7 +1063,7 @@ const toggleClearStackModal = (
 /**
  * 
  */
-const toggleContentEditable = (
+const toggleEditorMode = (
   div,
   display = !$(div).attr('contentEditable') ? true : false
 ) => {
@@ -1119,7 +1106,7 @@ const updateTextInfoMessage = (text) => {
 /**
  * 
  */
-const sortTextItems = (sortingByNew) => {
+const sortNotes = (sortingByNew) => {
   // NEW
   if (sortingByNew) {
     $('#sort').html('New <i class="material-icons">arrow_upward</i>');
@@ -1183,8 +1170,8 @@ const exportTextItems = () => {
 /**
  * 
  */
-const createEmptyTextItem = () => {
-  const newItem = {
+const createNoteItem = () => {
+  const note = {
     id: uuidv4(),
     type: 'note',
     content: '',
@@ -1197,37 +1184,38 @@ const createEmptyTextItem = () => {
   // add the current tag in the seachbox
   const searchQuery = windowState.searchQuery;
   if (searchQuery[0] === '#' && searchQuery.length > 0) {
-    newItem.footnote.tags.push(searchQuery.substring(1))
+    note.footnote.tags.push(searchQuery.substring(1))
   }
 
   // add item to stack
-  stack.push(newItem);
+  stack.push(note);
   stackStorage.set(JSON.stringify(stack));
 
   // render the ga
-  renderTextItem(newItem);
+  renderNoteItem(note);
 };
 
 /**
  * 
  */
-const removeTextItem = (textitemDOM) => {
+const removeNoteItem = (noteItem) => {
   // apply visual effects and display message
-  textitemDOM.classList.add('removed')
+  noteItem.classList.add('removed')
   displayMessage("Item Removed!");
 
   // remove from stack and storage after a while
   setTimeout(() => {
     // remove the item
-    const id = textitemDOM.querySelector('input').value;
+    const id = noteItem.querySelector('input').value;
     stack = stack.filter(item => item.id !== id);
     stackStorage.set(JSON.stringify(stack));
-    textitemDOM.remove();
+    noteItem.remove();
     // show toolbox
     $('#toolbox').show();
     $('#statusboard').text('');
   }, 450);
 }
+
 /**
  * 
  */
@@ -1253,11 +1241,11 @@ const clearAllItems = () => {
 /**
  * 
  */
-const replaceTagName = (oldTag, newTag) => {
+const replaceTagName = (prevTag, newTag) => {
   // add item to stack
   stack.forEach(item => {
-    if (item.footnote.tags.includes(oldTag)) {
-      item.footnote.tags.splice(item.footnote.tags.findIndex(tag => tag == oldTag), 1, newTag)
+    if (item.footnote.tags.includes(prevTag)) {
+      item.footnote.tags.splice(item.footnote.tags.findIndex(tag => tag == prevTag), 1, newTag)
     }
   })
   stackStorage.set(JSON.stringify(stack));
@@ -1282,14 +1270,14 @@ const renderStack = () => {
         if (res.footnote.tags.includes('pinned') || res.footnote.tags.includes('📌')) {
           pinnedItemStack.push(res);
         } else {
-          renderTextItem(res);
+          renderNoteItem(res);
         }
       });
       // insert separators between items
       insertDateSeparator();
       // render pinned text item after the other items rendered
       pinnedItemStack.forEach(res => {
-        renderTextItem(res);
+        renderNoteItem(res);
       });
     }
   });
@@ -1307,6 +1295,7 @@ const insertDateSeparator = () => {
         addClass: 'date',
         text: date
       }).insertBefore(wrapper)
+
       dateStack.push(date);
     } else {
       // insert only between the date and the previous date
@@ -1315,6 +1304,7 @@ const insertDateSeparator = () => {
           addClass: 'date',
           text: date
         }).insertBefore(wrapper)
+
         dateStack.push(date);
       }
     }
@@ -1332,8 +1322,7 @@ const insertDateSeparator = () => {
 }
 
 /**
- * Restore the previous popup window state
- * 
+ * Function to restore the previous window state
  */
 const restorePreviousState = () => {
   chrome.storage.local.get(['searchQuery', 'scrollY', 'closedDateTime', 'sortedByNew'],
@@ -1345,12 +1334,12 @@ const restorePreviousState = () => {
 
       if (timeElapsed < config.CACHE_DURATION) {
         // restore searchbox
-        if (typeof state.searchQuery !== 'undefined' || !state.searchQuery.match(/^\s+$/)) {
-          fireSearchWithQuery(state.searchQuery);
+        if (typeof state.searchQuery !== 'undefined') {
+          fireNoteSearch(state.searchQuery);
         }
         // restore sort order
         if (typeof state.sortedByNew !== 'undefined') {
-          sortTextItems(state.sortedByNew)
+          sortNotes(state.sortedByNew)
         }
         // restore scrollY
         if (typeof state.scrollY !== 'undefined') {
