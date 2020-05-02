@@ -517,11 +517,12 @@ footer {
 }
 
 /* */
-/* .viewmode .create {
+.viewmode .create {
     pointer-events: none;
+    visibility: hidden;
 }
 
-.viewmode .searchbox {
+/* .viewmode .searchbox {
     pointer-events: none;
 } */
 
@@ -735,6 +736,14 @@ footer {
 /* remove */
 #textstack .stackwrapper:hover .checkbox {
     right: 5px !important;
+}
+
+.viewmode .stackwrapper:not(.pinned) {
+    display: none;
+}
+
+.viewmode div.date {
+    display: none;
 }
 
 .checkbox:hover {
