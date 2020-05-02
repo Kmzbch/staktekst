@@ -378,78 +378,32 @@ const setDropdownListItems = () => {
 /**
  * 
  */
-function attachContentEditableEvents(wrapper) {
-  // create and insert
-  let editIcon = document.createElement('i');
-  editIcon.classList.add('material-icons');
-  editIcon.classList.add('edit');
-  editIcon.innerText = 'edit';
-  wrapper.insertBefore(editIcon, wrapper.querySelector('i'));
-
+const attachContentEditableEvents = (wrapper) => {
   let contentDIV = wrapper.querySelector('.content');
+  let prevHTML = wrapper.innerHTML;
 
-  // add click event
-  editIcon.addEventListener('click', function enableEditing() {
-    setTimeout(() => {
-      toggleEditorMode(contentDIV, true);
-      $(editIcon).hide();
-    }, 100);
+  // add editIcon to the content
+  let editIcon = $('<i>', {
+    addClass: 'edit material-icons',
+    text: 'edit',
+    on: {
+      click: () => {
+        setTimeout(() => {
+          toggleEditorMode(contentDIV, true);
+        }, 100);
+      }
+    }
   })
-
-
-  contentDIV.addEventListener('focusout', (e) => {
-    // enable URL
-    toggleEditorMode(false);
-    console.log('toggled to false!!!');
-    $('#toolbox').show();
-    $('#statusboard').text('');
-    $('#statusboard').removeClass('entering');
-
-    wrapper.classList.remove('editing');
-    $(editIcon).show();
-
-    contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
-
-    // replace new lines with br tag
-    contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n+$/i, '');
-    contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
-
-    contentDIV.innerHTML = contentDIV.innerHTML.replace(String.fromCharCode(8203), '');
-  });
-
-  contentDIV.addEventListener('keyup', (e) => {
-    fireChange(e);
-  });
+  editIcon.insertAfter(contentDIV);
 
   // add to wrapper
   wrapper.addEventListener('dblclick', (e) => {
     if (wrapper.classList.contains('note')) {
-      // if (wrapper.classList.contains('note') || wrapper.classList.contains('bookmark')) {
+      // fire only when the area out of text body double clicked
       if (!e.target.classList.contains('content')) {
         setTimeout(hideBubble, 30);
         setTimeout(() => {
-
-          // editing mode styles
-          wrapper.classList.add('editing');
-
-          contentDIV.contentEditable = true;
           toggleEditorMode(contentDIV, true)
-          $(editIcon).hide();
-
-          // remove a tag
-          Array.from(contentDIV.childNodes).forEach((item) => {
-            $(item).contents().unwrap()
-          }, '')
-
-          // move caret to the end of the text
-          const node = contentDIV.childNodes[contentDIV.childNodes.length - 1]
-          const editorRange = document.createRange()
-          const editorSel = window.getSelection()
-          editorRange.setStart(node, node.length)
-          editorRange.collapse(true)
-          editorSel.removeAllRanges()
-          editorSel.addRange(editorRange)
-
         }, 100)
       }
     }
@@ -457,10 +411,6 @@ function attachContentEditableEvents(wrapper) {
 
   // add to content DIV
   contentDIV.addEventListener('focus', (e) => {
-    console.log('focus!');
-    // editing mode styles
-    wrapper.classList.add('editing');
-
     // remove a tag
     Array.from(contentDIV.childNodes).forEach((item) => {
       $(item).contents().unwrap()
@@ -479,11 +429,30 @@ function attachContentEditableEvents(wrapper) {
     editorRange.collapse(true)
     editorSel.removeAllRanges()
     editorSel.addRange(editorRange)
-
   })
 
+  // ctrl + Enter to end editing
+  contentDIV.addEventListener('keydown', (e) => {
+    if (e.keyCode === 13 && e.ctrlKey) {
+      toggleEditorMode(contentDIV, false);
+      return false;
+    }
+  });
 
-  let oldHTML = wrapper.innerHTML;
+  wrapper.addEventListener('mouseout', (e) => {
+    if ($(contentDIV).attr('contentEditable')) {
+      toggleEditorMode(contentDIV, false);
+    }
+    return false;
+  });
+
+  contentDIV.addEventListener('focusout', (e) => {
+    // turn on editor mode
+    // show header 
+    $('#toolbox').show();
+    $('#statusboard').text('');
+    $('#statusboard').removeClass('entering');
+  });
 
   // detect changes on content editable
   wrapper.addEventListener('blur', fireChange);
@@ -493,48 +462,28 @@ function attachContentEditableEvents(wrapper) {
   wrapper.addEventListener('cut', fireChange);
   wrapper.addEventListener('mouseup', fireChange);
   wrapper.addEventListener('change', (e) => {
+    const id = $(e.target).attr('id');
+    const index = stack.findIndex(item => item.id === id);
+    const newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
 
-    let id = $(e.target).attr('id');
+    updateStatusBoard(newHTML);
 
-    let newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
-    updateTextInfoMessage(newHTML);
-
-    // update teext item
-    let index = stack.findIndex(item => item.id === id);
+    // update note item
     stack[index].content = newHTML.replace(/<br>/ig, '\n');
     stackStorage.set(JSON.stringify(stack));
   })
 
-  // ctrl + Enter to end editing
-  contentDIV.addEventListener('keydown', (e) => {
-
-    if (contentDIV.innerHTML.match(String.fromCharCode(8203))) {
-      // contentDIV.innerHTML.replace(new Regex(`${String.fromCharCode(8203)}`, 'g'), '')
-      contentDIV.innerHTML = contentDIV.innerHTML.replace(String.fromCharCode(8203), '');
-      const node = contentDIV.childNodes[contentDIV.childNodes.length - 1]
-      const editorRange = document.createRange()
-      const editorSel = window.getSelection()
-      editorRange.setStart(node, node.length)
-      editorRange.collapse(true)
-      editorSel.removeAllRanges()
-      editorSel.addRange(editorRange)
-    }
-
-
-    if (e.keyCode === 13 && e.ctrlKey) {
-
-      toggleEditorMode(contentDIV, false);
-
-      return false;
-    }
-  });
-
+  // fire change event of content editable div when its content changed 
   function fireChange(e) {
     let newHTML = wrapper.innerHTML;
-    if (oldHTML !== newHTML) {
+
+    // replace with new HTML
+    if (prevHTML !== newHTML) {
       wrapper.dispatchEvent(new Event('change'));
-      oldHTML = newHTML;
+      prevHTML = newHTML;
     }
+
+    // insert zero-width space when the text is empty
     if (contentDIV.innerHTML.length == 0) {
       contentDIV.innerHTML += '&#8203;';
     }
@@ -890,9 +839,9 @@ const initializeEventListeners = () => {
   $('.create').click(() => {
     createNoteItem();
     toggleEditorMode($('.content').last(), true);
-    $('i.edit').last().hide();
+    // $('i.edit').last().hide();
 
-    updateTextInfoMessage($('.content').last().html());
+    updateStatusBoard($('.content').last().html());
   });
 
   $('.export').click(exportTextItems);
@@ -1070,8 +1019,22 @@ const toggleEditorMode = (
   if (display) {
     $(div).attr('contentEditable', true);
     $(div).focus();
+
+    // change visual styles
+    $(div).parent().addClass('editing');
+    $(div).next().hide(); // edit icon
   } else {
     $(div).attr('contentEditable', false);
+
+    // replace new lines with br tag
+    div.innerHTML = enableURLEmbededInText(div.innerText);
+    div.innerHTML = div.innerHTML.replace(/\n+$/i, '');
+    div.innerHTML = div.innerHTML.replace(/\n/gi, '<br>');
+    div.innerHTML = div.innerHTML.replace(String.fromCharCode(8203), '');
+
+    // change visual styles
+    $(div).parent().removeClass('editing');
+    $(div).next().show(); // edit icon
   }
 }
 
@@ -1089,11 +1052,10 @@ const displayMessage = (message) => {
 /**
  * 
  */
-const updateTextInfoMessage = (text) => {
+const updateStatusBoard = (text) => {
   $('#toolbox').hide();
 
   let info = extractTextInfo(text.replace(String.fromCharCode(8203), ''));
-  // let info = extractTextInfo(text);
   $('#statusboard').html(
     `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`
   );
