@@ -25,14 +25,12 @@ const doTaskOnceInputIsDone = (task, time) => {
   if (task in doTaskOnceInputIsDone.TID) {
     window.clearTimeout(doTaskOnceInputIsDone.TID[task])
   }
-
   //
   doTaskOnceInputIsDone.TID[task] = window.setTimeout(
     () => {
       // clear task ID previously registered
       delete doTaskOnceInputIsDone.TID[task];
       try {
-        //  run the task
         task.call();
       } catch (e) {
         console.log('EXCEPTION: ' + task)
@@ -46,7 +44,6 @@ doTaskOnceInputIsDone.TID = {}
  * 
  */
 const updateSearchResult = () => {
-
   let query = $('.searchbox').val().trim().toLowerCase();
   let hits;
 
@@ -54,6 +51,7 @@ const updateSearchResult = () => {
   windowState.searchQuery = query;
 
   // if the query is a tag
+  // TODO: consider what special search tags to use
   if (query[0] === '#') {
     hits = filterNoteItemsByTag(query);
   } else if (query === '::d') {
@@ -116,6 +114,8 @@ const filterNoteItemsByTag = (tagName) => {
 }
 
 
+
+
 const filterNoteItemsWithDateTag = (dateTag) => {
   // dateTag = dateTag.substring(2);
 
@@ -142,12 +142,11 @@ const filterNoteItemsWithDateTag = (dateTag) => {
   return hits;
 }
 
+
+
 /**
  * 
  */
-
-
-
 const filterNoteItems = (term) => {
   let termRegex;
   let hits = 0;
@@ -203,6 +202,8 @@ const filterNoteItems = (term) => {
 
   return hits;
 };
+
+
 
 /**
  * 
@@ -274,6 +275,9 @@ const selectOnDropdownList = (e) => {
   }
 }
 
+
+
+
 /**
  * 
  */
@@ -290,6 +294,8 @@ const filterDropdownListItems = (query) => {
       return listItem;
     })
 }
+
+
 
 /**
  * 
@@ -309,9 +315,7 @@ const setDropdownListItems = () => {
     !tag.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu)
   );
 
-  // tagStack = defaultTagStack.concat(emojiTagStack).concat(customTagStack.sort());
   tagStack = defaultTagStack.concat(customTagStack.sort()).concat(emojiTagStack.sort());
-
 
   // create list from tagStack
   tagStack
@@ -435,453 +439,35 @@ const setDropdownListItems = () => {
 }
 
 /**
- * 
+ * generate note item HTML
  */
-const attachContentEditableEvents = (wrapper) => {
-  let contentDIV = wrapper.querySelector('.content');
-  let prevHTML = wrapper.innerHTML;
-
-  $(wrapper).find('.edit').click(
-    () => {
-      setTimeout(() => {
-        toggleEditorMode(contentDIV, true);
-      }, 100);
-    }
-  )
-
-
-  // add to wrapper
-  wrapper.addEventListener('dblclick', (e) => {
-    if (wrapper.classList.contains('note')) {
-      // fire only when the area out of text body double clicked
-      if (!e.target.classList.contains('content')) {
-        setTimeout(hideBubble, 30);
-        setTimeout(() => {
-          toggleEditorMode(contentDIV, true)
-        }, 100)
-      }
-    }
-  });
-
-  // add to content DIV
-  contentDIV.addEventListener('focus', (e) => {
-    // remove a tag
-    Array.from(contentDIV.childNodes).forEach((item) => {
-      $(item).contents().unwrap()
-    }, '')
-
-    // insert decimal code as a zero-width space for displaying caret
-    if (!contentDIV.innerHTML.match(String.fromCharCode(8203))) {
-      contentDIV.innerHTML += '&#8203;';
-    }
-
-    // move caret to the end of the text
-    const node = contentDIV.childNodes[contentDIV.childNodes.length - 1]
-    const editorRange = document.createRange()
-    const editorSel = window.getSelection()
-    editorRange.setStart(node, node.length)
-    editorRange.collapse(true)
-    editorSel.removeAllRanges()
-    editorSel.addRange(editorRange)
-  })
-
-  // ctrl + Enter to end editing
-  contentDIV.addEventListener('keydown', (e) => {
-    if (e.keyCode === 13 && e.ctrlKey) {
-      toggleEditorMode(contentDIV, false);
-      return false;
-    }
-  });
-
-  wrapper.addEventListener('mouseleave', (e) => {
-    if ($(contentDIV).attr('contentEditable')) {
-      toggleEditorMode(contentDIV, false);
-    }
-    return false;
-  });
-
-  contentDIV.addEventListener('focusout', (e) => {
-    // turn on editor mode
-    // show header 
-    $('#toolbox').show();
-    $('#statusboard').text('');
-    $('#statusboard').removeClass('entering');
-  });
-
-  // detect changes on content editable
-  wrapper.addEventListener('blur', fireChange);
-  wrapper.addEventListener('keyup', fireChange);
-  wrapper.addEventListener('paste', fireChange);
-  wrapper.addEventListener('copy', fireChange);
-  wrapper.addEventListener('cut', fireChange);
-  wrapper.addEventListener('mouseup', fireChange);
-  wrapper.addEventListener('change', (e) => {
-    const id = $(e.target).attr('id');
-    const index = stack.findIndex(item => item.id === id);
-    const newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
-
-    updateStatusBoard(newHTML);
-
-    // update note item
-    stack[index].content = newHTML.replace(/<br>/ig, '\n');
-    stackStorage.set(JSON.stringify(stack));
-  })
-
-  // fire change event of content editable div when its content changed 
-  function fireChange(e) {
-    let newHTML = wrapper.innerHTML;
-
-    // replace with new HTML
-    if (prevHTML !== newHTML) {
-      wrapper.dispatchEvent(new Event('change'));
-      prevHTML = newHTML;
-    }
-
-    // insert zero-width space when the text is empty
-    if (contentDIV.innerHTML.length == 0) {
-      contentDIV.innerHTML += '&#8203;';
-    }
-  }
-}
-
-/**
- * 
- */
-const renderNoteItem = ({ id, type, content, footnote, date }) => {
-  let stackWrapper = document.createElement('div');
-  stackWrapper.className = 'stackwrapper';
-  stackWrapper.id = id;
-  stackWrapper.classList.add(type);
-
-  stackWrapper.innerHTML = `<div class='content'>$#8203;${content}</div><div><i class="material-icons checkbox">check</i></div><input type="hidden" value="${id}"><input class='itemDate' type='hidden' value="${date}"><div class="spacer"></div><div class="footnote"></div>`;
-
-  $('#textstack').append(stackWrapper);
-
-  content = $('<div>', {
-    html: content
-  }).text();
-
-  // content
-  // enable URL link
-  let contentDIV = stackWrapper.firstElementChild;
-  contentDIV.innerHTML = enableURLEmbededInText(content);
-  contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
-
-  // foot note
-  if (type === 'clip') {
-    stackWrapper.querySelector('.footnote').innerHTML = `<span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span><span class="tag type clip">clip</span>`;
-  } else {
-    stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag type">${type}</span>`;
-    // if (type === 'note' || type === 'bookmark') {
-    if (type === 'note') {
-      attachContentEditableEvents(stackWrapper);
-    }
-  }
-
-  // TAGS
-  if (typeof footnote.tags !== 'undefined') {
-    footnote.tags.forEach(item => {
-      if (item.match(/pinned|📌/i)) {
-        item = item.replace(/pinned/i, '📌');
-        $(stackWrapper).addClass('pinned');
-      }
-
-      const tagElem = $('<span>', { addClass: 'tag', text: item });
-      if (item.match(/pinned|📌/i)) {
-
-        tagElem.addClass('pinned');
-      }
-      // if (!['note', 'clip', 'bookmark'].includes(item)) {
-      $(stackWrapper).find('.footnote').append(tagElem);
-
-      if (!tagStack.includes(item)) {
-        tagStack.push(item);
-      }
-      // reserved tags
-      // if (item.match(/(fav|favourite|favorite)/i)) {
-      if (item.match(/(★|☆|✭|⭐)/i)) {
-        // $(stackWrapper).addClass('fav');
-        tagElem.addClass('fav');
-      }
-      if (item.match(/(♡|💛|♥|❤)/i)) {
-        // $(stackWrapper).addClass('fav');
-        tagElem.addClass('like');
-      }
-      // emoji
-      if (item.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
-      )) {
-
-        tagElem.addClass('emoji');
-      }
-
-      if (!isNaN(new Date(item))) {
-        tagElem.addClass('tagDate');
-      }
-
-
-      // }
-    })
-  }
-
-  if (stackWrapper.querySelector('.footnote').childNodes.length < 5) {
-    let divWrap = $('<div>', { addClass: 'divWrap' })
-    divWrap.appendTo($(stackWrapper).find('.footnote'));
-
-
-    let input = $('<input>', {
-      type: 'text',
-      addClass: 'tagadd',
-    });
-
-    divWrap.append(input);
-
-    // attach events
-    input.blur((ev) => {
-      let tagName = ev.target.value.trim();
-      if (tagName !== '') {
-        if (tagName.match(/pinned|📌/i)) {
-          tagName = tagName.replace(/pinned/i, '📌');
-          $(stackWrapper).addClass('pinned');
-        }
-
-        // find the index of the text item
-        let index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
-        // update Tag
-        if (typeof stack[index].footnote.tags === 'undefined') {
-          stack[index].footnote.tags = [];
-        }
-        stack[index].footnote.tags.push(tagName);
-        stackStorage.set(JSON.stringify(stack));
-
-
-        const tagElem = $('<span>', {
-          addClass: 'tag',
-          text: tagName
-        });
-        if (tagName.match(/pinned|📌/i)) {
-
-          tagElem.addClass('pinned');
-        }
-        // if (tagName.match(/(fav|favourite|favorite)/i)) {
-        if (tagName.match(/(★|☆|✭|⭐)/i)) {
-          tagElem.addClass('fav');
-        }
-        if (tagName.match(/(♡|💛|♥|❤)/i)) {
-          tagElem.addClass('like');
-        }
-
-        if (tagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
-        )) {
-
-          tagElem.addClass('emoji');
-        }
-
-        if (!isNaN(new Date(tagName))) {
-          tagElem.addClass('tagDate');
-        }
-
-
-        tagElem.insertBefore(divWrap);
-
-        // 
-        if (!tagStack.includes(tagName)) {
-          tagStack.push(tagName);
-        }
-        ev.target.value = '';
-        if ($(stackWrapper).find('.tag').length >= 6) {
-          divWrap.hide();
-        }
-      }
-    });
-
-    input.keyup(
-      (ev) => {
-        ev.preventDefault();
-
-        let tagName = ev.target.value;
-        if (tagName[tagName.length - 1] === ' ' || ev.keyCode === 13) {
-          tagName = ev.target.value.trim();
-          if (tagName !== '') {
-            if (tagName.match(/pinned|📌/i)) {
-              tagName = tagName.replace(/pinned/i, '📌')
-              $(stackWrapper).addClass('pinned');
-            }
-
-            const tagElem = $('<span>', {
-              addClass: 'tag',
-              text: tagName
-            });
-            if (tagName.match(/pinned|📌/i)) {
-
-              tagElem.addClass('pinned');
-            }
-
-            // find the index of the text item
-            let index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
-
-            // update Tag
-            if (typeof stack[index].footnote.tags === 'undefined') {
-              stack[index].footnote.tags = [];
-            }
-
-            stack[index].footnote.tags.push(tagName);
-            stackStorage.set(JSON.stringify(stack));
-
-            // if (tagName.match(/(fav|favourite|favorite)/i)) {
-
-
-            if (tagName.match(/(★|☆|✭|⭐)/i)) {
-              tagElem.addClass('fav');
-            }
-            if (tagName.match(/(♡|💛|♥|❤)/i)) {
-              tagElem.addClass('like');
-            }
-
-            if (tagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
-            )) {
-
-              tagElem.addClass('emoji');
-            }
-            if (!isNaN(new Date(tagName))) {
-              tagElem.addClass('tagDate');
-            }
-
-            // 
-            tagElem.insertBefore(divWrap);
-
-            // 
-            if (!tagStack.includes(tagName)) {
-              tagStack.push(tagName);
-            }
-            ev.target.value = '';
-
-            if ($(stackWrapper).hasClass('clip')) {
-              if ($(stackWrapper).find('.tag').length >= 4) {
-                divWrap.hide();
-              }
-
-            } else {
-              if ($(stackWrapper).find('.tag').length >= 5) {
-                divWrap.hide();
-              }
-            }
-
-          }
-        } else if (ev.keyCode === 8 && tagName === '') {
-          let tagInput = ev.target;
-          let prevTag = $(tagInput).parent().prev();
-          if ($(stackWrapper).find('.tag').length > 1) {
-
-            // remove tag from footnote
-            let prevTagName = prevTag.text();
-            let prevStackWrapper = prevTag.parent().parent();
-
-            // find the id of the previous tag
-            let index = stack.findIndex(item => item.id === $(prevStackWrapper).attr('id'));
-            let tagIndex = stack[index].footnote.tags.indexOf(prevTagName);
-
-            // remove the previous tag
-            stack[index].footnote.tags.splice(tagIndex, 1);
-            stackStorage.set(JSON.stringify(stack));
-            prevTag.remove();
-
-            // remove the tag from tagStack if there is no item with the tag
-            tagStack.splice(tagStack.findIndex(t => t === prevTagName), 1);
-            $('.tag').each((index, item) => {
-              let tagRegex = new RegExp(`${escapeRegExp(prevTagName)}$`, 'i');
-
-              if ($(item).text().match(tagRegex)) {
-                tagStack.push(prevTagName);
-                return false;
-              }
-            })
-
-            // remove pinned styles
-            if (prevTagName.match(/pinned|📌/i)) {
-              $(stackWrapper).removeClass('pinned');
-              prevTag.removeClass('pinned');
-            }
-            // if (prevTagName.slice(1).match(/(fav|favourite|favorite)/i)) {
-            if (prevTagName.match(/(★|☆|✭|⭐)/i)) {
-              prevTag.removeClass('fav');
-              // $(stackWrapper).removeClass('fav');
-            }
-
-            if (prevTagName.match(/(♡|💛|♥|❤)/i)) {
-              prevTag.removeClass('like');
-              // $(stackWrapper).removeClass('fav');
-            }
-
-            if (prevTagName.match(/(♡|💛|♥|❤)/i)) {
-              prevTag.removeClass('like');
-              // $(stackWrapper).removeClass('fav');
-            }
-
-            if (!isNaN(new Date(prevTagName))) {
-              prevTag.removeClass('tagDate');
-            }
-
-            if (prevTagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
-            )) {
-              prevTag.removeClass('emoji');
-            }
-
-            // set
-            $(tagInput).val(prevTagName);
-            $(tagInput).trigger('focus');
-          }
-        }
-      });
-  }
-}
-
-/**
- * optimized version of renderNoteItem2
- */
-const renderNoteItemOptimized = ({ id, type, content, footnote, date }) => {
+const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
   // add the most outer opening tag
   let noteItemHTML = `<div class="stackwrapper ${type}" id="${id}">`
 
   // add content body
   noteItemHTML += `<div class='content'>${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div><i class="material-icons edit">edit</i><div><i class="material-icons checkbox">check</i></div><input type="hidden" value="${id}"><input class='itemDate' type='hidden' value="${date}"><div class="spacer"></div>`;
 
-
-  // add foot note
+  // add footnote
   if (type === 'clip') {
     noteItemHTML += `<div class="footnote"><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span><span class="tag type clip">clip</span>`;
   } else {
     noteItemHTML += `<div class="footnote"><span class="tag type">${type}</span>`;
   }
 
+  // add tags to footnote
   let tagsHTML = "";
 
   if (typeof footnote.tags !== 'undefined') {
     footnote.tags.forEach(item => {
-      // add classes for special tags
-      if (item.match(/pinned|📌/i)) {
-        tagsHTML += `<span class="tag pinned emoji">${item}</span>`
-      } else if (item.match(/(★|☆|✭|⭐)/i)) {
-        tagsHTML += `<span class="tag fav">${item}</span>`
-      } else if (item.match(/(♡|💛|♥|❤)/i)) {
-        tagsHTML += `<span class="tag like">${item}</span>`
-      } else if (item.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
-      )) {
-        tagsHTML += `<span class="tag emoji">${item}</span>`
-      } else if (!isNaN(new Date(item))) {
-        tagsHTML += `<span class="tag tagDate">${item}</span>`
-      } else {
-        tagsHTML += `<span class="tag">${item}</span>`
-      }
-      // save tags for tag search
-      if (!tagStack.includes(item)) {
-        tagStack.push(item);
-      }
+      tagsHTML += generateTagsHTML(item);
     })
   }
 
   noteItemHTML += tagsHTML
 
-  // omit input for tag addition
+  // omit input of tag addition
+  // TODO: rename tagadd class
   if (footnote.tags.length < 4) {
     noteItemHTML += '<div class="divWrap"><input type="text" class="tagadd"></div>';
   } else {
@@ -902,94 +488,105 @@ const renderNoteItemOptimized = ({ id, type, content, footnote, date }) => {
   return noteItemHTML;
 }
 
-const attachTaggAddEvents = (stackWrapper) => {
-  $(stackWrapper).find('.tagadd').on({
-    blur: (ev) => {
+
+/**
+ * 
+ */
+const generateTagsHTML = (tagName) => {
+  let tagsHTML = "";
+
+  // change the tag to emoji
+  if (tagName.match(/pinned|📌/i)) {
+    tagName = tagName.replace(/pinned/i, '📌');
+    $(stackWrapper).addClass('pinned');
+  }
+
+  // add classes for special tags
+  if (tagName.match(/pinned|📌/i)) {
+    // pinned
+    tagsHTML += `<span class="tag pinned emoji">${tagName}</span>`
+  } else if (tagName.match(/(★|☆|✭|⭐)/i)) {
+    // favourite
+    tagsHTML += `<span class="tag fav">${tagName}</span>`
+  } else if (tagName.match(/(♡|💛|♥|❤)/i)) {
+    // likes
+    tagsHTML += `<span class="tag like">${tagName}</span>`
+  } else if (
+    tagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
+    )) {
+    // emoji
+    tagsHTML += `<span class="tag emoji">${tagName}</span>`
+  } else if (!isNaN(new Date(tagName))) {
+    // datetag
+    // TODO: rename tagDate class
+    tagsHTML += `<span class="tag tagDate">${tagName}</span>`
+  } else {
+    tagsHTML += `<span class="tag">${tagName}</span>`
+  }
+  // save tags for tag search
+  if (!tagStack.includes(tagName)) {
+    tagStack.push(tagName);
+  }
+
+  return tagsHTML;
+}
+
+/**
+ * 
+ */
+const attachTagInputEvents = (stackWrapper) => {
+  // BLUR event
+  $(stackWrapper).find('.tagadd').blur(
+    (ev) => {
       let tagName = ev.target.value.trim();
       if (tagName !== '') {
-        if (tagName.match(/pinned|📌/i)) {
-          tagName = tagName.replace(/pinned/i, '📌');
-          $(stackWrapper).addClass('pinned');
-        }
+        // update tag information
+        const index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
 
-        // find the index of the text item
-        let index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
-        // update Tag
         if (typeof stack[index].footnote.tags === 'undefined') {
           stack[index].footnote.tags = [];
         }
+
         stack[index].footnote.tags.push(tagName);
         stackStorage.set(JSON.stringify(stack));
 
-
-        const tagElem = $('<span>', {
-          addClass: 'tag',
-          text: tagName
-        });
-        if (tagName.match(/pinned|📌/i)) {
-
-          tagElem.addClass('pinned');
-        }
-        // if (tagName.match(/(fav|favourite|favorite)/i)) {
-        if (tagName.match(/(★|☆|✭|⭐)/i)) {
-          tagElem.addClass('fav');
-        }
-        if (tagName.match(/(♡|💛|♥|❤)/i)) {
-          tagElem.addClass('like');
-        }
-
-        if (tagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
-        )) {
-
-          tagElem.addClass('emoji');
-        }
-
-        if (!isNaN(new Date(tagName))) {
-          tagElem.addClass('tagDate');
-        }
-
-        let divWrap = $(stackWrapper).find('.divWrap');
-        tagElem.insertBefore(divWrap);
-
         // 
-        if (!tagStack.includes(tagName)) {
-          tagStack.push(tagName);
-        }
+        let tagsHTML = generateTagsHTML(tagName);
+
+        // insert before tag input
+        // TODO: rename divWrap class
+        let divWrap = $(stackWrapper).find('.divWrap');
+        divWrap.get(0).insertAdjacentHTML("beforebegin", tagsHTML);
+
+        // reset value
         ev.target.value = '';
+
+        // toggle divWrap visibility
         if ($(stackWrapper).find('.tag').length >= 6) {
-          // divWrap.hide();
           divWrap.addClass('hidden');
         } else {
           divWrap.removeClass('hidden');
-          // divWrap.show();
         }
       }
     },
-    keyup: (ev) => {
+  )
+
+  // KEYUP
+  $(stackWrapper).find('.tagadd').keyup(
+    (ev) => {
       ev.preventDefault();
 
       let tagName = ev.target.value;
+
       if (tagName[tagName.length - 1] === ' ' || ev.keyCode === 13) {
+
         tagName = ev.target.value.trim();
+
         if (tagName !== '') {
-          if (tagName.match(/pinned|📌/i)) {
-            tagName = tagName.replace(/pinned/i, '📌')
-            $(stackWrapper).addClass('pinned');
-          }
 
-          const tagElem = $('<span>', {
-            addClass: 'tag',
-            text: tagName
-          });
-          if (tagName.match(/pinned|📌/i)) {
+          // update tag information
+          const index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
 
-            tagElem.addClass('pinned');
-          }
-
-          // find the index of the text item
-          let index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
-
-          // update Tag
           if (typeof stack[index].footnote.tags === 'undefined') {
             stack[index].footnote.tags = [];
           }
@@ -997,60 +594,39 @@ const attachTaggAddEvents = (stackWrapper) => {
           stack[index].footnote.tags.push(tagName);
           stackStorage.set(JSON.stringify(stack));
 
-          // if (tagName.match(/(fav|favourite|favorite)/i)) {
+          let tagsHTML = generateTagsHTML(tagName);
 
-
-          if (tagName.match(/(★|☆|✭|⭐)/i)) {
-            tagElem.addClass('fav');
-          }
-          if (tagName.match(/(♡|💛|♥|❤)/i)) {
-            tagElem.addClass('like');
-          }
-
-          if (tagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
-          )) {
-
-            tagElem.addClass('emoji');
-          }
-          if (!isNaN(new Date(tagName))) {
-            tagElem.addClass('tagDate');
-          }
-
+          // insert before tag input
+          // TODO: rename divWrap class
           let divWrap = $(stackWrapper).find('.divWrap');
-          tagElem.insertBefore(divWrap);
+          divWrap.get(0).insertAdjacentHTML("beforebegin", tagsHTML);
 
-          // 
-          if (!tagStack.includes(tagName)) {
-            tagStack.push(tagName);
-          }
+          // reset value
           ev.target.value = '';
 
+          // toggle divWrap visibility
           if ($(stackWrapper).hasClass('clip')) {
+            // TODO: consider the use of jQuery toggle
             if ($(stackWrapper).find('.tag').length >= 4) {
-              // divWrap.hide();
               divWrap.addClass('hidden');
-
             } else {
-              // divWrap.show();
               divWrap.removeClass('hidden');
             }
-
           } else {
             if ($(stackWrapper).find('.tag').length >= 5) {
-              // divWrap.hide();
               divWrap.addClass('hidden');
             } else {
               divWrap.removeClass('hidden');
-              // divWrap.show();
             }
           }
-
         }
       } else if (ev.keyCode === 8 && tagName === '') {
+        // TODO: refactor BACKSPACE event of tag input
+        // BACKSPACE
         let tagInput = ev.target;
         let prevTag = $(tagInput).parent().prev();
-        if ($(stackWrapper).find('.tag').length > 1) {
 
+        if ($(stackWrapper).find('.tag').length > 1) {
           // remove tag from footnote
           let prevTagName = prevTag.text();
           let prevStackWrapper = prevTag.parent().parent();
@@ -1105,13 +681,125 @@ const attachTaggAddEvents = (stackWrapper) => {
             prevTag.removeClass('emoji');
           }
 
-          // set
+
+          // set value
           $(tagInput).val(prevTagName);
           $(tagInput).trigger('focus');
         }
       }
+    })
+}
+
+/**
+ * 
+ */
+const attachNoteContentEvents = (wrapper) => {
+  let contentDIV = wrapper.querySelector('.content');
+  let prevHTML = wrapper.innerHTML;
+
+  $(wrapper).find('.edit').click(
+    () => {
+      setTimeout(() => {
+        toggleEditorMode(contentDIV, true);
+      }, 100);
     }
+  )
+
+  // add to wrapper
+  wrapper.addEventListener('dblclick', (e) => {
+    if (wrapper.classList.contains('note')) {
+      // fire only when the area out of text body double clicked
+      if (!e.target.classList.contains('content')) {
+        // workaround for bubble control
+        setTimeout(hideBubble, 30);
+        setTimeout(() => {
+          toggleEditorMode(contentDIV, true)
+        }, 100)
+      }
+    }
+  });
+
+  contentDIV.addEventListener('focus', (e) => {
+    // remove html tags
+    Array.from(contentDIV.childNodes).forEach((item) => {
+      $(item).contents().unwrap()
+    }, '')
+
+    // insert decimal code as a zero-width space for displaying caret
+    if (!contentDIV.innerHTML.match(String.fromCharCode(8203))) {
+      contentDIV.innerHTML += '&#8203;';
+    }
+
+    // move caret to the end of the text
+    const node = contentDIV.childNodes[contentDIV.childNodes.length - 1]
+    const editorRange = document.createRange()
+    const editorSel = window.getSelection()
+    editorRange.setStart(node, node.length)
+    editorRange.collapse(true)
+    editorSel.removeAllRanges()
+    editorSel.addRange(editorRange)
   })
+
+  // ctrl + Enter to end editing
+  contentDIV.addEventListener('keydown', (e) => {
+    if (e.keyCode === 13 && e.ctrlKey) {
+      // Ctrl + Enter
+      toggleEditorMode(contentDIV, false);
+      return false;
+    }
+  });
+
+  wrapper.addEventListener('mouseleave', (e) => {
+    if ($(contentDIV).attr('contentEditable')) {
+      toggleEditorMode(contentDIV, false);
+    }
+    return false;
+  });
+
+  contentDIV.addEventListener('focusout', (e) => {
+    $('#toolbox').show();
+    $('#statusboard').text('');
+    // TODO: rename entering class
+    $('#statusboard').removeClass('entering');
+  });
+
+  // detect changes on content editable
+  wrapper.addEventListener('blur', fireChange);
+  wrapper.addEventListener('keyup', fireChange);
+  wrapper.addEventListener('paste', fireChange);
+  wrapper.addEventListener('copy', fireChange);
+  wrapper.addEventListener('cut', fireChange);
+  wrapper.addEventListener('mouseup', fireChange);
+
+  // fire div change event used for content change event
+  wrapper.addEventListener('change', (e) => {
+    const newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
+    updateStatusBoard(newHTML);
+
+    // find note item index
+    const id = $(e.target).attr('id');
+    const index = stack.findIndex(item => item.id === id);
+
+    // update note item
+    stack[index].content = newHTML.replace(/<br>/ig, '\n');
+    stackStorage.set(JSON.stringify(stack));
+  })
+
+  // fire change event of content editable div when its content changed 
+  function fireChange(e) {
+    const newHTML = wrapper.innerHTML;
+
+    // replace with new HTML
+    if (prevHTML !== newHTML) {
+      wrapper.dispatchEvent(new Event('change'));
+      prevHTML = newHTML;
+    }
+
+    // insert zero-width space when the text is empty
+    if (contentDIV.innerHTML.length == 0) {
+      contentDIV.innerHTML += '&#8203;';
+    }
+  }
 }
 
 
@@ -1205,8 +893,8 @@ const initializeEventListeners = () => {
         attachEventsToTextStack();
 
         $('.stackwrapper').each((index, item) => {
-          attachTaggAddEvents(item);
-          attachContentEditableEvents(item);
+          attachTagInputEvents(item);
+          attachNoteContentEvents(item);
         });
         dupNodes.length = 0;
         dupNodes.push(document.querySelector('#textstack').cloneNode(true))
@@ -1320,10 +1008,6 @@ const attachEventsToTextStack = () => {
               return false;
             }
           })
-
-          //
-          // stackWrapper.find('.footnote')
-          //   .find('.divWrap').show();
           stackWrapper.find('.footnote')
             .find('.divWrap').removeClass('hidden');
 
@@ -1584,9 +1268,9 @@ const createNoteItem = () => {
   stack.push(note);
   stackStorage.set(JSON.stringify(stack));
 
-  let wrapper = $(renderNoteItemOptimized(note)).get(0);
-  attachTaggAddEvents(wrapper);
-  attachContentEditableEvents(wrapper);
+  let wrapper = $(generateNoteItemHTML(note)).get(0);
+  attachTagInputEvents(wrapper);
+  attachNoteContentEvents(wrapper);
 
   // render the ga
   $('#textstack').append(wrapper);
@@ -1665,7 +1349,7 @@ const renderStack = () => {
       // NORMAL MODE
       let notesHTML = "";
       stack.forEach(res => {
-        notesHTML += renderNoteItemOptimized(res);
+        notesHTML += generateNoteItemHTML(res);
       });
 
       // insert current time
@@ -1685,8 +1369,8 @@ const renderStack = () => {
 
       $('.stackwrapper').each((index, item) => {
         // console.log(item);
-        attachTaggAddEvents(item);
-        attachContentEditableEvents(item);
+        attachTagInputEvents(item);
+        attachNoteContentEvents(item);
       })
     }
   });
