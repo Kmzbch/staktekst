@@ -810,6 +810,273 @@ const renderNoteItem = ({ id, type, content, footnote, date }) => {
   }
 }
 
+
+
+
+
+
+const renderNoteItem2 = ({ id, type, content, footnote, date }) => {
+  // let stackWrapper = document.createElement('div');
+  // stackWrapper.className = 'stackwrapper';
+  // stackWrapper.id = id;
+  // stackWrapper.classList.add(type);
+
+
+
+
+  let addingHTML = `<div class="stackwrapper ${type}" id="${id}">`
+
+  addingHTML += `<div class='content'>${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div><div><i class="material-icons checkbox">check</i></div><input type="hidden" value="${id}"><input class='itemDate' type='hidden' value="${date}"><div class="spacer"></div>`;
+
+  // foot note
+  if (type === 'clip') {
+    addingHTML += `<div class="footnote"><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span><span class="tag type clip">clip</span>`;
+  } else {
+    addingHTML += `<div class="footnote"><span class="tag type">${type}</span>`;
+  }
+
+  // TAGS
+  let tagsHTML = "";
+
+  if (typeof footnote.tags !== 'undefined') {
+    footnote.tags.forEach(item => {
+
+      if (item.match(/pinned|📌/i)) {
+        tagsHTML += `<span class="tag pinned emoji">${item}</span>`
+      } else if (item.match(/(★|☆|✭|⭐)/i)) {
+        tagsHTML += `<span class="tag fav">${item}</span>`
+      } else if (item.match(/(♡|💛|♥|❤)/i)) {
+        tagsHTML += `<span class="tag like">${item}</span>`
+      } else if (item.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
+      )) {
+        tagsHTML += `<span class="tag emoji">${item}</span>`
+      } else if (!isNaN(new Date(item))) {
+        tagsHTML += `<span class="tag tagDate">${item}</span>`
+      } else {
+        tagsHTML += `<span class="tag">${item}</span>`
+      }
+
+      if (!tagStack.includes(item)) {
+        tagStack.push(item);
+      }
+    })
+  }
+
+  // closing tag
+  addingHTML += tagsHTML
+
+  if (footnote.tags.length < 4) {
+    addingHTML += '<div class="divWrap"><input type="text" class="tagadd"></div>' + "</div>";
+  }
+
+  if (addingHTML.match(/pinned|📌/i)) {
+    addingHTML = addingHTML.replace(/stackwrapper/ig, "stackwrapper pinned");
+    console.log(addingHTML);
+  }
+
+
+  return addingHTML + "</div>";
+}
+
+const attachTaggAddEvents = (stackWrapper) => {
+  $(stackWrapper).find('.tagadd').on({
+    blur: (ev) => {
+      let tagName = ev.target.value.trim();
+      if (tagName !== '') {
+        if (tagName.match(/pinned|📌/i)) {
+          tagName = tagName.replace(/pinned/i, '📌');
+          $(stackWrapper).addClass('pinned');
+        }
+
+        // find the index of the text item
+        let index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
+        // update Tag
+        if (typeof stack[index].footnote.tags === 'undefined') {
+          stack[index].footnote.tags = [];
+        }
+        stack[index].footnote.tags.push(tagName);
+        stackStorage.set(JSON.stringify(stack));
+
+
+        const tagElem = $('<span>', {
+          addClass: 'tag',
+          text: tagName
+        });
+        if (tagName.match(/pinned|📌/i)) {
+
+          tagElem.addClass('pinned');
+        }
+        // if (tagName.match(/(fav|favourite|favorite)/i)) {
+        if (tagName.match(/(★|☆|✭|⭐)/i)) {
+          tagElem.addClass('fav');
+        }
+        if (tagName.match(/(♡|💛|♥|❤)/i)) {
+          tagElem.addClass('like');
+        }
+
+        if (tagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
+        )) {
+
+          tagElem.addClass('emoji');
+        }
+
+        if (!isNaN(new Date(tagName))) {
+          tagElem.addClass('tagDate');
+        }
+
+        let divWrap = $(stackWrapper).find('.divWrap');
+        tagElem.insertBefore(divWrap);
+
+        // 
+        if (!tagStack.includes(tagName)) {
+          tagStack.push(tagName);
+        }
+        ev.target.value = '';
+        if ($(stackWrapper).find('.tag').length >= 6) {
+          divWrap.hide();
+        }
+      }
+    },
+    keyup: (ev) => {
+      ev.preventDefault();
+
+      let tagName = ev.target.value;
+      if (tagName[tagName.length - 1] === ' ' || ev.keyCode === 13) {
+        tagName = ev.target.value.trim();
+        if (tagName !== '') {
+          if (tagName.match(/pinned|📌/i)) {
+            tagName = tagName.replace(/pinned/i, '📌')
+            $(stackWrapper).addClass('pinned');
+          }
+
+          const tagElem = $('<span>', {
+            addClass: 'tag',
+            text: tagName
+          });
+          if (tagName.match(/pinned|📌/i)) {
+
+            tagElem.addClass('pinned');
+          }
+
+          // find the index of the text item
+          let index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
+
+          // update Tag
+          if (typeof stack[index].footnote.tags === 'undefined') {
+            stack[index].footnote.tags = [];
+          }
+
+          stack[index].footnote.tags.push(tagName);
+          stackStorage.set(JSON.stringify(stack));
+
+          // if (tagName.match(/(fav|favourite|favorite)/i)) {
+
+
+          if (tagName.match(/(★|☆|✭|⭐)/i)) {
+            tagElem.addClass('fav');
+          }
+          if (tagName.match(/(♡|💛|♥|❤)/i)) {
+            tagElem.addClass('like');
+          }
+
+          if (tagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
+          )) {
+
+            tagElem.addClass('emoji');
+          }
+          if (!isNaN(new Date(tagName))) {
+            tagElem.addClass('tagDate');
+          }
+
+          let divWrap = $(stackWrapper).find('.divWrap');
+          tagElem.insertBefore(divWrap);
+
+          // 
+          if (!tagStack.includes(tagName)) {
+            tagStack.push(tagName);
+          }
+          ev.target.value = '';
+
+          if ($(stackWrapper).hasClass('clip')) {
+            if ($(stackWrapper).find('.tag').length >= 4) {
+              divWrap.hide();
+            }
+
+          } else {
+            if ($(stackWrapper).find('.tag').length >= 5) {
+              divWrap.hide();
+            }
+          }
+
+        }
+      } else if (ev.keyCode === 8 && tagName === '') {
+        let tagInput = ev.target;
+        let prevTag = $(tagInput).parent().prev();
+        if ($(stackWrapper).find('.tag').length > 1) {
+
+          // remove tag from footnote
+          let prevTagName = prevTag.text();
+          let prevStackWrapper = prevTag.parent().parent();
+
+          // find the id of the previous tag
+          let index = stack.findIndex(item => item.id === $(prevStackWrapper).attr('id'));
+          let tagIndex = stack[index].footnote.tags.indexOf(prevTagName);
+
+          // remove the previous tag
+          stack[index].footnote.tags.splice(tagIndex, 1);
+          stackStorage.set(JSON.stringify(stack));
+          prevTag.remove();
+
+          // remove the tag from tagStack if there is no item with the tag
+          tagStack.splice(tagStack.findIndex(t => t === prevTagName), 1);
+          $('.tag').each((index, item) => {
+            let tagRegex = new RegExp(`${escapeRegExp(prevTagName)}$`, 'i');
+
+            if ($(item).text().match(tagRegex)) {
+              tagStack.push(prevTagName);
+              return false;
+            }
+          })
+
+          // remove pinned styles
+          if (prevTagName.match(/pinned|📌/i)) {
+            $(stackWrapper).removeClass('pinned');
+            prevTag.removeClass('pinned');
+          }
+          // if (prevTagName.slice(1).match(/(fav|favourite|favorite)/i)) {
+          if (prevTagName.match(/(★|☆|✭|⭐)/i)) {
+            prevTag.removeClass('fav');
+            // $(stackWrapper).removeClass('fav');
+          }
+
+          if (prevTagName.match(/(♡|💛|♥|❤)/i)) {
+            prevTag.removeClass('like');
+            // $(stackWrapper).removeClass('fav');
+          }
+
+          if (prevTagName.match(/(♡|💛|♥|❤)/i)) {
+            prevTag.removeClass('like');
+            // $(stackWrapper).removeClass('fav');
+          }
+
+          if (!isNaN(new Date(prevTagName))) {
+            prevTag.removeClass('tagDate');
+          }
+
+          if (prevTagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
+          )) {
+            prevTag.removeClass('emoji');
+          }
+
+          // set
+          $(tagInput).val(prevTagName);
+          $(tagInput).trigger('focus');
+        }
+      }
+    }
+  })
+}
+
 /**
  * Initialize events listners
  */
@@ -1211,9 +1478,14 @@ const createNoteItem = () => {
   stack.push(note);
   stackStorage.set(JSON.stringify(stack));
 
+  let wrapper = $(renderNoteItem2(note)).get(0);
+  attachTaggAddEvents(wrapper);
+  attachContentEditableEvents(wrapper);
+
   // render the ga
-  renderNoteItem(note);
+  $('#textstack').append(wrapper);
 };
+
 
 /**
  * 
@@ -1284,68 +1556,100 @@ const renderStack = () => {
       stackStorage.reset();
     } else {
       stack = JSON.parse(rawData);
+
       if ($('#textstack').hasClass('viewmode')) {
         const pinnedItemStack = [];
+        const normalItemStack = [];
         // read and render text items
         stack.forEach(res => {
           if (res.footnote.tags.includes('📌')) {
             pinnedItemStack.push(res);
+          } else {
+            normalItemStack.push(res);
           }
         });
-        pinnedItemStack.forEach(res => {
-          renderNoteItem(res);
-        });
-        insertDateSeparator();
-      } else {
+        stack = normalItemStack.concat(pinnedItemStack);
+        let notesHTML = '';
         stack.forEach(res => {
-          renderNoteItem(res);
+          notesHTML += renderNoteItem2(res);
         });
+        $('#textstack').html(x);
+        insertDateSeparator();
+
+      } else {
+
+        let notesHTML = "";
+        stack.forEach(res => {
+          notesHTML += renderNoteItem2(res);
+        });
+
+        // insert current time
+        let now = new Date();
+        let hours = ('0' + now.getHours()).slice(-2);
+        let minutes = ('0' + now.getMinutes()).slice(-2);
+
+        let currentDate = `<div class="date current">${formatDate() + ' ' + hours + ":" + minutes}</div>`
+        notesHTML += currentDate;
+
+        $('#textstack').html(notesHTML);
+
         // insert separators between items
         insertDateSeparator();
       }
+
+      $('.stackwrapper').each((index, item) => {
+        // console.log(item);
+        attachTaggAddEvents(item);
+        attachContentEditableEvents(item);
+      })
+
+      // stack.sort(function (a, b) {
+      //   // Turn your strings into dates, and then subtract them
+      //   // to get a value that is either negative, positive, or zero.
+      //   return new Date(a.date) - new Date(b.date);
+      // });
+      // stackStorage.set(JSON.stringify(stack));
+
     }
   });
+
+
 };
+
+
+
+
 
 /**
  * insert date as a separator
  */
 const insertDateSeparator = () => {
-  $(stackDOM.children).each((index, wrapper) => {
-    const date = new Date(($(wrapper).find('.itemDate').val()));
 
+  stack.forEach((item) => {
+    let date = new Date(item.date);
     if (dateStack.length === 0) {
-      $('<div>', {
-        addClass: 'date',
-        text: formatDate(date)
-      }).insertBefore(wrapper)
 
-      console.log(date);
-
-      dateStack.push(date);
+      dateStack.push({ id: item.id, date: date });
     } else {
       // insert only between the date and the previous date
-      // if (dateStack[dateStack.length - 1] !== date) {
-      if (formatDate(new Date(dateStack[dateStack.length - 1])) !== formatDate(date)) {
-        $('<div>', {
-          addClass: 'date',
-          text: formatDate(date)
-        }).insertBefore(wrapper)
+      if (formatDate(new Date(dateStack[dateStack.length - 1].date)) !== formatDate(new Date(date))) {
 
-        dateStack.push(date);
+        dateStack.push({ id: item.id, date: date });
       }
     }
   })
 
-  // insert current time
-  let now = new Date();
-  let hours = ('0' + now.getHours()).slice(-2);
-  let minutes = ('0' + now.getMinutes()).slice(-2);
+  dateStack.forEach(item => {
+    $(stackDOM.children).each((index, wrapper) => {
+      if ($(wrapper).attr("id") === item.id) {
+        $('<div>', {
+          addClass: 'date',
+          text: formatDate(item.date)
+        }).insertAfter($(wrapper).prev())
+      }
+    });
 
-  $('<div>', {
-    addClass: 'date current',
-    text: formatDate() + ' ' + hours + ':' + minutes
-  }).appendTo(stackDOM);
+  })
 }
 
 /**
@@ -1405,7 +1709,7 @@ const importFromJsonFile = async (path) => {
 // ========== INITIALIZATION ==========
 // initialize
 document.addEventListener('DOMContentLoaded', () => {
-  // importFromJsonFile("importData.json").then(() => {
+  // importFromJsonFile("/importData.json").then(() => {
   //   // convertDateToDateTimeFormat();
   //   initializeEventListeners();
   //   renderStack();
