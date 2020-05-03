@@ -20,6 +20,28 @@ let windowState = {
   sortedByNew: true
 }
 
+const doTaskOnceInputIsDone = (task, time) => {
+  // clear timeout of undone task
+  if (task in doTaskOnceInputIsDone.TID) {
+    window.clearTimeout(doTaskOnceInputIsDone.TID[job])
+  }
+
+  //
+  doTaskOnceInputIsDone.TID[task] = window.setTimeout(
+    () => {
+      // clear task ID previously registered
+      delete doTaskOnceInputIsDone.TID[task];
+      try {
+        //  run the task
+        task.call();
+      } catch (e) {
+        alert('EXCEPTION: ' + task)
+      }
+    }, time);
+}
+
+doTaskOnceInputIsDone.TID = {}
+
 /**
  * 
  */
@@ -810,37 +832,28 @@ const renderNoteItem = ({ id, type, content, footnote, date }) => {
   }
 }
 
+/**
+ * optimized version of renderNoteItem2
+ */
+const renderNoteItemOptimized = ({ id, type, content, footnote, date }) => {
+  // add the most outer opening tag
+  let noteItemHTML = `<div class="stackwrapper ${type}" id="${id}">`
 
+  // add content body
+  noteItemHTML += `<div class='content'>${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div><div><i class="material-icons checkbox">check</i></div><input type="hidden" value="${id}"><input class='itemDate' type='hidden' value="${date}"><div class="spacer"></div>`;
 
-
-
-
-const renderNoteItem2 = ({ id, type, content, footnote, date }) => {
-  // let stackWrapper = document.createElement('div');
-  // stackWrapper.className = 'stackwrapper';
-  // stackWrapper.id = id;
-  // stackWrapper.classList.add(type);
-
-
-
-
-  let addingHTML = `<div class="stackwrapper ${type}" id="${id}">`
-
-  addingHTML += `<div class='content'>${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div><div><i class="material-icons checkbox">check</i></div><input type="hidden" value="${id}"><input class='itemDate' type='hidden' value="${date}"><div class="spacer"></div>`;
-
-  // foot note
+  // add foot note
   if (type === 'clip') {
-    addingHTML += `<div class="footnote"><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span><span class="tag type clip">clip</span>`;
+    noteItemHTML += `<div class="footnote"><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span><span class="tag type clip">clip</span>`;
   } else {
-    addingHTML += `<div class="footnote"><span class="tag type">${type}</span>`;
+    noteItemHTML += `<div class="footnote"><span class="tag type">${type}</span>`;
   }
 
-  // TAGS
   let tagsHTML = "";
 
   if (typeof footnote.tags !== 'undefined') {
     footnote.tags.forEach(item => {
-
+      // add classes for special tags
       if (item.match(/pinned|📌/i)) {
         tagsHTML += `<span class="tag pinned emoji">${item}</span>`
       } else if (item.match(/(★|☆|✭|⭐)/i)) {
@@ -855,27 +868,34 @@ const renderNoteItem2 = ({ id, type, content, footnote, date }) => {
       } else {
         tagsHTML += `<span class="tag">${item}</span>`
       }
-
+      // save tags for tag search
       if (!tagStack.includes(item)) {
         tagStack.push(item);
       }
     })
   }
 
-  // closing tag
-  addingHTML += tagsHTML
+  noteItemHTML += tagsHTML
 
+  // omit input for tag addition
   if (footnote.tags.length < 4) {
-    addingHTML += '<div class="divWrap"><input type="text" class="tagadd"></div>' + "</div>";
+    noteItemHTML += '<div class="divWrap"><input type="text" class="tagadd"></div>';
+  } else {
+    noteItemHTML += '<div class="divWrap hidden"><input type="text" class="tagadd"></div>';
   }
 
-  if (addingHTML.match(/pinned|📌/i)) {
-    addingHTML = addingHTML.replace(/stackwrapper/ig, "stackwrapper pinned");
-    console.log(addingHTML);
+  // add the closing tag of footnote
+  noteItemHTML += "</div>";
+
+  // replace class names for setting styles
+  if (noteItemHTML.match(/pinned|📌/i)) {
+    noteItemHTML = noteItemHTML.replace(/stackwrapper/ig, "stackwrapper pinned");
   }
 
+  // add the most outer closing tag
+  noteItemHTML += "</div>"
 
-  return addingHTML + "</div>";
+  return noteItemHTML;
 }
 
 const attachTaggAddEvents = (stackWrapper) => {
@@ -933,7 +953,11 @@ const attachTaggAddEvents = (stackWrapper) => {
         }
         ev.target.value = '';
         if ($(stackWrapper).find('.tag').length >= 6) {
-          divWrap.hide();
+          // divWrap.hide();
+          divWrap.addClass('hidden');
+        } else {
+          divWrap.removeClass('hidden');
+          // divWrap.show();
         }
       }
     },
@@ -999,12 +1023,21 @@ const attachTaggAddEvents = (stackWrapper) => {
 
           if ($(stackWrapper).hasClass('clip')) {
             if ($(stackWrapper).find('.tag').length >= 4) {
-              divWrap.hide();
+              // divWrap.hide();
+              divWrap.addClass('hidden');
+
+            } else {
+              // divWrap.show();
+              divWrap.removeClass('hidden');
             }
 
           } else {
             if ($(stackWrapper).find('.tag').length >= 5) {
-              divWrap.hide();
+              // divWrap.hide();
+              divWrap.addClass('hidden');
+            } else {
+              divWrap.removeClass('hidden');
+              // divWrap.show();
             }
           }
 
@@ -1077,6 +1110,7 @@ const attachTaggAddEvents = (stackWrapper) => {
   })
 }
 
+
 /**
  * Initialize events listners
  */
@@ -1123,8 +1157,29 @@ const initializeEventListeners = () => {
     click: hideDropdownList,
     dblclick: showDropdownList,
     keydown: selectOnDropdownList,
-    input: updateSearchResult
-  })
+    input: () => {
+      // wait a while for user input
+      let milseconds = 0;
+      switch ($('.searchbox').val().length) {
+        case 1:
+          milseconds = 400;
+          break;
+        case 2:
+          milseconds = 400;
+          break;
+        case 3:
+          milseconds = 300;
+          break;
+        case 4:
+          milseconds = 100;
+          break;
+        default:
+          milseconds = 50;
+      }
+      doTaskOnceInputIsDone(updateSearchResult, milseconds)
+    }
+  }
+  )
 
   $('.search-cancel-button').click((e) => {
     fireNoteSearch('');
@@ -1144,19 +1199,12 @@ const initializeEventListeners = () => {
       $('#textstack').removeClass('viewmode');
       $('#toolbox').removeClass('viewmode');
       $('.view').text('assignment');
-      // renderStack();
     } else {
       $('#textstack').addClass('viewmode');
       $('#toolbox').addClass('viewmode');
       $('.searchbox').val('');
       $('.view').text('assignment');
-      // renderStack();
     }
-    //    createNoteItem();
-
-    //    toggleEditorMode($('.content').last(), true);
-
-    //    updateStatusBoard($('.content').last().html());
   });
 
 
@@ -1210,12 +1258,15 @@ const initializeEventListeners = () => {
             }
           })
 
+          //
+          // stackWrapper.find('.footnote')
+          //   .find('.divWrap').show();
           stackWrapper.find('.footnote')
-            .find('.divWrap').show();
+            .find('.divWrap').removeClass('hidden');
+
         }
       } else {
         // when hashtag clicked
-        console.log($(targetElem).html());
         if (!isNaN(Date.parse($(targetElem).html()))) {
           filterNoteItemsWithDateTag('::d');
           $('.searchbox').val('::d');
@@ -1478,7 +1529,7 @@ const createNoteItem = () => {
   stack.push(note);
   stackStorage.set(JSON.stringify(stack));
 
-  let wrapper = $(renderNoteItem2(note)).get(0);
+  let wrapper = $(renderNoteItemOptimized(note)).get(0);
   attachTaggAddEvents(wrapper);
   attachContentEditableEvents(wrapper);
 
@@ -1556,101 +1607,53 @@ const renderStack = () => {
       stackStorage.reset();
     } else {
       stack = JSON.parse(rawData);
+      // NORMAL MODE
+      let notesHTML = "";
+      stack.forEach(res => {
+        notesHTML += renderNoteItemOptimized(res);
+      });
 
-      if ($('#textstack').hasClass('viewmode')) {
-        const pinnedItemStack = [];
-        const normalItemStack = [];
-        // read and render text items
-        stack.forEach(res => {
-          if (res.footnote.tags.includes('📌')) {
-            pinnedItemStack.push(res);
-          } else {
-            normalItemStack.push(res);
-          }
-        });
-        stack = normalItemStack.concat(pinnedItemStack);
-        let notesHTML = '';
-        stack.forEach(res => {
-          notesHTML += renderNoteItem2(res);
-        });
-        $('#textstack').html(x);
-        insertDateSeparator();
+      // insert current time
+      let now = new Date();
+      let hours = ('0' + now.getHours()).slice(-2);
+      let minutes = ('0' + now.getMinutes()).slice(-2);
 
-      } else {
+      // add
+      let currentDate = `<div class="date current">${formatDate() + ' ' + hours + ":" + minutes}</div>`
+      notesHTML += currentDate;
 
-        let notesHTML = "";
-        stack.forEach(res => {
-          notesHTML += renderNoteItem2(res);
-        });
+      // insert HTML
+      document.querySelector('#textstack').insertAdjacentHTML('afterbegin', notesHTML)
 
-        // insert current time
-        let now = new Date();
-        let hours = ('0' + now.getHours()).slice(-2);
-        let minutes = ('0' + now.getMinutes()).slice(-2);
-
-        let currentDate = `<div class="date current">${formatDate() + ' ' + hours + ":" + minutes}</div>`
-        notesHTML += currentDate;
-
-        // $('#textstack').html(notesHTML);
-        document.querySelector('#textstack').insertAdjacentHTML('afterbegin', notesHTML)
-
-
-        // insert separators between items
-        insertDateSeparator();
-      }
+      // insert separators between items
+      insertDateSeparator();
 
       $('.stackwrapper').each((index, item) => {
         // console.log(item);
         attachTaggAddEvents(item);
         attachContentEditableEvents(item);
       })
-
-      // stack.sort(function (a, b) {
-      //   // Turn your strings into dates, and then subtract them
-      //   // to get a value that is either negative, positive, or zero.
-      //   return new Date(a.date) - new Date(b.date);
-      // });
-      // stackStorage.set(JSON.stringify(stack));
-
     }
   });
 
-
 };
-
-
-
-
 
 /**
  * insert date as a separator
  */
 const insertDateSeparator = () => {
-
   stack.forEach((item) => {
     let date = new Date(item.date);
     if (dateStack.length === 0) {
-
       dateStack.push({ id: item.id, date: date });
     } else {
       // insert only between the date and the previous date
       if (formatDate(new Date(dateStack[dateStack.length - 1].date)) !== formatDate(new Date(date))) {
-
         dateStack.push({ id: item.id, date: date });
       }
     }
   })
 
-  // dateStack.forEach(item => {
-  //   $(stackDOM.children).each((index, wrapper) => {
-  //     if ($(wrapper).attr("id") === item.id) {
-  //       $('<div>', {
-  //         addClass: 'date',
-  //         text: formatDate(item.date)
-  //       }).insertAfter($(wrapper).prev())
-  //     }
-  //   });
-  // })
   dateStack.forEach(item => {
     $(stackDOM.children).each((index, wrapper) => {
       if ($(wrapper).attr("id") === item.id) {
@@ -1658,7 +1661,6 @@ const insertDateSeparator = () => {
       }
     });
   })
-
 }
 
 /**
