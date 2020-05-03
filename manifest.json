@@ -45,7 +45,8 @@
   "web_accessible_resources": [
     "images/*",
     "webfonts/*",
-    "icons/*"
+    "icons/*",
+    "*.json"
   ],
   "content_security_policy": "script-src 'self' 'unsafe-eval' chrome-extension-resource: ; object-src 'self' ; child-src 'self' ; style-src 'self' ; frame-src 'self' ; default-src 'self' ; img-src 'self' ; connect-src 'self' ",
   "description": "Paragraph-based learning aid for ESL learners",

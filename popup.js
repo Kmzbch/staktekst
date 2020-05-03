@@ -1283,17 +1283,13 @@ const renderStack = () => {
     if (typeof rawData === 'undefined') {
       stackStorage.reset();
     } else {
-
+      stack = JSON.parse(rawData);
       if ($('#textstack').hasClass('viewmode')) {
-
         const pinnedItemStack = [];
         // read and render text items
-        stack = JSON.parse(rawData);
         stack.forEach(res => {
-          if (res.footnote.tags.includes('pinned') || res.footnote.tags.includes('📌')) {
+          if (res.footnote.tags.includes('📌')) {
             pinnedItemStack.push(res);
-          } else {
-            // renderNoteItem(res);
           }
         });
         pinnedItemStack.forEach(res => {
@@ -1301,14 +1297,12 @@ const renderStack = () => {
         });
         insertDateSeparator();
       } else {
-        stack = JSON.parse(rawData);
         stack.forEach(res => {
           renderNoteItem(res);
         });
         // insert separators between items
         insertDateSeparator();
       }
-
     }
   });
 };
@@ -1400,13 +1394,28 @@ const convertDateToDateTimeFormat = () => {
   stackStorage.set(JSON.stringify(convertedData));
 }
 
+const importFromJsonFile = async (path) => {
+  const url = chrome.runtime.getURL(path);
+  $.getJSON(url, function (data) {
+    console.log("done");
+    stackStorage.set(JSON.stringify(data.raw));
+  });
+}
+
 // ========== INITIALIZATION ==========
 // initialize
 document.addEventListener('DOMContentLoaded', () => {
-  // convertDateToDateTimeFormat();
+  // importFromJsonFile("importData.json").then(() => {
+  //   // convertDateToDateTimeFormat();
+  //   initializeEventListeners();
+  //   renderStack();
+  //   restorePreviousState();
+  // })
+
   initializeEventListeners();
   renderStack();
   restorePreviousState();
+
 });
 
 document.addEventListener('keyup', (e) => {
