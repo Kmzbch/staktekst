@@ -1591,7 +1591,9 @@ const renderStack = () => {
         let currentDate = `<div class="date current">${formatDate() + ' ' + hours + ":" + minutes}</div>`
         notesHTML += currentDate;
 
-        $('#textstack').html(notesHTML);
+        // $('#textstack').html(notesHTML);
+        document.querySelector('#textstack').insertAdjacentHTML('afterbegin', notesHTML)
+
 
         // insert separators between items
         insertDateSeparator();
@@ -1639,17 +1641,24 @@ const insertDateSeparator = () => {
     }
   })
 
+  // dateStack.forEach(item => {
+  //   $(stackDOM.children).each((index, wrapper) => {
+  //     if ($(wrapper).attr("id") === item.id) {
+  //       $('<div>', {
+  //         addClass: 'date',
+  //         text: formatDate(item.date)
+  //       }).insertAfter($(wrapper).prev())
+  //     }
+  //   });
+  // })
   dateStack.forEach(item => {
     $(stackDOM.children).each((index, wrapper) => {
       if ($(wrapper).attr("id") === item.id) {
-        $('<div>', {
-          addClass: 'date',
-          text: formatDate(item.date)
-        }).insertAfter($(wrapper).prev())
+        $(wrapper).get(0).insertAdjacentHTML('beforebegin', `<div class="date">${formatDate(item.date)}</div>`);
       }
     });
-
   })
+
 }
 
 /**
