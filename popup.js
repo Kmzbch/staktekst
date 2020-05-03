@@ -459,8 +459,13 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
   let tagsHTML = "";
 
   if (typeof footnote.tags !== 'undefined') {
-    footnote.tags.forEach(item => {
-      tagsHTML += generateTagsHTML(item);
+    footnote.tags.forEach(tagName => {
+      // change the tag to emoji
+      if (tagName.match(/pinned|📌/i)) {
+        tagName = tagName.replace(/pinned/i, '📌');
+      }
+
+      tagsHTML += generateTagsHTML(tagName);
     })
   }
 
@@ -494,12 +499,6 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
  */
 const generateTagsHTML = (tagName) => {
   let tagsHTML = "";
-
-  // change the tag to emoji
-  if (tagName.match(/pinned|📌/i)) {
-    tagName = tagName.replace(/pinned/i, '📌');
-    $(stackWrapper).addClass('pinned');
-  }
 
   // add classes for special tags
   if (tagName.match(/pinned|📌/i)) {
@@ -550,6 +549,12 @@ const attachTagInputEvents = (stackWrapper) => {
         stack[index].footnote.tags.push(tagName);
         stackStorage.set(JSON.stringify(stack));
 
+        // change the tag to emoji
+        if (tagName.match(/pinned|📌/i)) {
+          tagName = tagName.replace(/pinned/i, '📌');
+          $(stackWrapper).addClass('pinned');
+        }
+
         // 
         let tagsHTML = generateTagsHTML(tagName);
 
@@ -593,6 +598,12 @@ const attachTagInputEvents = (stackWrapper) => {
 
           stack[index].footnote.tags.push(tagName);
           stackStorage.set(JSON.stringify(stack));
+
+          // change the tag to emoji
+          if (tagName.match(/pinned|📌/i)) {
+            tagName = tagName.replace(/pinned/i, '📌');
+            $(stackWrapper).addClass('pinned');
+          }
 
           let tagsHTML = generateTagsHTML(tagName);
 
@@ -844,9 +855,6 @@ const initializeEventListeners = () => {
     }
   });
 
-
-  let startTime;
-
   let dupNodes = [];
   /* searchbox  */
   $('.searchbox').on({
@@ -881,9 +889,6 @@ const initializeEventListeners = () => {
           milseconds = 50;
       }
 
-      startTime = new Date();
-
-
       if (queryLength === 0) {
         // reset task
         doTaskOnceInputIsDone.TID = {};
@@ -908,11 +913,6 @@ const initializeEventListeners = () => {
       } else {
         doTaskOnceInputIsDone(updateSearchResult, milseconds)
       }
-
-
-      let timeElapsed = new Date() - startTime;
-
-      console.log(timeElapsed);
 
     }
   }

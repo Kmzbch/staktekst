@@ -575,6 +575,7 @@ footer {
     text-overflow: ellipsis;
     margin-right: 25px;
     float: right;
+    text-align: right;
     width: 45%;
 }
 
