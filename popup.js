@@ -1,6 +1,6 @@
 // seachbox
 const dropdownList = document.querySelector('#tagsearch-result');
-const stackDOM = document.querySelector('#textstack');
+let stackDOM = document.querySelector('#textstack');
 
 // configration
 const config = {
@@ -35,7 +35,7 @@ const doTaskOnceInputIsDone = (task, time) => {
         //  run the task
         task.call();
       } catch (e) {
-        alert('EXCEPTION: ' + task)
+        console.log('EXCEPTION: ' + task)
       }
     }, time);
 }
@@ -433,19 +433,14 @@ const attachContentEditableEvents = (wrapper) => {
   let contentDIV = wrapper.querySelector('.content');
   let prevHTML = wrapper.innerHTML;
 
-  // add editIcon to the content
-  let editIcon = $('<i>', {
-    addClass: 'edit material-icons',
-    text: 'edit',
-    on: {
-      click: () => {
-        setTimeout(() => {
-          toggleEditorMode(contentDIV, true);
-        }, 100);
-      }
+  $(wrapper).find('.edit').click(
+    () => {
+      setTimeout(() => {
+        toggleEditorMode(contentDIV, true);
+      }, 100);
     }
-  })
-  editIcon.insertAfter(contentDIV);
+  )
+
 
   // add to wrapper
   wrapper.addEventListener('dblclick', (e) => {
@@ -840,7 +835,8 @@ const renderNoteItemOptimized = ({ id, type, content, footnote, date }) => {
   let noteItemHTML = `<div class="stackwrapper ${type}" id="${id}">`
 
   // add content body
-  noteItemHTML += `<div class='content'>${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div><div><i class="material-icons checkbox">check</i></div><input type="hidden" value="${id}"><input class='itemDate' type='hidden' value="${date}"><div class="spacer"></div>`;
+  noteItemHTML += `<div class='content'>${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div><i class="material-icons edit">edit</i><div><i class="material-icons checkbox">check</i></div><input type="hidden" value="${id}"><input class='itemDate' type='hidden' value="${date}"><div class="spacer"></div>`;
+
 
   // add foot note
   if (type === 'clip') {
@@ -1152,6 +1148,7 @@ const initializeEventListeners = () => {
     }
   });
 
+  let dupNodes = [];
   /* searchbox  */
   $('.searchbox').on({
     click: hideDropdownList,
@@ -1159,10 +1156,18 @@ const initializeEventListeners = () => {
     keydown: selectOnDropdownList,
     input: () => {
       // wait a while for user input
+
+      if (dupNodes.length === 0) {
+        dupNodes.push(document.querySelector('#textstack').cloneNode(true));
+      }
+
       let milseconds = 0;
-      switch ($('.searchbox').val().length) {
+      let queryLength = $('.searchbox').val().length;
+      switch (queryLength) {
+        case 0:
+          break;
         case 1:
-          milseconds = 400;
+          milseconds = 500;
           break;
         case 2:
           milseconds = 400;
@@ -1176,7 +1181,30 @@ const initializeEventListeners = () => {
         default:
           milseconds = 50;
       }
-      doTaskOnceInputIsDone(updateSearchResult, milseconds)
+      if (queryLength === 0) {
+        // reset task
+        doTaskOnceInputIsDone.TID = {};
+        $('#textstack').remove();
+        document.querySelector('#main').insertAdjacentElement('beforeend', dupNodes[0]);
+        stackDOM = document.querySelector('#textstack');
+        attachEventsToTextStack();
+
+        $('.stackwrapper').each((index, item) => {
+          attachTaggAddEvents(item);
+          attachContentEditableEvents(item);
+        });
+        dupNodes.length = 0;
+        dupNodes.push(document.querySelector('#textstack').cloneNode(true))
+
+        $('#statusboard').text('');
+        // show/hide
+        $('#toolbox').show();
+        $('.search-cancel-button').hide();
+        $('footer').show();
+        hideDropdownList();
+      } else {
+        doTaskOnceInputIsDone(updateSearchResult, milseconds)
+      }
     }
   }
   )
@@ -1215,9 +1243,23 @@ const initializeEventListeners = () => {
   })
   $('#sort').click(() => { sortNotes(!windowState.sortedByNew) });
 
+
+  attachEventsToTextStack();
+
+  /* footer & modal */
+  $('#clearstack').click(() => { toggleClearStackModal(true) });
+  $('.overlay').click(() => { toggleClearStackModal(false) });
+  $('.ok').click(() => {
+    clearAllItems();
+    toggleClearStackModal(false)
+  });
+  $('.cancel').click(() => { toggleClearStackModal(false) });
+}
+
+const attachEventsToTextStack = () => {
   /**
-   * the text stack dynamically changes
-   */
+ * the text stack dynamically changes
+ */
   $('#textstack').click((e) => {
     let targetElem = e.target;
     let stackWrapper = $(e.target).parent().parent();
@@ -1332,14 +1374,6 @@ const initializeEventListeners = () => {
     },
   })
 
-  /* footer & modal */
-  $('#clearstack').click(() => { toggleClearStackModal(true) });
-  $('.overlay').click(() => { toggleClearStackModal(false) });
-  $('.ok').click(() => {
-    clearAllItems();
-    toggleClearStackModal(false)
-  });
-  $('.cancel').click(() => { toggleClearStackModal(false) });
 }
 
 /* search */
