@@ -23,7 +23,7 @@ let windowState = {
 const doTaskOnceInputIsDone = (task, time) => {
   // clear timeout of undone task
   if (task in doTaskOnceInputIsDone.TID) {
-    window.clearTimeout(doTaskOnceInputIsDone.TID[job])
+    window.clearTimeout(doTaskOnceInputIsDone.TID[task])
   }
 
   //
@@ -145,9 +145,13 @@ const filterNoteItemsWithDateTag = (dateTag) => {
 /**
  * 
  */
+
+
+
 const filterNoteItems = (term) => {
   let termRegex;
   let hits = 0;
+
 
   // Search in Japanese/English
   if (containsJapanese(term)) {
@@ -187,12 +191,16 @@ const filterNoteItems = (term) => {
           return item.match(linkRegex) ? item : (item.replace(termRegex, "<span class='highlighted'>$1</span>$2"));
         })
         contentDIV.innerHTML = splitText.join('');
+
+        // $(contentDIV).highlight(term, { element: 'span', className: 'highlighted' });
+
       } else {
         // get the text back to the initial state
         contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
         contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
       }
     });
+
   return hits;
 };
 
@@ -1148,6 +1156,9 @@ const initializeEventListeners = () => {
     }
   });
 
+
+  let startTime;
+
   let dupNodes = [];
   /* searchbox  */
   $('.searchbox').on({
@@ -1181,6 +1192,10 @@ const initializeEventListeners = () => {
         default:
           milseconds = 50;
       }
+
+      startTime = new Date();
+
+
       if (queryLength === 0) {
         // reset task
         doTaskOnceInputIsDone.TID = {};
@@ -1205,6 +1220,12 @@ const initializeEventListeners = () => {
       } else {
         doTaskOnceInputIsDone(updateSearchResult, milseconds)
       }
+
+
+      let timeElapsed = new Date() - startTime;
+
+      console.log(timeElapsed);
+
     }
   }
   )
