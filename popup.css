@@ -76,6 +76,11 @@
 .radio-container {
     margin-top: 10px;
 }
+
+.radio-container input {
+    margin-right: 8px;
+}
+
 #fileexport-messagebox {
     position: fixed;
     display: flex;

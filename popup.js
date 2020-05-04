@@ -70,6 +70,15 @@ const updateSearchResult = () => {
     $('#toolbox').hide();
     $('.search-cancel-button').show();
     $('footer').hide();
+
+    //
+    setTimeout(() => {
+      // reset
+      $('#statusboard').text('');
+      // show/hide
+      $('#toolbox').show();
+      $('.search-cancel-button').hide();
+    }, 5000);
   } else {
     // reset
     $('#statusboard').text('');
@@ -1655,6 +1664,11 @@ document.addEventListener('keyup', (e) => {
     renderStack();
   } else if (e.keyCode === 13 && e.ctrlKey) {
     let itemInEdit = null;
+
+    // when adding/editing a tag
+    if ($('.tagadd').is(':focus')) {
+      return false;
+    }
 
     $('.content').each((index, item) => {
       if ($(item).attr('contenteditable') === 'true') {
