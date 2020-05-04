@@ -990,7 +990,7 @@ const initializeEventListeners = () => {
   });
 
 
-  $('.export').click(exportTextItems);
+  $('.export').click(exportNoteItemsAsTextFile);
   $('#statusboard').click(() => {
     $('#toolbox').show();
     $('#statusboard').text('');
@@ -1259,7 +1259,7 @@ const sortNotes = (sortingByNew) => {
 /**
  * export the note items visible in the stack
  */
-const exportTextItems = () => {
+const exportNoteItemsAsTextFile = () => {
   const ids = [];
 
   // get note item ids displayed
@@ -1268,6 +1268,7 @@ const exportTextItems = () => {
       ids.push($(wrapper).attr('id'));
     }
   })
+
 
   // create exporting content
   const content = stack.slice(0)
@@ -1284,17 +1285,24 @@ const exportTextItems = () => {
       }
     })
     .reduce((content, item) => {
+      let header = '-----\n';
+      header += 'created: ' + `'${item.date}'\n`
+      header += 'type: ' + `${item.type}\n`
+      header += 'tags: ' + `[${item.footnote.tags.join(',')}]\n`
+      header += '-----\n\n'
+
       // remove html tags
       const sanitizedContent = $('<div>', {
         html: item.content
       }).text();
+
+      content += header + sanitizedContent + "\n";
+
       // 
-      content += `${sanitizedContent}\n\n`;
-      if (typeof item.footnote.pageTitle !== 'undefined' && item.footnote.pageTitle !== "") {
-        content += item.footnote.pageTitle + '\n';
-      }
-      if (typeof item.footnote.pageURL !== 'undefined' && item.footnote.pageURL !== "") {
-        content += item.footnote.pageURL + "\n";
+      if (item.type === 'clip') {
+        content += '\n';
+        content += `${item.footnote.pageTitle}\n`
+        content += `${item.footnote.pageURL}\n`
       }
 
       return content += '\n';
