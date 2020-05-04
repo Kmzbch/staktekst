@@ -854,6 +854,7 @@ const initializeEventListeners = () => {
     input: () => {
       // wait a while for user input
 
+      // TODO: compare the speed with normal
       if (dupNodes.length === 0) {
         dupNodes.push(document.querySelector('#textstack').cloneNode(true));
       }
@@ -880,23 +881,31 @@ const initializeEventListeners = () => {
           milseconds = 50;
       }
 
-      if (queryLength === 0) {
+      // optimization for reset search
+      if (queryLength === 0 && !$('#textstack').hasClass('viewmode')) {
         // reset task
         doTaskOnceInputIsDone.TID = {};
+
+        // remove current DOM
         $('#textstack').remove();
+
+        // attach duplicated DOM
         document.querySelector('#main').insertAdjacentElement('beforeend', dupNodes[0]);
         stackDOM = document.querySelector('#textstack');
-        attachEventsToTextStack();
 
+        // atach eventes
+        attachEventsToTextStack();
         $('.stackwrapper').each((index, item) => {
           attachTagInputEvents(item);
           attachNoteContentEvents(item);
         });
+
+        // reset and clone the current DOM
         dupNodes.length = 0;
         dupNodes.push(document.querySelector('#textstack').cloneNode(true))
 
+        // show toolbox
         $('#statusboard').text('');
-        // show/hide
         $('#toolbox').show();
         $('.search-cancel-button').hide();
         $('footer').show();
@@ -906,7 +915,6 @@ const initializeEventListeners = () => {
       } else {
         doTaskOnceInputIsDone(updateSearchResult, milseconds)
       }
-
     }
   }
   )
@@ -929,11 +937,12 @@ const initializeEventListeners = () => {
       $('#textstack').removeClass('viewmode');
       $('#toolbox').removeClass('viewmode');
       $('.view').text('assignment');
+      fireNoteSearch('');
     } else {
+      fireNoteSearch('');
+      $('.view').text('assignment');
       $('#textstack').addClass('viewmode');
       $('#toolbox').addClass('viewmode');
-      $('.searchbox').val('');
-      $('.view').text('assignment');
     }
   });
 
