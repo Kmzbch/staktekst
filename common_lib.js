@@ -86,11 +86,12 @@ function pushText(content, type, pageTitle = '', pageURL = '') {
             stack.push({
                 id: uuidv4(),
                 type: type,
-                date: formatDate(),
+                date: new Date().toISOString(),
                 content: content,
                 footnote: {
-                    pageTitle,
-                    pageURL
+                    tags: [],
+                    pageTitle: pageTitle,
+                    pageURL: pageURL
                 }
             });
             stackStorage.set(JSON.stringify(stack));
@@ -139,5 +140,5 @@ function fitHeightToContent(textarea) {
 }
 
 function enableURLEmbededInText(text) {
-    return text.replace(/(https?:[\.\/\w-%?&=#]+)/g, "<span class='pseudolink' href='$1' target='_blank'>$1</span>");
+    return text.replace(/(https?:[\.\/\w-%?&=#+]+)/g, "<span class='pseudolink' href='$1' target='_blank'>$1</span>");
 }

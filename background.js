@@ -131,17 +131,6 @@ const getMessage = (request, sender, sendResponse) => {
           });
         })
         break;
-      case 'OVERLAY_ON':
-      case 'OVERLAY_OFF':
-        // send message to the current tab
-        chrome.tabs.sendMessage(tabs[0].id, {
-          command: request.command
-        }, () => {
-          sendResponse({
-            message: 'overlay switched!'
-          });
-        });
-        break;
       default:
         if (request.selection) {
           executeUserCommand(request.command, request.selection, tabs[0].title, tabs[0].url, tabs[0].id);

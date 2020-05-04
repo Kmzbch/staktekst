@@ -1,122 +1,198 @@
 // seachbox
-const dropdownList = document.querySelector('#dropdownlist');
-const textarea = document.querySelector('.add-textitem');
-const tagarea = document.querySelector('.tagarea');
-const stackDOM = document.querySelector('#textstack');
+const dropdownList = document.querySelector('#tagsearch-result');
+let stackDOM = document.querySelector('#textstack');
+
+// configration
+const config = {
+  CACHE_DURATION: 30000
+}
+
+// background.js instance
+const background = chrome.extension.getBackgroundPage();
 
 // state variables
 let stack = [];
 let tagStack = ['bookmark', 'clip', 'note'];
 let dateStack = [];
 let windowState = {
-  draftText: '',
-  draftTags: [],
   searchQuery: '',
   scrollY: 0,
   sortedByNew: true
 }
 
-/* switches */
-const updateSearchResult = () => {
-
-  let term = $('.searchbox').val().trim().toLowerCase();
-
-  windowState.searchQuery = term;
-
-  let hits;
-  if (term.split(' ').length > 1 && term.split(' ')[0].slice(0, 1) === '#') {
-    let tagQuery = term.split(' ')[0]
-    let query = term.split(' ')[1];
-    hits = filterTextItems(query);
-    filterDropdownListItems(tagQuery);
-  } else {
-    hits = filterTextItems(term);
-    filterDropdownListItems(term);
+const doTaskOnceInputIsDone = (task, time) => {
+  // clear timeout of undone task
+  if (task in doTaskOnceInputIsDone.TID) {
+    window.clearTimeout(doTaskOnceInputIsDone.TID[task])
   }
+  //
+  doTaskOnceInputIsDone.TID[task] = window.setTimeout(
+    () => {
+      // clear task ID previously registered
+      delete doTaskOnceInputIsDone.TID[task];
+      try {
+        task.call();
+      } catch (e) {
+        console.log('EXCEPTION: ' + task)
+      }
+    }, time);
+}
+
+doTaskOnceInputIsDone.TID = {}
+
+/**
+ * 
+ */
+const updateSearchResult = () => {
+  let query = $('.searchbox').val().trim().toLowerCase();
+  let hits;
+
+  // save when the search result updated
+  windowState.searchQuery = query;
+
+  // if the query is a tag
+  // TODO: consider what special search tags to use
+  if (query[0] === '#') {
+    hits = filterNoteItemsByTag(query);
+  } else if (query === '::d') {
+    hits = filterNoteItemsWithDateTag(query);
+  } else {
+    hits = filterNoteItems(query);
+  }
+  filterDropdownListItems(query);
 
   // change styles on search
-  if (term) {
-    switchToolboxVisibility(false);
-
-    $('.header-board').text(hits === 0 ? 'No Results' : `${hits} of ${stack.length}`)
-    $('.searchcancel-button').removeClass('hidden');
-
-    $('footer').addClass('hidden');
-
+  if (query) {
+    // set text
+    $('#statusboard').text(hits === 0 ? 'No Results' : `${hits} of ${stack.length}`)
+    // show/hide
+    $('#toolbox').hide();
+    $('.search-cancel-button').show();
+    $('footer').hide();
   } else {
-    switchToolboxVisibility(true);
-
-    $('.searchcancel-button').addClass('hidden');
-    $('footer').removeClass('hidden');
-
+    // reset
+    $('#statusboard').text('');
+    // show/hide
+    $('#toolbox').show();
+    $('.search-cancel-button').hide();
+    $('footer').show();
     hideDropdownList();
   }
 }
 
+/**
+ * 
+ */
+const filterNoteItemsByTag = (tagName) => {
+  if (tagName[0] === '#') {
+    tagName = tagName.substring(1);
+  }
 
-function filterTextItems(term) {
+  let hits = 0;
+  const tagRegex = new RegExp(`^${escapeRegExp(tagName)}`, 'i');
+
+  Array.from(stackDOM.children)
+    .map(textItem => {
+      if ($(textItem).hasClass('date')) {
+        textItem.classList.add('filtered');
+      } else {
+        $(textItem).find('.tag').each((index, tag) => {
+
+          if ($(tag).text().match(tagRegex)) {
+            textItem.classList.remove('filtered');
+            hits++;
+            return false;
+          } else {
+            textItem.classList.add('filtered');
+          }
+        })
+
+      }
+      return textItem;
+    })
+  return hits;
+}
+
+
+
+
+const filterNoteItemsWithDateTag = (dateTag) => {
+  let hits = 0;
+
+  Array.from(stackDOM.children)
+    .map(textItem => {
+      if ($(textItem).hasClass('date')) {
+        textItem.classList.add('filtered');
+      } else {
+        $(textItem).find('.tag').each((index, tag) => {
+          if (!isNaN(Date.parse($(tag).text()))) {
+            textItem.classList.remove('filtered');
+            hits++;
+            return false;
+          } else {
+            textItem.classList.add('filtered');
+          }
+        })
+      }
+      return textItem;
+    })
+  return hits;
+}
+
+
+
+/**
+ * 
+ */
+const filterNoteItems = (term) => {
   let termRegex;
   let hits = 0;
 
-
-
   // Search in Japanese/English
   if (containsJapanese(term)) {
-    termRegex = new RegExp(`(${escapeRegExp(term)})(.*?)`, 'ig');
+    termRegex = new RegExp(`(${escapeRegExp(term)})`, 'i');
   } else {
-    // termRegex = new RegExp(`\\b(${escapeRegExp(term)})(.*?)\\b`, 'ig');
-    termRegex = new RegExp(`(?!<span .+? target="_blank"/>)(${escapeRegExp(term)})(.*?)(?!</span>)`, 'ig');
+    termRegex = new RegExp(`(?!<span .+? target="_blank"/>)(${escapeRegExp(term)})(.*?)(?!</span>)`, 'i');
   }
 
   Array.from(stackDOM.children)
     .map(textItem => {
-      // remove text decoration and highlight
-      textItem.firstChild.innerHTML = textItem.firstChild.innerHTML;
-
-      // if (textItem.textContent.match(termRegex) || textItem.innerHTML.includes('#pinned')) {
-      //   textItem.classList.remove('filtered');
-      //   hits++;
-      // } else {
-      //   textItem.classList.add('filtered');
-      // }
       if (textItem.textContent.match(termRegex)) {
         textItem.classList.remove('filtered');
         hits++;
       } else {
         textItem.classList.add('filtered');
       }
-
       return textItem;
     })
     .filter(textItem => !textItem.classList.contains('date'))
     .filter(textItem => !textItem.classList.contains('filtered'))
     .forEach(textItem => {
       let contentDIV = textItem.firstElementChild;
-
       // enable URL link
       contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
       contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
 
       if (term.length >= 1) {
-        // highlight text except those of pseudo anchor tag
-        let linkRegex = new RegExp(`(<span .+? target="_blank">.*?</span>)`, 'i');
-        let splitText = contentDIV.innerHTML.split(linkRegex);
-        splitText = splitText.map(item => {
-          return item.match(linkRegex) ? item : (item.replace(termRegex, "<span class='highlighted'>$1</span>$2"));
-        })
-        contentDIV.innerHTML = splitText.join('');
+        $(contentDIV).highlight(term, { element: 'span', className: 'highlighted' });
       } else {
-        // get the text back to the initial state
-        contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
-        contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
+        // UNUSED
+        // // get the text back to the initial state
+        // contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
+        // contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
       }
     });
+
   return hits;
 };
 
 
+
+/**
+ * 
+ */
 const selectOnDropdownList = (e) => {
-  let liSelected = $('#dropdownlist').find('.selected');
+  let liSelected = $('#tagsearch-result').find('.selected');
   let unfiltered = $('li').not('.filtered');
   let index = unfiltered.index(liSelected);
 
@@ -124,12 +200,12 @@ const selectOnDropdownList = (e) => {
     // ENTER
     if (liSelected) {
       liSelected.removeClass('selected');
-      fireSearchWithQuery('#' + liSelected.text().replace(/edit$/, ''));
+      fireNoteSearch('#' + liSelected.text().replace(/edit$/, ''));
     }
     hideDropdownList()
   } else if (e.keyCode === 38) {
     // UP
-    if (!$('#dropdownlist').hasClass('hidden')) {
+    if (!$('#tagsearch-result').is(":hidden")) {
       if (liSelected) {
         if (index - 1 >= 0) {
           // move up
@@ -139,11 +215,11 @@ const selectOnDropdownList = (e) => {
           // scroll
           const newLiSelectedY = $(unfiltered[index - 1]).position().top;
           const newLiSelectedHeight = $(unfiltered[index - 1]).innerHeight();
-          const innerHeight = $('#dropdownlist').position().top;
-          const scrollTop = $('#dropdownlist').scrollTop();
+          const innerHeight = $('#tagsearch-result').position().top;
+          const scrollTop = $('#tagsearch-result').scrollTop();
 
           if (newLiSelectedY <= (innerHeight) - newLiSelectedHeight) {
-            $('#dropdownlist').animate({ scrollTop: scrollTop - (scrollTop % newLiSelectedHeight) - newLiSelectedHeight }, 20);
+            $('#tagsearch-result').animate({ scrollTop: scrollTop - (scrollTop % newLiSelectedHeight) - newLiSelectedHeight }, 20);
           }
 
         } else {
@@ -154,7 +230,7 @@ const selectOnDropdownList = (e) => {
     }
   } else if (e.keyCode === 40) {
     // DOWN
-    if ($('#dropdownlist').hasClass('hidden')) {
+    if ($('#tagsearch-result').is(":hidden")) {
       showDropdownList()
     } else {
       if (liSelected) {
@@ -166,11 +242,11 @@ const selectOnDropdownList = (e) => {
           // scroll
           const newLiSelectedY = $(unfiltered[index + 1]).position().top;
           const newLiSelectedHeight = $(unfiltered[index + 1]).height();
-          const innerHeight = $('#dropdownlist').innerHeight();
-          const scrollTop = $('#dropdownlist').scrollTop();
+          const innerHeight = $('#tagsearch-result').innerHeight();
+          const scrollTop = $('#tagsearch-result').scrollTop();
 
           if (newLiSelectedY > (innerHeight) - newLiSelectedHeight) {
-            $('#dropdownlist').animate({ scrollTop: $('#dropdownlist').position().top + scrollTop + ((scrollTop % newLiSelectedHeight) + newLiSelectedHeight) }, 0);
+            $('#tagsearch-result').animate({ scrollTop: $('#tagsearch-result').position().top + scrollTop + ((scrollTop % newLiSelectedHeight) + newLiSelectedHeight) }, 0);
           }
 
         }
@@ -182,379 +258,468 @@ const selectOnDropdownList = (e) => {
   }
 }
 
-const filterDropdownListItems = (tag) => {
-  let tagName = tag.trim().toLowerCase().slice(1);
-  let termRegex;
 
-  // Search in Japanese/English
-  if (containsJapanese(tagName)) {
-    termRegex = new RegExp(`^(${escapeRegExp(tagName)})(.*?)`, 'i');
-  } else {
-    termRegex = new RegExp(`^(${escapeRegExp(tagName)})(.*?)`, 'i');
-  }
 
-  $.map($('#dropdownlist').children(),
-    (tagItem) => {
-      if ($(tagItem).text().match(termRegex)) {
-        tagItem.classList.remove('filtered');
+
+/**
+ * 
+ */
+const filterDropdownListItems = (query) => {
+  const tagName = query.trim()[0] === "#" ? query.trim().toLowerCase().slice(1) : query.trim().toLowerCase();
+  const termRegex = new RegExp(`^(${escapeRegExp(tagName)})(.*?)`, 'i');
+  $.map($('#tagsearch-result').children(),
+    (listItem) => {
+      if ($(listItem).text().match(termRegex)) {
+        listItem.classList.remove('filtered');
       } else {
-        tagItem.classList.add('filtered');
+        listItem.classList.add('filtered');
       }
-      return tagItem;
+      return listItem;
     })
 }
 
+
+
+/**
+ * 
+ */
 const setDropdownListItems = () => {
   // empty selections
-  $('#dropdownlist').empty();
+  $('#tagsearch-result').empty();
 
-  tagStack = tagStack.slice(0, 3).concat(tagStack.slice(3).sort());
+  let defaultTagStack = tagStack.slice(0, 3);
+  let emojiTagStack = tagStack.filter((tag) =>
+    tag.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu)
+  );
+
+  let customTagStack = tagStack.slice(3).filter((tag) =>
+    !tag.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu)
+  );
+
+  tagStack = defaultTagStack.concat(customTagStack.sort()).concat(emojiTagStack.sort());
 
   // create list from tagStack
   tagStack
     .filter(item => isNaN(Date.parse(item))) // filter duedate tag
     .forEach(tag => {
       if (tag !== '') {
-        let liItem = $('<li>', {
-          text: tag,
-          // text: tag,
-          on: {
-            mouseover: (e) => {
-              // work as hover
-              let liSelected = $('#dropdownlist').find('.selected');
-              $(e.target).addClass('selected');
-            },
-            mouseleave: (e) => {
-              // work as hover
-              let liSelected = $('#dropdownlist').find('.selected');
-              if (liSelected) {
-                liSelected.removeClass('selected');
-              }
-            },
-            click: (e) => {
+        // create list item
+        let liItem = $('<li>');
 
-              if (e.target.classList.contains('tag-editIcon')) {
-                e.preventDefault();
-                let liSelected = $('#dropdownlist').find('.selected');
-                let orgHTML = liSelected.html();
-                $(liSelected).empty();
-                let editTagInput = $('<input>', {
-                  type: 'text',
-                  addClass: 'tageditInput tagadd',
-                  on: {
-                    keyup: (e) => {
-                      if (e.keyCode === 13) {
-                        if (e.target.value !== '') {
-                          //ESC
-                          e.target.blur();
-                        }
-                      }
-                    },
-                    blur: (e) => {
-                      if (e.target.value === '') {
-                        $(liSelected).empty();
-                        $(liSelected).html(orgHTML);
-                      } else {
-                        // replace with new tag
-                        let newTag = e.target.value;
-                        orgHTML = orgHTML.replace(tag, newTag)
-                        $(liSelected).empty();
-                        $(liSelected).html(orgHTML);
-                        replaceTagName(tag, newTag);
-                        $('.tag').each((index, elem) => {
-                          if ($(elem).text() === '#' + tag) {
-                            $(elem).text('#' + newTag)
-                          }
-                        })
-                        tagStack.slice(tagStack.findIndex(t => t === tag), 1, newTag);
-                        //                        fireSearchWithQuery('#' + newTag);
-                        if ($('.searchbox').val() !== "") {
-                          $('.searchbox').val('#' + newTag);
-                          windowState.searchQuery = '#' + newTag;
-                        }
-                        tag = newTag;
-                        // renderStack();
+        liItem.append(
+          $('<span>', {
+            text: tag,
+          })
+        )
 
-                      }
-                    }
-                  }
-                });
-                editTagInput.appendTo(liSelected);
-
-                $('.tageditInput').val(tag);
-                $('.tageditInput').focus();
-
-
-
-                return false;
-              } else if (e.target.classList.contains('tageditInput')) {
-                e.preventDefault();
-                return false;
-              } else {
-                fireSearchWithQuery('#' + $(e.target).text().replace(/edit$/, ''));
-                hideDropdownList();
-
-              }
-
-            },
-          }
-        });
-
+        // append edit Icon to list item
         if (!['note', 'bookmark', 'clip'].includes(tag)) {
-          let editIcon = document.createElement('i');
-          editIcon.classList.add('material-icons');
-          editIcon.classList.add('tag-edit');
-          editIcon.classList.add('tag-editIcon');
-          editIcon.innerText = 'edit';
-          liItem.append(editIcon);
+          let editTagInput = $('<input>', {
+            type: 'text',
+            addClass: 'tageditInput tagadd',
+            value: tag,
+            spellCheck: 'false',
+            css: {
+              display: 'none'
+            }
+          });
+          //
+
+          // events
+          editTagInput.keyup((e) => {
+            if (e.keyCode === 13) {
+              // ENTER
+              let newTag = e.target.value;
+              let oldTag = e.target.defaultValue;
+              if (newTag.match(/^\s*$/)) {
+                newTag = oldTag;
+
+              } else {
+                replaceTagName(oldTag, newTag);
+                $('.tag').each((index, elem) => {
+                  if ($(elem).text() === oldTag) {
+                    $(elem).text(newTag)
+                  }
+                })
+                tagStack.splice(tagStack.findIndex(t => t === oldTag), 1, newTag);
+                e.target.defaultValue = newTag;
+
+              }
+
+              $(e.target).parent().find('span').text(newTag);
+              $(e.target).parent().find('span').show();
+              $(e.target).parent().find('.tagedit').show();
+              $(e.target).hide();
+
+              if ($('.searchbox').val() !== '') {
+                $('.searchbox').val('#' + newTag);
+                windowState.searchQuery = '#' + newTag;
+              }
+
+            }
+          })
+
+
+          //
+          liItem.append(
+            editTagInput
+          );
+
+          liItem.append(
+            $('<i>', {
+              addClass: 'material-icons tagedit',
+              text: 'edit'
+            }));
         }
+        $('#tagsearch-result').append(liItem)
 
-        $('#dropdownlist').append(liItem)
+        // atach events for selected item
+        liItem.on({
+          mouseover: (e) => {
+            // work as hover
+            $(e.target).addClass('selected');
+          },
+          mouseleave: (e) => {
+            // work as hover
+            let liSelected = $('#tagsearch-result').find('.selected');
+            if (liSelected) {
+              liSelected.removeClass('selected');
+            }
+          },
+        })
 
+        //
+        liItem.click((e) => {
+          if (e.target.classList.contains('tagedit')) {
+            e.preventDefault();
+
+            let liSelected = $('#tagsearch-result').find('.selected');
+            let orgTag = liSelected.find('span').text();
+
+            $(liSelected).find('span').hide();
+            $(e.target).hide();
+            $(liSelected).find('.tageditInput').show();
+            $(liSelected).find('.tageditInput').focus();
+            let val = $(liSelected).find('.tageditInput').val();
+            $(liSelected).find('.tageditInput').val('')
+            $(liSelected).find('.tageditInput').val(val)
+
+
+            return false;
+          } else if (e.target.classList.contains('tageditInput')) {
+            e.preventDefault();
+
+            return false;
+          } else {
+            fireNoteSearch('#' + $(e.target).text().replace(/edit$/, ''));
+            hideDropdownList();
+          }
+        })
       }
     })
 }
 
-const replaceTagName = (oldTag, newTag) => {
-  // add item to stack
-  stack.forEach(item => {
-    if (item.type != 'clip') {
-      if (item.footnote.tags.includes(oldTag)) {
-        item.footnote.tags.splice(item.footnote.tags.findIndex(tag => tag == oldTag), 1, newTag)
+/**
+ * generate note item HTML
+ */
+const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
+  // add the most outer opening tag
+  let noteItemHTML = `<div class="stackwrapper ${type}" id="${id}">`
+
+  // add content body
+  noteItemHTML += `<div class='content'>${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div><i class="material-icons edit">edit</i><div><i class="material-icons checkbox">check</i></div><input type="hidden" value="${id}"><input class='itemDate' type='hidden' value="${date}"><div class="spacer"></div>`;
+
+  // add footnote
+  if (type === 'clip') {
+    noteItemHTML += `<div class="footnote"><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span><span class="tag type clip">clip</span>`;
+  } else {
+    noteItemHTML += `<div class="footnote"><span class="tag type">${type}</span>`;
+  }
+
+  // add tags to footnote
+  let tagsHTML = "";
+
+  if (typeof footnote.tags !== 'undefined') {
+    footnote.tags.forEach(tagName => {
+      // change the tag to emoji
+      if (tagName.match(/pinned|📌/i)) {
+        tagName = tagName.replace(/pinned/i, '📌');
       }
-    }
-  })
-
-  stackStorage.set(JSON.stringify(stack));
-
-}
-
-const exportTextItems = () => {
-  // get text items to export
-  let textitemIDs = $.map(
-    $(stackDOM.children).not('.date, .filtered'),
-    (item, index) => {
-      return $(item).attr('id')
+      tagsHTML += generateTagsHTML(tagName);
     })
-
-  // create exporting content
-  let content = Array.from(stack)
-    .filter(item => textitemIDs.includes(item.id))
-    .reduce((accm, item) => {
-
-      // for urls
-      let sanitizedContent = $('<div>', {
-        html: item.content
-      }).text();
-
-      accm += `${sanitizedContent}\n`;
-      if (typeof item.footnote.pageTitle !== 'undefined') {
-        accm += item.footnote.pageTitle + '\n';
-      }
-      if (typeof item.footnote.url !== 'undefined') {
-        accm += item.footnote.url + "\n";
-      }
-      return accm += '\n';
-    }, "")
-
-  // create url to download
-  const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-
-  let blob = new Blob([bom, content], {
-    type: 'data:text/plain'
-  });
-
-  window.URL = window.URL || window.webkitURL;
-
-  const url = window.URL.createObjectURL(blob);
-
-  // download
-  chrome.downloads.download({
-    url: url,
-    filename: formatDate() + '.txt',
-    saveAs: true
-  });
-}
-
-const clearAllItems = () => {
-  // clear storage
-  stackStorage.reset();
-  $('#textstack').empty();
-
-  // remove hashtags
-  while (tagarea.lastChild && tagarea.children.length > 1) {
-    tagarea.removeChild(tagarea.lastChild);
   }
 
-  $('.add-textitem').val('');
-  $('.searchbox').val('');
+  noteItemHTML += tagsHTML
 
-  // reset state variables
-  stack = [];
-  dateStack = [];
-  tagStack = ['bookmark', 'clip', 'note'];
-
-  windowState = {
-    draftText: '',
-    draftHashtags: [],
-    searchQuery: '',
-    scrollY: 0,
-    sortedByNew: true
+  // omit input of tag addition
+  // TODO: rename tagadd class
+  if (footnote.tags.length < 4) {
+    noteItemHTML += '<div class="divWrap"><input type="text" class="tagadd"></div>';
+  } else {
+    noteItemHTML += '<div class="divWrap hidden"><input type="text" class="tagadd"></div>';
   }
+
+  // add the closing tag of footnote
+  noteItemHTML += "</div>";
+
+  // replace class names for setting styles
+  if (noteItemHTML.match(/pinned|📌/i)) {
+    noteItemHTML = noteItemHTML.replace(/stackwrapper/ig, "stackwrapper pinned");
+  }
+
+  // add the most outer closing tag
+  noteItemHTML += "</div>"
+
+  return noteItemHTML;
 }
 
-const submitForm = (e) => {
-  if (e.keyCode === 13 && e.ctrlKey) {
-    // Ctrl + Enter
-    let errClass = tagarea.querySelector('.error');
 
-    if (errClass === null) {
-      let content = $('.add-textitem').val().trim();
-      if (content === '' || content === '\n') {
-        $('.add-textitem').val('');
-        return false;
-      }
+/**
+ * 
+ */
+const generateTagsHTML = (tagName) => {
+  let tagsHTML = "";
 
-      // 
-      let addingTags = [];
-      for (let i = 1; i < tagarea.children.length; i++) {
-        if (!tagarea.children[i].classList.contains('size-changer')) {
-          addingTags.push(tagarea.children[i].innerText);
+  // add classes for special tags
+  if (tagName.match(/pinned|📌/i)) {
+    // pinned
+    tagsHTML += `<span class="tag pinned emoji">${tagName}</span>`
+  } else if (tagName.match(/(★|☆|✭|⭐)/i)) {
+    // favourite
+    tagsHTML += `<span class="tag fav">${tagName}</span>`
+  } else if (tagName.match(/(♡|💛|♥|❤)/i)) {
+    // likes
+    tagsHTML += `<span class="tag like">${tagName}</span>`
+  } else if (
+    tagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
+    )) {
+    // emoji
+    tagsHTML += `<span class="tag emoji">${tagName}</span>`
+  } else if (!isNaN(new Date(tagName))) {
+    // datetag
+    // TODO: rename tagDate class
+    tagsHTML += `<span class="tag tagDate">${tagName}</span>`
+  } else {
+    tagsHTML += `<span class="tag">${tagName}</span>`
+  }
+  // save tags for tag search
+  if (!tagStack.includes(tagName)) {
+    tagStack.push(tagName);
+  }
+
+  return tagsHTML;
+}
+
+/**
+ * 
+ */
+const attachTagInputEvents = (stackWrapper) => {
+  // BLUR event
+  $(stackWrapper).find('.tagadd').blur(
+    (ev) => {
+      let tagName = ev.target.value.trim();
+      if (tagName !== '') {
+        // update tag information
+        const index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
+
+        if (typeof stack[index].footnote.tags === 'undefined') {
+          stack[index].footnote.tags = [];
+        }
+
+        stack[index].footnote.tags.push(tagName);
+        stackStorage.set(JSON.stringify(stack));
+
+        // change the tag to emoji
+        if (tagName.match(/pinned|📌/i)) {
+          tagName = tagName.replace(/pinned/i, '📌');
+          $(stackWrapper).addClass('pinned');
+        }
+
+        // 
+        let tagsHTML = generateTagsHTML(tagName);
+
+        // insert before tag input
+        // TODO: rename divWrap class
+        let divWrap = $(stackWrapper).find('.divWrap');
+        divWrap.get(0).insertAdjacentHTML("beforebegin", tagsHTML);
+
+        // reset value
+        ev.target.value = '';
+
+        // toggle divWrap visibility
+        if ($(stackWrapper).find('.tag').length >= 6) {
+          divWrap.addClass('hidden');
+        } else {
+          divWrap.removeClass('hidden');
         }
       }
+    },
+  )
 
-      //
-      let id = uuidv4();
-      let type = 'note';
-      let footnote = {
-        tags: addingTags
-      };
-      let date = formatDate();
+  // KEYUP
+  $(stackWrapper).find('.tagadd').keyup(
+    (ev) => {
+      ev.preventDefault();
 
-      // add item to stack
-      stack.push({
-        id: id,
-        type: type,
-        content: content,
-        date: date,
-        footnote: {
-          tags: footnote.tags
-        },
-      });
-      stackStorage.set(JSON.stringify(stack));
+      let tagName = ev.target.value;
 
-      renderTextItem(id, type, content, footnote, date);
+      if (tagName[tagName.length - 1] === ' ' || ev.keyCode === 13) {
 
-      // clear form and holders to the initial state
-      $('.add-textitem').val('');
+        tagName = ev.target.value.trim();
 
-      windowState.draftText = '';
-      // windowState.draftHashtags = [];
-      windowState.draftTags = [];
+        if (tagName !== '') {
 
-      switchTextareaSize(e, true);
+          // update tag information
+          const index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
 
-      // display system message
-      displayMessage('Item Added!');
-      setTimeout(() => {
-        updateTextInfoMessage($('.add-textitem').val());
-      }, 700);
+          if (typeof stack[index].footnote.tags === 'undefined') {
+            stack[index].footnote.tags = [];
+          }
 
-      return false;
-    }
-  }
-};
+          stack[index].footnote.tags.push(tagName);
+          stackStorage.set(JSON.stringify(stack));
+
+          // change the tag to emoji
+          if (tagName.match(/pinned|📌/i)) {
+            tagName = tagName.replace(/pinned/i, '📌');
+            $(stackWrapper).addClass('pinned');
+          }
+
+          let tagsHTML = generateTagsHTML(tagName);
+
+          // insert before tag input
+          // TODO: rename divWrap class
+          let divWrap = $(stackWrapper).find('.divWrap');
+          divWrap.get(0).insertAdjacentHTML("beforebegin", tagsHTML);
+
+          // reset value
+          ev.target.value = '';
+
+          // toggle divWrap visibility
+          if ($(stackWrapper).hasClass('clip')) {
+            // TODO: consider the use of jQuery toggle
+            if ($(stackWrapper).find('.tag').length >= 4) {
+              divWrap.addClass('hidden');
+            } else {
+              divWrap.removeClass('hidden');
+            }
+          } else {
+            if ($(stackWrapper).find('.tag').length >= 5) {
+              divWrap.addClass('hidden');
+            } else {
+              divWrap.removeClass('hidden');
+            }
+          }
+        }
+      } else if (ev.keyCode === 8 && tagName === '') {
+        // TODO: refactor BACKSPACE event of tag input
+        // BACKSPACE
+        let tagInput = ev.target;
+        let prevTag = $(tagInput).parent().prev();
+
+        if ($(stackWrapper).find('.tag').length > 1) {
+          // remove tag from footnote
+          let prevTagName = prevTag.text();
+          let prevStackWrapper = prevTag.parent().parent();
+
+          // find the id of the previous tag
+          let index = stack.findIndex(item => item.id === $(prevStackWrapper).attr('id'));
+          let tagIndex = stack[index].footnote.tags.indexOf(prevTagName);
+
+          // remove the previous tag
+          stack[index].footnote.tags.splice(tagIndex, 1);
+          stackStorage.set(JSON.stringify(stack));
+          prevTag.remove();
+
+          // remove the tag from tagStack if there is no item with the tag
+          tagStack.splice(tagStack.findIndex(t => t === prevTagName), 1);
+          $('.tag').each((index, item) => {
+            let tagRegex = new RegExp(`${escapeRegExp(prevTagName)}$`, 'i');
+
+            if ($(item).text().match(tagRegex)) {
+              tagStack.push(prevTagName);
+              return false;
+            }
+          })
+
+          // remove pinned styles
+          if (prevTagName.match(/pinned|📌/i)) {
+            $(stackWrapper).removeClass('pinned');
+            prevTag.removeClass('pinned');
+          }
+          // if (prevTagName.slice(1).match(/(fav|favourite|favorite)/i)) {
+          if (prevTagName.match(/(★|☆|✭|⭐)/i)) {
+            prevTag.removeClass('fav');
+            // $(stackWrapper).removeClass('fav');
+          }
+
+          if (prevTagName.match(/(♡|💛|♥|❤)/i)) {
+            prevTag.removeClass('like');
+            // $(stackWrapper).removeClass('fav');
+          }
+
+          if (prevTagName.match(/(♡|💛|♥|❤)/i)) {
+            prevTag.removeClass('like');
+            // $(stackWrapper).removeClass('fav');
+          }
+
+          if (!isNaN(new Date(prevTagName))) {
+            prevTag.removeClass('tagDate');
+          }
+
+          if (prevTagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
+          )) {
+            prevTag.removeClass('emoji');
+          }
 
 
-function updateInputForm(e) {
-  $('.error').remove();
-
-  let hashtags = e.target.value.match(/(^|\s)((#|＃)[^\s]+)(\s$|\n)/);
-
-  if (hashtags) {
-    let regex = new RegExp(`(^|\\s)${escapeRegExp(hashtags[2])}(\\s$|\\n)`);
-
-    if ($('.hashtag').length >= 5) {
-      $('<span>', {
-        addClass: 'error',
-        text: 'タグは最大5個まで'
-      }).appendTo(tagarea)
-    } else {
-      e.target.value = e.target.value.replace(regex, '')
-      addDraftTag(hashtags[2].slice(1))
-      windowState.draftTags.push(hashtags[2].slice(1));
-    }
-  }
-
-  windowState.draftText = e.target.value.trim();
-
-  fitHeightToContent(textarea);
-  updateTextInfoMessage($('.add-textitem').val());
-
+          // set value
+          $(tagInput).val(prevTagName);
+          $(tagInput).trigger('focus');
+        }
+      }
+    })
 }
 
-function removeTextItem(textitemDOM) {
-  // apply visual effects and display Message
-  textitemDOM.classList.add('removed')
-
-  displayMessage("Item Removed!");
-  setTimeout(() => {
-    // remove the item
-    let id = textitemDOM.querySelector('input').value;
-    stack = stack.filter(item => item.id !== id);
-
-    stackStorage.set(JSON.stringify(stack));
-
-    // remove DOM
-    textitemDOM.remove();
-    switchToolboxVisibility(true);
-  }, 450);
-}
-
-function attachContentEditableEvents(wrapper) {
-  // create and insert
-  let editIcon = document.createElement('i');
-  editIcon.classList.add('material-icons');
-  editIcon.classList.add('edit');
-  editIcon.innerText = 'edit';
-  wrapper.insertBefore(editIcon, wrapper.querySelector('i'));
-
-  // TODO: implment pin feature
-  // $('<i>', {
-  //   addClass: 'fas fa-thumbtack fa-lg pin',
-  //   on: {
-  //     click: (e => {
-  //       if ($(e.target).hasClass('pinned')) {
-  //         $(e.target).removeClass('pinned');
-  //       } else {
-  //         $(e.target).addClass('pinned');
-  //       }
-  //     })
-  //   }
-  // }).insertAfter(editIcon);
-
-
-
+/**
+ * 
+ */
+const attachNoteContentEvents = (wrapper) => {
   let contentDIV = wrapper.querySelector('.content');
+  let prevHTML = wrapper.innerHTML;
 
-  // add click event
-  editIcon.addEventListener('click', function enableEditing() {
-    setTimeout(() => {
-      contentDIV.contentEditable = true;
-      editIcon.classList.add('hidden');
-      contentDIV.focus();
-    }, 100);
-  })
+  $(wrapper).find('.edit').click(
+    () => {
+      setTimeout(() => {
+        toggleEditorMode(contentDIV, true);
+      }, 100);
+    }
+  )
 
-  // add to content DIV
+  // add to wrapper
+  wrapper.addEventListener('dblclick', (e) => {
+    if (wrapper.classList.contains('note')) {
+      // fire only when the area out of text body double clicked
+      if (!e.target.classList.contains('content')) {
+        // workaround for bubble control
+        setTimeout(hideBubble, 30);
+        setTimeout(() => {
+          toggleEditorMode(contentDIV, true)
+        }, 100)
+      }
+    }
+  });
+
   contentDIV.addEventListener('focus', (e) => {
-    // editing mode styles
-    wrapper.classList.add('editing');
-
-    // remove a tag
+    // remove html tags
     Array.from(contentDIV.childNodes).forEach((item) => {
       $(item).contents().unwrap()
     }, '')
+
+    // insert decimal code as a zero-width space for displaying caret
+    if (!contentDIV.innerHTML.match(String.fromCharCode(8203))) {
+      contentDIV.innerHTML += '&#8203;';
+    }
 
     // move caret to the end of the text
     const node = contentDIV.childNodes[contentDIV.childNodes.length - 1]
@@ -566,39 +731,28 @@ function attachContentEditableEvents(wrapper) {
     editorSel.addRange(editorRange)
   })
 
-  wrapper.addEventListener('focusout', (e) => {
-    // enable URL
-    contentDIV.contentEditable = false;
-    contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
-
-    // replace new lines with br tag
-    contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n+$/i, '');
-    contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
-
-    // leave edit mode
-    wrapper.classList.remove('editing');
-    editIcon.classList.remove('hidden');
-  });
-
-  contentDIV.addEventListener('keyup', (e) => {
-    fireChange(e);
-  });
-
-  // add to wrapper
-  wrapper.addEventListener('dblclick', (e) => {
-    if (wrapper.classList.contains('note')) {
-      if (!e.target.classList.contains('content')) {
-        setTimeout(hideBubble, 30);
-        setTimeout(() => {
-          contentDIV.contentEditable = true;
-          editIcon.classList.add('hidden');
-          contentDIV.focus();
-        }, 100)
-      }
+  // ctrl + Enter to end editing
+  contentDIV.addEventListener('keydown', (e) => {
+    if (e.keyCode === 13 && e.ctrlKey) {
+      // Ctrl + Enter
+      toggleEditorMode(contentDIV, false);
+      return false;
     }
   });
 
-  let oldHTML = wrapper.innerHTML;
+  wrapper.addEventListener('mouseleave', (e) => {
+    if ($(contentDIV).attr('contentEditable')) {
+      toggleEditorMode(contentDIV, false);
+    }
+    return false;
+  });
+
+  contentDIV.addEventListener('focusout', (e) => {
+    $('#toolbox').show();
+    $('#statusboard').text('');
+    // TODO: rename entering class
+    $('#statusboard').removeClass('entering');
+  });
 
   // detect changes on content editable
   wrapper.addEventListener('blur', fireChange);
@@ -607,274 +761,38 @@ function attachContentEditableEvents(wrapper) {
   wrapper.addEventListener('copy', fireChange);
   wrapper.addEventListener('cut', fireChange);
   wrapper.addEventListener('mouseup', fireChange);
+
+  // fire div change event used for content change event
   wrapper.addEventListener('change', (e) => {
-    let id = $(e.target).attr('id');
+    const newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
+    updateStatusBoard(newHTML);
 
-    let newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
-    updateTextInfoMessage(newHTML);
+    // find note item index
+    const id = $(e.target).attr('id');
+    const index = stack.findIndex(item => item.id === id);
 
-    // update teext item
-    let index = stack.findIndex(item => item.id === id);
+    // update note item
     stack[index].content = newHTML.replace(/<br>/ig, '\n');
     stackStorage.set(JSON.stringify(stack));
   })
 
-  // ctrl + Enter to end editing
-  wrapper.addEventListener('keydown', (e) => {
-    if (e.keyCode === 13 && e.ctrlKey) {
-      fireChange(e);
-      wrapper.dispatchEvent(new Event('focusout'));
-    }
-  });
-
-
+  // fire change event of content editable div when its content changed 
   function fireChange(e) {
-    let newHTML = wrapper.innerHTML;
-    if (oldHTML !== newHTML) {
+    const newHTML = wrapper.innerHTML;
+
+    // replace with new HTML
+    if (prevHTML !== newHTML) {
       wrapper.dispatchEvent(new Event('change'));
-      oldHTML = newHTML;
+      prevHTML = newHTML;
+    }
+
+    // insert zero-width space when the text is empty
+    if (contentDIV.innerHTML.length == 0) {
+      contentDIV.innerHTML += '&#8203;';
     }
   }
 }
 
-
-
-const renderTextItem = (id, type, content, footnote, date = formatDate()) => {
-  let stackWrapper = document.createElement('div');
-  stackWrapper.className = 'stackwrapper';
-  stackWrapper.id = id;
-  stackWrapper.classList.add(type);
-
-  stackWrapper.innerHTML = `<div class='content'>${content}</div><i class="material-icons checkbox">check</i><input type="hidden" value="${id}"><input class='itemDate' type='hidden' value="${date}"><div class="spacer"></div><div class="footnote"></div>`;
-
-  $('#textstack').append(stackWrapper);
-
-  content = $('<div>', {
-    html: content
-  }).text();
-
-  // content
-  // enable URL link
-  let contentDIV = stackWrapper.firstElementChild;
-  contentDIV.innerHTML = enableURLEmbededInText(content);
-  contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
-
-  // foot note
-  if (type === 'clip') {
-    // stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag clip hidden">#clip</span><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span>`;
-    stackWrapper.querySelector('.footnote').innerHTML = `<span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span><span class="tag clip">#clip</span>`;
-  } else {
-    stackWrapper.querySelector('.footnote').innerHTML = `<span class="tag">#${type}</span>`;
-    if (type === 'note') {
-      attachContentEditableEvents(stackWrapper);
-    }
-  }
-
-
-  // TAGS
-  if (typeof footnote.tags !== 'undefined') {
-    footnote.tags.forEach(item => {
-      // if (!['note', 'clip', 'bookmark'].includes(item)) {
-      $('<span>', { addClass: 'tag', text: '#' + item })
-        .appendTo($(stackWrapper).find('.footnote'));
-      if (!tagStack.includes(item)) {
-        tagStack.push(item);
-      }
-      if (item === 'pinned') {
-        $(stackWrapper).addClass('pinned');
-      }
-      if (item.match(/(fav|favourite|favorite)/i)) {
-
-        $(stackWrapper).addClass('fav');
-      }
-      // }
-    })
-  }
-
-  if (stackWrapper.querySelector('.footnote').childNodes.length < 5) {
-    let divWrap = $('<div>', { addClass: 'divWrap' })
-    divWrap.appendTo($(stackWrapper).find('.footnote'));
-
-
-    let input = $('<input>', {
-      type: 'text',
-      addClass: 'tagadd',
-    });
-
-    divWrap.append(input);
-
-    // attach events
-    input.blur((ev) => {
-      let tagName = ev.target.value.trim();
-      if (tagName !== '') {
-        // find the index of the text item
-        let index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
-        // update Tag
-        if (typeof stack[index].footnote.tags === 'undefined') {
-          stack[index].footnote.tags = [];
-        }
-        stack[index].footnote.tags.push(tagName);
-        stackStorage.set(JSON.stringify(stack));
-
-        if (tagName === 'pinned') {
-          $(stackWrapper).addClass('pinned');
-        }
-        if (tagName.match(/(fav|favourite|favorite)/i)) {
-          $(stackWrapper).addClass('fav');
-        }
-
-
-        $('<span>', {
-          addClass: 'tag',
-          text: '#' + tagName
-        }).insertBefore(divWrap);
-
-        // 
-        if (!tagStack.includes(tagName)) {
-          tagStack.push(tagName);
-        }
-        ev.target.value = '';
-        if ($(stackWrapper).find('.tag').length >= 6) {
-          divWrap.addClass('hidden');
-        }
-      }
-    });
-
-    input.keyup(
-      (ev) => {
-        ev.preventDefault();
-
-        let tagName = ev.target.value;
-        if (tagName.slice(tagName.length - 1) === ' ' || ev.keyCode === 13) {
-          tagName = ev.target.value.trim();
-          if (tagName !== '') {
-            // find the index of the text item
-            let index = stack.findIndex(item => item.id === $(stackWrapper).attr('id'));
-
-            // update Tag
-            if (typeof stack[index].footnote.tags === 'undefined') {
-              stack[index].footnote.tags = [];
-            }
-
-            stack[index].footnote.tags.push(tagName);
-            stackStorage.set(JSON.stringify(stack));
-
-            if (tagName === 'pinned') {
-              $(stackWrapper).addClass('pinned');
-            }
-            if (tagName.match(/(fav|favourite|favorite)/i)) {
-              $(stackWrapper).addClass('fav');
-            }
-
-            // 
-            $('<span>', {
-              addClass: 'tag',
-              text: '#' + tagName
-            }).insertBefore(divWrap);
-
-            // 
-            if (!tagStack.includes(tagName)) {
-              tagStack.push(tagName);
-            }
-            ev.target.value = '';
-
-            if ($(stackWrapper).hasClass('clip')) {
-              if ($(stackWrapper).find('.tag').length >= 4) {
-                divWrap.addClass('hidden');
-              }
-
-            } else {
-              if ($(stackWrapper).find('.tag').length >= 5) {
-                divWrap.addClass('hidden');
-              }
-            }
-
-          }
-        } else if (ev.keyCode === 8 && tagName === '') {
-          let tagInput = ev.target;
-          let prevTag = $(tagInput).parent().prev();
-          if ($(stackWrapper).find('.tag').length > 1) {
-
-            // remove tag from footnote
-            let prevTagName = prevTag.text();
-            let prevStackWrapper = prevTag.parent().parent();
-
-            // find the id of the previous tag
-            let index = stack.findIndex(item => item.id === $(prevStackWrapper).attr('id'));
-            let tagIndex = stack[index].footnote.tags.indexOf(prevTagName);
-
-            // remove the previous tag
-            stack[index].footnote.tags.splice(tagIndex, 1);
-            stackStorage.set(JSON.stringify(stack));
-            prevTag.remove();
-
-            // remove the tag from tagStack if there is no item with the tag
-            tagStack.splice(tagStack.findIndex(t => t === prevTagName.slice(1)), 1);
-            $('.tag').each((index, item) => {
-              let tagRegex = new RegExp(`${escapeRegExp(prevTagName)}$`, 'i');
-
-              if ($(item).text().match(tagRegex)) {
-                tagStack.push(prevTagName.slice(1));
-                return false;
-              }
-            })
-
-            // remove pinned styles
-            if (prevTagName.slice(1) === 'pinned') {
-              $(stackWrapper).removeClass('pinned');
-            }
-            if (prevTagName.slice(1).match(/(fav|favourite|favorite)/i)) {
-              $(stackWrapper).removeClass('fav');
-            }
-
-            // set
-            $(tagInput).val(prevTagName.slice(1));
-            $(tagInput).trigger('focus');
-          }
-        }
-      });
-
-
-
-
-  }
-}
-
-/**
- * insert date as a separator
- */
-const insertDateSeparator = () => {
-  $(stackDOM.children).each((index, wrapper) => {
-    let date = $(wrapper).find('.itemDate').val();
-
-    if (dateStack.length === 0) {
-      $('<div>', {
-        addClass: 'date',
-        text: date
-      }).insertBefore(wrapper)
-      dateStack.push(date);
-    } else {
-      // insert only between the date and the previous date
-      if (dateStack[dateStack.length - 1] !== date) {
-        $('<div>', {
-          addClass: 'date',
-          text: date
-        }).insertBefore(wrapper)
-        dateStack.push(date);
-      }
-    }
-  })
-
-  // insert current time
-  let now = new Date();
-  let hours = ('0' + now.getHours()).slice(-2);
-  let minutes = ('0' + now.getMinutes()).slice(-2);
-  $('<div>', {
-    addClass: 'date current',
-    text: formatDate() + ' ' + hours + ':' + minutes
-  }).appendTo(stackDOM);
-
-}
 
 /**
  * Initialize events listners
@@ -899,104 +817,141 @@ const initializeEventListeners = () => {
   }
 
   $(window).on('unload blur', () => {
-    windowState.closedDateTime = new Date().toJSON();
-    chrome.extension.getBackgroundPage().chrome.storage.local.set(windowState);
-    chrome.runtime.sendMessage({
-      command: 'OVERLAY_OFF'
-    });
+    windowState.closedDateTime = new Date().toISOString();
+    background.chrome.storage.local.set(windowState);
   })
 
   /* header */
   /* dropdown list */
-  $('#dropdownlist, header').on('mouseleave', hideDropdownList);
+  $('#tagsearch-result, header').on('mouseleave', hideDropdownList);
 
-
-
-
-  $('#dropdownlist').on('scroll', (e) => {
-    const clientHeight = $('#dropdownlist').innerHeight();
-    const scrollHeight = $('#dropdownlist').prop('scrollHeight')
-    if (scrollHeight - (clientHeight + $('#dropdownlist').scrollTop()) <= 0) {
-      $('#dropdownlist').addClass('dropdownlistBottom');
+  $('#tagsearch-result').on('scroll', (e) => {
+    const clientHeight = $('#tagsearch-result').innerHeight();
+    const scrollHeight = $('#tagsearch-result').prop('scrollHeight')
+    if (scrollHeight - (clientHeight + $('#tagsearch-result').scrollTop()) <= 0) {
+      $('#tagsearch-result').addClass('dropdownlistBottom');
     } else {
-      $('#dropdownlist').removeClass('dropdownlistBottom');
+      $('#tagsearch-result').removeClass('dropdownlistBottom');
     }
   });
 
-
-
+  let dupNodes = [];
   /* searchbox  */
   $('.searchbox').on({
     click: hideDropdownList,
     dblclick: showDropdownList,
-    focus: closeAddTextItemForm,
     keydown: selectOnDropdownList,
-    input: updateSearchResult
-  })
-  $('.searchcancel-button').click(cancelSearch);
+    input: () => {
+      // wait a while for user input
 
-  /* toolbox & text area*/
-  // $('.opener-top').click(openAddTextItemForm);
-  // create empty note for testing
-  $('.opener-top').click(() => {
-    //
-    let id = uuidv4();
-    let type = 'note';
-    let footnote = {
-      tags: []
-    };
-    // add the current tag in the seachbox
-    let searchQuery = $('.searchbox').val();
-    if (searchQuery[0] === '#' && searchQuery.length > 0) {
-      footnote.tags.push(searchQuery.substring(1))
+      if (dupNodes.length === 0) {
+        dupNodes.push(document.querySelector('#textstack').cloneNode(true));
+      }
+
+      let milseconds = 0;
+      let queryLength = $('.searchbox').val().length;
+      switch (queryLength) {
+        case 0:
+          milseconds = 1;
+          break;
+        case 1:
+          milseconds = 500;
+          break;
+        case 2:
+          milseconds = 400;
+          break;
+        case 3:
+          milseconds = 300;
+          break;
+        case 4:
+          milseconds = 100;
+          break;
+        default:
+          milseconds = 50;
+      }
+
+      if (queryLength === 0) {
+        // reset task
+        doTaskOnceInputIsDone.TID = {};
+        $('#textstack').remove();
+        document.querySelector('#main').insertAdjacentElement('beforeend', dupNodes[0]);
+        stackDOM = document.querySelector('#textstack');
+        attachEventsToTextStack();
+
+        $('.stackwrapper').each((index, item) => {
+          attachTagInputEvents(item);
+          attachNoteContentEvents(item);
+        });
+        dupNodes.length = 0;
+        dupNodes.push(document.querySelector('#textstack').cloneNode(true))
+
+        $('#statusboard').text('');
+        // show/hide
+        $('#toolbox').show();
+        $('.search-cancel-button').hide();
+        $('footer').show();
+        hideDropdownList();
+
+        windowState.searchQuery = '';
+      } else {
+        doTaskOnceInputIsDone(updateSearchResult, milseconds)
+      }
+
     }
-    let date = formatDate();
+  }
+  )
 
-    // add item to stack
-    stack.push({
-      id: id,
-      type: type,
-      content: "",
-      date: date,
-      footnote: footnote,
-    });
-    stackStorage.set(JSON.stringify(stack));
-
-    renderTextItem(id, type, "", footnote, date);
+  $('.search-cancel-button').click((e) => {
+    fireNoteSearch('');
+    $('.searchbox').trigger('focus');
   });
 
-  $('.fileexport').click(exportTextItems);
+  /* toolbox & text area*/
+  $('.create').click(() => {
+    createNoteItem();
+    toggleEditorMode($('.content').last(), true);
 
-  $('.header-board').click(switchToolboxVisibility)
-  /* textarea */
-  $('.opener').click(openAddTextItemForm);
-  $('.sort-by').click(() => { sortTextItems(!windowState.sortedByNew) });
-  $('.add-textitem').on({
-    keyup: submitForm,
-    input: updateInputForm,
-    blur: () => {
-      $('.header-board').removeClass('entering');
-      $('.header-board').text('')
-    },
-    focus: (e) => {
-      // add draft tag when searchbox having tag query
-      if ($('.searchbox').val().slice(0, 1) === '#'
-        && !windowState.draftTags.includes($('.searchbox').val().slice(1))) {
-        while (tagarea.lastChild && tagarea.children.length > 1) {
-          tagarea.removeChild(tagarea.lastChild);
-        }
-        addDraftTag($('.searchbox').val());
+    updateStatusBoard($('.content').last().html());
+  });
 
-      }
-      fitHeightToContent(e.currentTarget);
-      updateTextInfoMessage($('.add-textitem').val());
+  $('.view').click(() => {
+    if ($('#textstack').hasClass('viewmode')) {
+      $('#textstack').removeClass('viewmode');
+      $('#toolbox').removeClass('viewmode');
+      $('.view').text('assignment');
+    } else {
+      $('#textstack').addClass('viewmode');
+      $('#toolbox').addClass('viewmode');
+      $('.searchbox').val('');
+      $('.view').text('assignment');
     }
-  })
-  $('.size-changer').click(switchTextareaSize);
+  });
 
+
+  $('.export').click(exportTextItems);
+  $('#statusboard').click(() => {
+    $('#toolbox').show();
+    $('#statusboard').text('');
+  })
+  $('#sort').click(() => { sortNotes(!windowState.sortedByNew) });
+
+
+  attachEventsToTextStack();
+
+  /* footer & modal */
+  $('#clearstack').click(() => { toggleClearStackModal(true) });
+  $('.overlay').click(() => { toggleClearStackModal(false) });
+  $('.ok').click(() => {
+    clearAllItems();
+    toggleClearStackModal(false)
+  });
+  $('.cancel').click(() => { toggleClearStackModal(false) });
+}
+
+const attachEventsToTextStack = () => {
   /**
-   * the text stack dynamically changes
-   */
+ * the text stack dynamically changes
+ */
   $('#textstack').click((e) => {
     let targetElem = e.target;
     let stackWrapper = $(e.target).parent().parent();
@@ -1008,13 +963,8 @@ const initializeEventListeners = () => {
         let stackWrapper = $(targetElem).parent().parent();
 
         // remove pinned styles
-        if (tagName.slice(1) === 'pinned') {
+        if (tagName.match(/pinned|📌/i)) {
           $(stackWrapper).removeClass('pinned');
-
-        }
-        if (tagName.slice(1).match(/(fav|favourite|favorite)/i)) {
-          $(stackWrapper).removeClass('fav');
-
         }
 
         if (stackWrapper.find('.tag').length > 1 && $(targetElem).prev().length != 0) {
@@ -1030,24 +980,36 @@ const initializeEventListeners = () => {
           $(targetElem).remove();
 
           // remove the tag from tagstack if there's no item with the tag
-          tagStack.splice(tagStack.findIndex(t => t === tagName.slice(1)), 1);
+          tagStack.splice(tagStack.findIndex(t => t === tagName), 1);
 
           $('.tag').each((index, item) => {
             let tagRegex = new RegExp(`${escapeRegExp(tagName)}`, 'i');
             console.log($(item).text());
 
             if ($(item).text().match(tagRegex)) {
-              tagStack.push(tagName.slice(1));
+              tagStack.push(tagName);
               return false;
             }
           })
-
           stackWrapper.find('.footnote')
             .find('.divWrap').removeClass('hidden');
+
         }
       } else {
         // when hashtag clicked
-        fireSearchWithQuery($(targetElem).html());
+        if (!isNaN(Date.parse($(targetElem).html()))) {
+          filterNoteItemsWithDateTag('::d');
+          $('.searchbox').val('::d');
+
+          $('#statusboard').removeClass('entering');
+        } else {
+          fireNoteSearch('#' + $(targetElem).html());
+        }
+
+
+        $('#statusboard').removeClass('entering');
+
+
         // stay at the position
         let stackWrapper = $(targetElem).parent().parent();
         let id = stackWrapper.find('input').val();
@@ -1065,8 +1027,8 @@ const initializeEventListeners = () => {
     } else if ($(targetElem).hasClass('checkbox')) {
       // when checkbox clicked
       $(targetElem).css('color', 'white !important')
-      let textItem = $(targetElem).parent().get(0);
-      removeTextItem(textItem);
+      let textItem = $(targetElem).parent().parent().get(0);
+      removeNoteItem(textItem);
       // PSEUDOLINK
     } else if ($(targetElem).hasClass('pseudolink')) {
       // use span tag as a link
@@ -1077,266 +1039,391 @@ const initializeEventListeners = () => {
       })
       return false;
     }
-    else {
-      closeAddTextItemForm();
-    }
   });
 
   $('#textstack').on({
     mouseover: (e) => {
       if ($(e.target).hasClass('tag')) {
-        // if (!['note', 'clip', 'bookmark'].includes($(e.target).text().slice(1))) {
-        //   if (e.ctrlKey && !$(e.target).hasClass('removing')) {
-        //     $(e.target).addClass('removing');
-        //   }
-        // }
         let stackWrapper = $(e.target).parent().parent();
-        if ($(stackWrapper).find('.tag').length > 1 && $(e.target).prev().length != 0) {
+        if ($(stackWrapper).find('.tag').length > 1
+          && !$(e.target).hasClass('type')) {
           if (e.ctrlKey && !$(e.target).hasClass('removing')) {
             $(e.target).addClass('removing');
           }
         }
-
       }
     },
     mouseout: (e) => {
       if ($(e.target).hasClass('tag')) {
-        if (!['note', 'clip', 'bookmark'].includes(e.target.textContent.slice(1))) {
+        if (!['note', 'clip', 'bookmark'].includes(e.target.textContent)) {
           $(e.target).removeClass('removing');
         }
       }
     },
   })
 
-
-  /* footer & modal */
-  $('.clear-button').click(showClearStackWindow);
-  $('.overlay').click(hideClearStackWindow);
-  $('.ok').click(() => {
-    clearAllItems();
-    hideClearStackWindow();
-  });
-  $('.cancel').click(hideClearStackWindow);
 }
 
-
 /* search */
-function fireSearchWithQuery(query) {
+const fireNoteSearch = (query) => {
   $('.searchbox').val(query);
   $('.searchbox').trigger('input')
 };
 
-function showDropdownList() {
+// ========== DISPLAY ==========
+/**
+ * 
+ */
+const showDropdownList = () => {
   setDropdownListItems();
   filterDropdownListItems($('.searchbox').val());
-  $('#dropdownlist').removeClass('hidden');
+  $('#tagsearch-result').animate({ scrollTop: 0 }, 20);
 
+  // show and select the first item
+  $('#tagsearch-result').show();
+  $('li').first().addClass('selected');
 }
 
-function hideDropdownList() {
-  $('#dropdownlist').addClass('hidden');
-  $('#dropdownlist').animate({ scrollTop: 0 }, 20);
-
-}
-
-function cancelSearch() {
-  fireSearchWithQuery('');
-  $('.searchbox').trigger('focus');
+/**
+ * 
+ */
+const hideDropdownList = () => {
+  $('#tagsearch-result').hide();
+  $('li.selected').removeClass('selected');
 }
 
 /* clear stack window modal*/
-function showClearStackWindow() {
-  $('#clear-window').removeClass('hidden');
-}
-
-function hideClearStackWindow() {
-  $('#clear-window').addClass('hidden');
-}
-
-const switchToolboxVisibility = (forseVisible = false) => {
-  if (forseVisible) {
-    $('.header-board').text('');
-    $('#toolbox').removeClass('hidden');
+/**
+ * 
+ */
+const toggleClearStackModal = (
+  display = $('.modal').hasClass('hidden') ? true : false
+) => {
+  if (display) {
+    $('.modal').removeClass('hidden');
   } else {
-    $('#toolbox').addClass('hidden');
+    $('.modal').addClass('hidden');
   }
 }
 
+/**
+ * 
+ */
+const toggleEditorMode = (
+  div,
+  display = !$(div).attr('contentEditable') ? true : false
+) => {
+  if (display) {
+    $(div).attr('contentEditable', true);
+    $(div).focus();
+
+    // change visual styles
+    $(div).parent().addClass('editing');
+    $(div).next().hide(); // edit icon
+  } else {
+    $(div).attr('contentEditable', false);
+
+    // replace new lines with br tag
+    div.innerHTML = enableURLEmbededInText(div.innerText);
+    div.innerHTML = div.innerHTML.replace(/\n+$/i, '');
+    div.innerHTML = div.innerHTML.replace(/\n/gi, '<br>');
+    div.innerHTML = div.innerHTML.replace(String.fromCharCode(8203), '');
+
+    // change visual styles
+    $(div).parent().removeClass('editing');
+    $(div).next().show(); // edit icon
+  }
+}
+
+/**
+ * 
+ */
 const displayMessage = (message) => {
-  if ($('.header-board').hasClass('entering')) {
-    $('.header-board').removeClass('entering');
+  if ($('#statusboard').hasClass('entering')) {
+    $('#statusboard').removeClass('entering');
   }
-  $('.header-board').text(message);
-
-  switchToolboxVisibility(false);
+  $('#statusboard').text(message);
+  $('#toolbox').hide();
 }
 
-const updateTextInfoMessage = (text) => {
-  switchToolboxVisibility(false);
+/**
+ * 
+ */
+const updateStatusBoard = (text) => {
+  $('#toolbox').hide();
 
-  let info = extractTextInfo(text);
-  $('.header-board').html(
+  let info = extractTextInfo(text.replace(String.fromCharCode(8203), ''));
+  $('#statusboard').html(
     `${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`
   );
 
-  if (!$('.header-board').hasClass('entering')) {
-    $('.header-board').addClass('entering');
+  if (!$('#statusboard').hasClass('entering')) {
+    $('#statusboard').addClass('entering');
   }
 }
 
-const sortTextItems = (sortingByNew) => {
+/**
+ * 
+ */
+const sortNotes = (sortingByNew) => {
   // NEW
   if (sortingByNew) {
-    $('.sort-by').html('New <i class="material-icons">arrow_upward</i>');
+    $('#sort').html('New <i class="material-icons">arrow_upward</i>');
     $('#textstack').css('flexDirection', 'column-reverse')
     // OLD
   } else {
-    $('.sort-by').html('Old <i class="material-icons">arrow_downward</i>');
+    $('#sort').html('Old <i class="material-icons">arrow_downward</i>');
     $('#textstack').css('flexDirection', 'column')
   }
   windowState.sortedByNew = sortingByNew;
 }
 
-const openAddTextItemForm = () => {
-  switchToolboxVisibility(false);
-  // HIDE
-  $('.opener').addClass('hidden');
-  $('.sort-by').addClass('hidden');
-  // SHOW
-  $('.add-textitem').removeClass('hidden');
-  $('.tagarea').removeClass('hidden');
-  // focus
-  $('.add-textitem').trigger('focus');
-}
+// ========== EXPORT ==========
+/**
+ * export the note items visible in the stack
+ */
+const exportTextItems = () => {
+  const ids = [];
 
-const closeAddTextItemForm = () => {
-  switchToolboxVisibility(true);
-  // HIDE
-  $('.add-textitem').addClass('hidden');
-  $('.tagarea').addClass('hidden');
-  // SHOW
-  $('.opener').removeClass('hidden');
-  $('.sort-by').removeClass('hidden');
-  $('.header-board').removeClass('entering');
-  // turn off overlay
-  chrome.runtime.sendMessage({
-    command: 'OVERLAY_OFF'
+  // get note item ids displayed
+  $('#textstack').find('.stackwrapper').each((index, wrapper) => {
+    if (!$(wrapper).is(":hidden")) {
+      ids.push($(wrapper).attr('id'));
+    }
+  })
+
+  // create exporting content
+  const content = stack.slice(0)
+    .filter(item => ids.includes(item.id))
+    .sort((a, b) => {
+      a = new Date(a.date);
+      b = new Date(b.date);
+      if (windowState.sortedByNew) {
+        // NEW => OLD
+        return a > b ? -1 : a < b ? 1 : 0;
+      } else {
+        // OLD => NEW
+        return a > b ? 1 : a < b ? -1 : 0;
+      }
+    })
+    .reduce((content, item) => {
+      // remove html tags
+      const sanitizedContent = $('<div>', {
+        html: item.content
+      }).text();
+      // 
+      content += `${sanitizedContent}\n\n`;
+      if (typeof item.footnote.pageTitle !== 'undefined' && item.footnote.pageTitle !== "") {
+        content += item.footnote.pageTitle + '\n';
+      }
+      if (typeof item.footnote.pageURL !== 'undefined' && item.footnote.pageURL !== "") {
+        content += item.footnote.pageURL + "\n";
+      }
+
+      return content += '\n';
+    }, '')
+
+  // create blob
+  const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+  const blob = new Blob([bom, content], {
+    type: 'data:text/plain'
+  });
+
+  // create url to download
+  window.URL = window.URL || window.webkitURL;
+  const url = window.URL.createObjectURL(blob);
+
+  // download the file
+  chrome.downloads.download({
+    url: url,
+    filename: formatDate() + '.txt',
+    saveAs: true
   });
 }
 
-const addDraftTag = (tagName) => {
-  // sanitize tag
-  tagName = tagName.replace(/^#|\s+$/g, '');
-  // create tag
-  $(tagarea).append($('<span>', {
-    addClass: 'hashtag',
-    text: tagName,
-    on: {
-      // attach remove event
-      'click': (e) => {
-        $(e.currentTarget).remove();
-        let index = windowState.draftTags.indexOf(tagName);
-        windowState.draftTags.splice(index, 1);
-      }
-    }
-  }))
+// ========== STORAGE ==========
+/**
+ * 
+ */
+const createNoteItem = () => {
+  const note = {
+    id: uuidv4(),
+    type: 'note',
+    content: '',
+    footnote: {
+      tags: [],
+      pageTitle: '',
+      pageURL: ''
+    },
+    // date: formatDate()
+    date: new Date().toISOString()
+  }
+
+  // add the current tag in the seachbox
+  const searchQuery = windowState.searchQuery;
+  if (searchQuery[0] === '#' && searchQuery.length > 0) {
+    note.footnote.tags.push(searchQuery.substring(1))
+  }
+
+  // add item to stack
+  stack.push(note);
+  stackStorage.set(JSON.stringify(stack));
+
+  let wrapper = $(generateNoteItemHTML(note)).get(0);
+  attachTagInputEvents(wrapper);
+  attachNoteContentEvents(wrapper);
+
+  // render the ga
+  $('#textstack').append(wrapper);
+};
+
+
+/**
+ * 
+ */
+const removeNoteItem = (noteItem) => {
+  // apply visual effects and display message
+  noteItem.classList.add('removed')
+  displayMessage("Item Removed!");
+
+  // remove from stack and storage after a while
+  setTimeout(() => {
+    // remove the item
+    const id = noteItem.querySelector('input').value;
+    stack = stack.filter(item => item.id !== id);
+    stackStorage.set(JSON.stringify(stack));
+    noteItem.remove();
+    // show toolbox
+    $('#toolbox').show();
+    $('#statusboard').text('');
+  }, 450);
 }
 
 /**
- * render textitems on stack
+ * 
+ */
+const clearAllItems = () => {
+  // clear storage
+  stackStorage.reset();
+
+  // reset the form
+  $('.searchbox').val('');
+  $('#textstack').empty();
+
+  // reset state variables
+  stack = [];
+  dateStack = [];
+  tagStack = ['bookmark', 'clip', 'note'];
+  windowState = {
+    searchQuery: '',
+    scrollY: 0,
+    sortedByNew: true
+  }
+}
+
+/**
+ * 
+ */
+const replaceTagName = (prevTag, newTag) => {
+  // add item to stack
+  stack.forEach(item => {
+    if (item.footnote.tags.includes(prevTag)) {
+      item.footnote.tags.splice(item.footnote.tags.findIndex(tag => tag == prevTag), 1, newTag)
+    }
+  })
+  stackStorage.set(JSON.stringify(stack));
+}
+
+/**
+ * render textitems on text stack
  */
 const renderStack = () => {
+  // remove all text items
+  $('#textstack').empty();
+
   // read from storage
-  stackStorage.get(raw => {
-    if (typeof raw === 'undefined') {
+  stackStorage.get(rawData => {
+    if (typeof rawData === 'undefined') {
       stackStorage.reset();
     } else {
-      let pinnedStack = [];
-      stack = JSON.parse(raw);
+      stack = JSON.parse(rawData);
+      // NORMAL MODE
+      let notesHTML = "";
       stack.forEach(res => {
-        let type = res.hasOwnProperty('type') ? res.type : 'note';
-        if (typeof res.footnote.tags === 'undefined') {
-          res.footnote["tags"] = [];
-        }
-        if (res.footnote.tags.includes('pinned')) {
-          pinnedStack.push(res);
-        } else {
-          renderTextItem(res.id, type, res.content, res.footnote, res.date);
-
-        }
+        notesHTML += generateNoteItemHTML(res);
       });
+
+      // insert current time
+      let now = new Date();
+      let hours = ('0' + now.getHours()).slice(-2);
+      let minutes = ('0' + now.getMinutes()).slice(-2);
+
+      // add
+      let currentDate = `<div class="date current">${formatDate() + ' ' + hours + ":" + minutes}</div>`
+      notesHTML += currentDate;
+
+      // insert HTML
+      document.querySelector('#textstack').insertAdjacentHTML('afterbegin', notesHTML)
+
+      // insert separators between items
       insertDateSeparator();
-      pinnedStack.forEach(res => {
-        // let type = res.hasOwnProperty('type') ? res.type : 'note';
-        renderTextItem(res.id, res.type, res.content, res.footnote, res.date);
-      });
 
+      $('.stackwrapper').each((index, item) => {
+        // console.log(item);
+        attachTagInputEvents(item);
+        if ($(item).hasClass('note')) {
+          attachNoteContentEvents(item);
+        }
+      })
     }
   });
 
 };
 
-const switchTextareaSize = (e, forceExpandLess = false) => {
-  let sizeChangerIcon = $('.size-changer').find('i');
-
-  let config = sizeChangerIcon.text() === 'expand_less' || forceExpandLess ?
-    {
-      height: '25px',
-      minHeight: '25px',
-      icon: 'expand_more',
-      command: 'OVERLAY_OFF'
-    } : {
-      height: '300px',
-      minHeight: '300px',
-      icon: 'expand_less',
-      command: 'OVERLAY_ON'
+/**
+ * insert date as a separator
+ */
+const insertDateSeparator = () => {
+  stack.forEach((item) => {
+    let date = new Date(item.date);
+    if (dateStack.length === 0) {
+      dateStack.push({ id: item.id, date: date });
+    } else {
+      // insert only between the date and the previous date
+      if (formatDate(new Date(dateStack[dateStack.length - 1].date)) !== formatDate(new Date(date))) {
+        dateStack.push({ id: item.id, date: date });
+      }
     }
-
-  updateTextInfoMessage($('.add-textitem').val())
-
-  // change textarea size and icon
-  $('.add-textitem').css({
-    height: config.height,
-    minHeight: config.minHeight
   })
-  sizeChangerIcon.text(config.icon);
 
-  // turn on/off overlay of the current tab
-  chrome.runtime.sendMessage({
-    command: config.command
-  });
+  dateStack.forEach(item => {
+    $(stackDOM.children).each((index, wrapper) => {
+      if ($(wrapper).attr("id") === item.id) {
+        $(wrapper).get(0).insertAdjacentHTML('beforebegin', `<div class="date">${formatDate(item.date)}</div>`);
+      }
+    });
+  })
 }
 
 /**
- * Restore the previous popup window state
- * 
+ * Function to restore the previous window state
  */
 const restorePreviousState = () => {
-  chrome.storage.local.get(['searchQuery', 'draftText', 'draftTags', 'scrollY', 'closedDateTime', 'sortedByNew'],
+  chrome.storage.local.get(['searchQuery', 'scrollY', 'closedDateTime', 'sortedByNew'],
     state => {
       windowState = state;
 
-      let timeElapsed = typeof state.closedDateTime !== 'undefined'
-        ? (new Date() - new Date(state.closedDateTime)) : 30000;
+      const timeElapsed = typeof state.closedDateTime !== 'undefined'
+        ? (new Date() - new Date(state.closedDateTime)) : config.CACHE_DURATION;
 
-      if (timeElapsed < 30000) {
-        // restore textarea
-        if (typeof state.draftText !== 'undefined') {
-          $('.add-textitem').text(state.draftText);
-        }
-        // restore tagarea
-        if (typeof state.draftTags !== 'undefined') {
-          state.draftTags.forEach(tag => {
-            addDraftTag(tag);
-          })
-        }
+      if (timeElapsed < config.CACHE_DURATION) {
         // restore searchbox
         if (typeof state.searchQuery !== 'undefined') {
-          fireSearchWithQuery(state.searchQuery);
+          fireNoteSearch(state.searchQuery);
         }
         // restore sort order
         if (typeof state.sortedByNew !== 'undefined') {
-          sortTextItems(state.sortedByNew)
+          sortNotes(state.sortedByNew)
         }
         // restore scrollY
         if (typeof state.scrollY !== 'undefined') {
@@ -1346,11 +1433,46 @@ const restorePreviousState = () => {
     })
 }
 
+// utilities
+const convertDateToDateTimeFormat = () => {
+  const convertedData = [];
+
+  stackStorage.get(rawData => {
+    if (typeof rawData === 'undefined') {
+      stackStorage.reset();
+    } else {
+      stack = JSON.parse(rawData);
+      stack.forEach(res => {
+        res.date = new Date(res.date).toISOString();
+        convertedata.push(res);
+      });
+    }
+  });
+  stackStorage.set(JSON.stringify(convertedData));
+}
+
+const importFromJsonFile = async (path) => {
+  const url = chrome.runtime.getURL(path);
+  $.getJSON(url, function (data) {
+    console.log("done");
+    stackStorage.set(JSON.stringify(data.raw));
+  });
+}
+
+// ========== INITIALIZATION ==========
 // initialize
 document.addEventListener('DOMContentLoaded', () => {
+  // importFromJsonFile("/importData.json").then(() => {
+  //   // convertDateToDateTimeFormat();
+  //   initializeEventListeners();
+  //   renderStack();
+  //   restorePreviousState();
+  // })
+
   initializeEventListeners();
   renderStack();
   restorePreviousState();
+
 });
 
 document.addEventListener('keyup', (e) => {

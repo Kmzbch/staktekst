@@ -4,16 +4,20 @@
 <head>
   <meta charset="UTF-8">
   <title>Staktekst</title>
+  <!-- custom styles -->
+  <link rel="stylesheet" href="currentTab.css" type='text/css' />
+  <link rel="stylesheet" href="popup.css" type='text/css' />
+  <!-- third-party libraries -->
   <link rel="stylesheet" href="css/font-awesome.min.css" type='text/css' />
   <link rel="stylesheet" href="css/solid.min.css" type='text/css' />
   <link rel="stylesheet" href="css/brands.min.css" type='text/css' />
-  <link rel="stylesheet" href="popup.css" type='text/css' id='style_default' />
 </head>
 
 <body>
-  <div id="clear-window" class="modal hidden">
+  <!-- dialog window -->
+  <div id="clearstack-window" class="modal hidden">
     <div class='overlay'></div>
-    <div class='messagebox'>
+    <div id='messagebox'>
       <h4>スタックのクリア</h4>
       過去の保存データがすべて削除されます。<br>クリアしますか？
       <div class='button-container'>
@@ -22,43 +26,39 @@
       </div>
     </div>
   </div>
+  <!-- main content -->
   <div id="container">
     <header class="sticky">
       <div id="search">
-        <label class="search-label material-icons">search</label>
+        <label class="searchlabel material-icons">search</label>
         <input class="searchbox" type="search" autofocus="true" spellcheck="false" placeholder="キーワード検索" />
-        <i class="searchcancel-button material-icons hidden">cancel</i>
-        <ul id="dropdownlist" class="hidden">
+        <i class="search-cancel-button material-icons">cancel</i>
+        <ul id="tagsearch-result">
         </ul>
       </div>
       <div id="toolbox">
-        <i class="opener-top material-icons">post_add</i>
-        <i class="switchview material-icons">apps</i>
-        <i class="fileexport material-icons">get_app</i>
+        <i class="create material-icons">post_add</i>
+        <i class="view material-icons">assignment</i>
+        <i class="export material-icons">get_app</i>
       </div>
-      <div class="header-board"></div>
+      <div id="statusboard"></div>
     </header>
     <div id="main">
-      <div id="add-sort">
-        <textarea class="add-textitem hidden" placeholder="テキストを追加"></textarea>
-        <div class="tagarea hidden"><span class="hashtag default">note</span>
-          <div class='size-changer'><i class='material-icons'>expand_more</i></div>
-        </div>
-        <i class="opener material-icons">add</i>
-        <div class="sort-by">New <i class="material-icons">arrow_upward</i></div>
-      </div>
+      <div id="sort">New <i class="material-icons">arrow_upward</i></div>
       <div id="textstack">
       </div>
     </div>
     <footer class="sticky">
-      <button class="clear-button">スタックを空にする</button>
+      <button id="clearstack">スタックを空にする</button>
     </footer>
   </div>
-  <script src="popup.js"></script>
+  <!-- third-party libraries -->
   <script src="lib/jquery-3.5.0.min.js"></script>
+  <script src="lib/jquery.highlight.js"></script>
+  <!-- libraries -->
+  <script src="popup.js"></script>
   <script src="bubble_lib.js"></script>
   <script src="common_lib.js"></script>
-
 </body>
 
 </html>
