@@ -736,6 +736,13 @@ const attachNoteContentEvents = (wrapper) => {
     if (e.keyCode === 13 && e.ctrlKey) {
       // Ctrl + Enter
       toggleEditorMode(contentDIV, false);
+
+      // create a new note
+      createNoteItem();
+      toggleEditorMode($('.content').last(), true);
+
+      updateStatusBoard($('.content').last().html());
+
       return false;
     }
   });
