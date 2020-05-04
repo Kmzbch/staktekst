@@ -910,6 +910,8 @@ const initializeEventListeners = () => {
         $('.search-cancel-button').hide();
         $('footer').show();
         hideDropdownList();
+
+        windowState.searchQuery = '';
       } else {
         doTaskOnceInputIsDone(updateSearchResult, milseconds)
       }
@@ -1196,29 +1198,45 @@ const sortNotes = (sortingByNew) => {
 }
 
 // ========== EXPORT ==========
+/**
+ * export the note items visible in the stack
+ */
 const exportTextItems = () => {
-  // get text items to export
-  const ids = $.map(
-    $(stackDOM.children).not('.date, .filtered'),
-    (item, index) => {
-      return $(item).attr('id')
-    })
+  const ids = [];
+
+  // get note item ids displayed
+  $('#textstack').find('.stackwrapper').each((index, wrapper) => {
+    if (!$(wrapper).is(":hidden")) {
+      ids.push($(wrapper).attr('id'));
+    }
+  })
 
   // create exporting content
-  const content = Array.from(stack)
+  const content = stack.slice(0)
     .filter(item => ids.includes(item.id))
+    .sort((a, b) => {
+      a = new Date(a.date);
+      b = new Date(b.date);
+      if (windowState.sortedByNew) {
+        // NEW => OLD
+        return a > b ? -1 : a < b ? 1 : 0;
+      } else {
+        // OLD => NEW
+        return a > b ? 1 : a < b ? -1 : 0;
+      }
+    })
     .reduce((content, item) => {
       // remove html tags
       const sanitizedContent = $('<div>', {
         html: item.content
       }).text();
       // 
-      content += `${sanitizedContent}\n`;
-      if (typeof item.footnote.pageTitle !== 'undefined') {
+      content += `${sanitizedContent}\n\n`;
+      if (typeof item.footnote.pageTitle !== 'undefined' && item.footnote.pageTitle !== "") {
         content += item.footnote.pageTitle + '\n';
       }
-      if (typeof item.footnote.url !== 'undefined') {
-        content += item.footnote.url + "\n";
+      if (typeof item.footnote.pageURL !== 'undefined' && item.footnote.pageURL !== "") {
+        content += item.footnote.pageURL + "\n";
       }
 
       return content += '\n';
@@ -1234,7 +1252,7 @@ const exportTextItems = () => {
   window.URL = window.URL || window.webkitURL;
   const url = window.URL.createObjectURL(blob);
 
-  // download
+  // download the file
   chrome.downloads.download({
     url: url,
     filename: formatDate() + '.txt',
@@ -1252,7 +1270,9 @@ const createNoteItem = () => {
     type: 'note',
     content: '',
     footnote: {
-      tags: []
+      tags: [],
+      pageTitle: '',
+      pageURL: ''
     },
     // date: formatDate()
     date: new Date().toISOString()

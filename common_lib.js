@@ -90,8 +90,8 @@ function pushText(content, type, pageTitle = '', pageURL = '') {
                 content: content,
                 footnote: {
                     tags: [],
-                    pageTitle,
-                    pageURL
+                    pageTitle: pageTitle,
+                    pageURL: pageURL
                 }
             });
             stackStorage.set(JSON.stringify(stack));
