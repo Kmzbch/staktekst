@@ -1,6 +1,7 @@
 // seachbox
 const dropdownList = document.querySelector('#tagsearch-result');
 let stackDOM = document.querySelector('#textstack');
+let dupNodes = [];
 
 // configration
 const config = {
@@ -54,7 +55,7 @@ const updateSearchResult = () => {
   // TODO: consider what special search tags to use
   if (query[0] === '#') {
     hits = filterNoteItemsByTag(query);
-  } else if (query === '::d') {
+  } else if (query === ':d') {
     hits = filterNoteItemsWithDateTag(query);
   } else {
     hits = filterNoteItems(query);
@@ -234,7 +235,9 @@ const selectOnDropdownList = (e) => {
   } else if (e.keyCode === 40) {
     // DOWN
     if ($('#tagsearch-result').is(":hidden")) {
-      showDropdownList()
+      if ($('li.flitered').length > 0 || $('.searchbox').val() === "") {
+        showDropdownList()
+      }
     } else {
       if (liSelected) {
         if (unfiltered.length > index + 1) {
@@ -486,24 +489,28 @@ const generateTagsHTML = (tagName) => {
   // add classes for special tags
   if (tagName.match(/pinned|📌/i)) {
     // pinned
-    tagsHTML += `<span class="tag pinned emoji">${tagName}</span>`
-  } else if (tagName.match(/(★|☆|✭|⭐)/i)) {
+    tagsHTML = `<span class="tag pinned emoji">${tagName}</span>`
+  } else if (tagName.match(/fav|★|☆|✭|⭐/i)) {
     // favourite
-    tagsHTML += `<span class="tag fav">${tagName}</span>`
-  } else if (tagName.match(/(♡|💛|♥|❤)/i)) {
+    // tagsHTML = `<span class="tag fav">${tagName}</span>`
+    tagsHTML = `<span class="tag fav">⭐</span>`
+  } else if (tagName.match(/like|♡|💛|♥|❤/i)) {
     // likes
-    tagsHTML += `<span class="tag like">${tagName}</span>`
+    // tagsHTML = `<span class="tag like">${tagName}</span>`
+    tagsHTML = `<span class="tag like">❤</span>`
   } else if (
     tagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
     )) {
     // emoji
-    tagsHTML += `<span class="tag emoji">${tagName}</span>`
+    tagsHTML = `<span class="tag emoji">${tagName}</span>`
+  } else if (tagName === "today") {
+    tagsHTML = `<span class="tag tagDate">${formatDate()}</span>`
   } else if (!isNaN(new Date(tagName))) {
     // datetag
     // TODO: rename tagDate class
-    tagsHTML += `<span class="tag tagDate">${tagName}</span>`
+    tagsHTML = `<span class="tag tagDate">${tagName}</span>`
   } else {
-    tagsHTML += `<span class="tag">${tagName}</span>`
+    tagsHTML = `<span class="tag">${tagName}</span>`
   }
   // save tags for tag search
   if (!tagStack.includes(tagName)) {
@@ -558,6 +565,7 @@ const attachTagInputEvents = (stackWrapper) => {
       }
     },
   )
+
 
   // KEYUP
   $(stackWrapper).find('.tagadd').keyup(
@@ -845,7 +853,6 @@ const initializeEventListeners = () => {
     }
   });
 
-  let dupNodes = [];
   /* searchbox  */
   $('.searchbox').on({
     click: hideDropdownList,
@@ -1292,8 +1299,11 @@ const createNoteItem = () => {
   attachTagInputEvents(wrapper);
   attachNoteContentEvents(wrapper);
 
-  // render the ga
+  // render
   $('#textstack').append(wrapper);
+
+  // for search optimization
+  dupNodes.length = 0;
 };
 
 
