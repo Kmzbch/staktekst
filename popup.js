@@ -792,6 +792,17 @@ const attachNoteContentEvents = (wrapper) => {
     // update note item
     stack[index].content = newHTML.replace(/<br>/ig, '\n');
     stackStorage.set(JSON.stringify(stack));
+
+    // for search optimization
+    if (dupNodes[0]) {
+      $(dupNodes[0]).find('.stackwrapper').each((index, item) => {
+        if ($(item).attr('id') === id) {
+          item.innerHTML = wrapper.innerHTML;
+          return false;
+        }
+      })
+    }
+
   })
 
   // fire change event of content editable div when its content changed 
@@ -1303,7 +1314,13 @@ const createNoteItem = () => {
   $('#textstack').append(wrapper);
 
   // for search optimization
-  dupNodes.length = 0;
+  if (dupNodes[0]) {
+    // remove the item from duplicated textstack as well
+    let wrapper = $(generateNoteItemHTML(note)).get(0);
+    attachTagInputEvents(wrapper);
+    attachNoteContentEvents(wrapper);
+    $(dupNodes[0]).append(wrapper);
+  }
 };
 
 
