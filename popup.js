@@ -350,6 +350,14 @@ const setDropdownListItems = () => {
                 tagStack.splice(tagStack.findIndex(t => t === oldTag), 1, newTag);
                 e.target.defaultValue = newTag;
 
+                // for search optimization
+                if (dupNodes[0]) {
+                  $(dupNodes[0]).find('.tag').each((index, elem) => {
+                    if ($(elem).text() === oldTag) {
+                      $(elem).text(newTag)
+                    }
+                  })
+                }
               }
 
               $(e.target).parent().find('span').text(newTag);
@@ -641,6 +649,23 @@ const attachTagInputEvents = (stackWrapper) => {
           stack[index].footnote.tags.splice(tagIndex, 1);
           stackStorage.set(JSON.stringify(stack));
           prevTag.remove();
+
+
+          // for search optimization
+          if (dupNodes[0]) {
+            // remove the item from duplicated textstack as well
+            $(dupNodes[0]).find('.stackwrapper').each((index, item) => {
+              if ($(item).attr('id') === $(prevStackWrapper).attr('id')) {
+                $(item).find('.tag').each((index, tag) => {
+                  if ($(tag).text() === prevTagName) {
+                    $(tag).remove();
+                    return false;
+                  }
+                })
+              }
+            })
+          }
+
 
           // remove the tag from tagStack if there is no item with the tag
           tagStack.splice(tagStack.findIndex(t => t === prevTagName), 1);
@@ -1016,6 +1041,21 @@ const attachEventsToTextStack = () => {
           // remove item in the UI
           $(targetElem).remove();
 
+          // for search optimization
+          if (dupNodes[0]) {
+            // remove the item from duplicated textstack as well
+            $(dupNodes[0]).find('.stackwrapper').each((index, item) => {
+              if ($(item).attr('id') === id) {
+                $(item).find('.tag').each((index, tag) => {
+                  if ($(tag).text() === tagName) {
+                    $(tag).remove();
+                    return false;
+                  }
+                })
+              }
+            })
+          }
+
           // remove the tag from tagstack if there's no item with the tag
           tagStack.splice(tagStack.findIndex(t => t === tagName), 1);
 
@@ -1389,6 +1429,7 @@ const replaceTagName = (prevTag, newTag) => {
     }
   })
   stackStorage.set(JSON.stringify(stack));
+
 }
 
 /**
