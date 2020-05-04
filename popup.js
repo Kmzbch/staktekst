@@ -1325,6 +1325,17 @@ const removeNoteItem = (noteItem) => {
     // show toolbox
     $('#toolbox').show();
     $('#statusboard').text('');
+
+    // for search optimization
+    if (dupNodes[0]) {
+      // remove the item from duplicated textstack as well
+      $(dupNodes[0]).find('.stackwrapper').each((index, item) => {
+        if ($(item).attr('id') === id) {
+          $(item).remove();
+          return false;
+        }
+      })
+    }
   }, 450);
 }
 
