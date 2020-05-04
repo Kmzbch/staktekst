@@ -17,8 +17,18 @@
 }
 
 /* clear stack window */
-#messagebox h4 {
+#fileexport-messagebox h4 {
     color: tomato;
+}
+
+#clearstack-messagebox h4 {
+    color: tomato;
+}
+
+#fileexport-window button {
+    
+    min-width: 100px;
+    z-index: 9999999;
 }
 
 #clearstack-window button {
@@ -43,7 +53,7 @@
     margin-top: 30px;
 }
 
-#messagebox {
+#clearstack-messagebox {
     position: fixed;
     display: flex;
     flex-direction: column;
@@ -62,6 +72,28 @@
     -moz-user-select: none;
 }
 
+
+.radio-container {
+    margin-top: 10px;
+}
+#fileexport-messagebox {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+    align-content: space-between;
+    z-index: 9999999;
+    width: 380px;
+    min-height: 230px;
+    background: white;
+    box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+    padding: 20px;
+    font-size: 16px;
+    text-align: left;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
 
 /* utilitie classes */
 .sticky {

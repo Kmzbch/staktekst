@@ -990,7 +990,9 @@ const initializeEventListeners = () => {
   });
 
 
-  $('.export').click(exportNoteItemsAsTextFile);
+  // $('.export').click(exportNoteItemsAsTextFile);
+  $('.export').click(() => { toggleFileExportModal(true) });
+
   $('#statusboard').click(() => {
     $('#toolbox').show();
     $('#statusboard').text('');
@@ -1002,12 +1004,25 @@ const initializeEventListeners = () => {
 
   /* footer & modal */
   $('#clearstack').click(() => { toggleClearStackModal(true) });
-  $('.overlay').click(() => { toggleClearStackModal(false) });
-  $('.ok').click(() => {
+  $('#clearstack-window .overlay').click(() => { toggleClearStackModal(false) });
+  $('#clearstack-window .ok').click(() => {
     clearAllItems();
     toggleClearStackModal(false)
   });
-  $('.cancel').click(() => { toggleClearStackModal(false) });
+  $('#clearstack-window .cancel').click(() => { toggleClearStackModal(false) });
+
+  /* */
+  $('#fileexport-window .overlay').click(() => { toggleFileExportModal(false) });
+  $('#fileexport-window .ok').click((e) => {
+    if ($(':checked').val() === 'text') {
+      exportNoteItemsAsTextFile();
+    } else if ($(':checked').val() === 'json') {
+      exportJsonFile();
+    }
+    toggleFileExportModal(false)
+  });
+  $('#fileexport-window .cancel').click(() => { toggleFileExportModal(false) });
+
 }
 
 const attachEventsToTextStack = () => {
@@ -1174,12 +1189,22 @@ const hideDropdownList = () => {
  * 
  */
 const toggleClearStackModal = (
-  display = $('.modal').hasClass('hidden') ? true : false
+  display = $('#clearstack-window.modal').hasClass('hidden') ? true : false
 ) => {
   if (display) {
-    $('.modal').removeClass('hidden');
+    $('#clearstack-window.modal').removeClass('hidden');
   } else {
-    $('.modal').addClass('hidden');
+    $('#clearstack-window.modal').addClass('hidden');
+  }
+}
+
+const toggleFileExportModal = (
+  display = $('#fileexport-window.modal').hasClass('hidden') ? true : false
+) => {
+  if (display) {
+    $('#fileexport-window.modal').removeClass('hidden');
+  } else {
+    $('#fileexport-window.modal').addClass('hidden');
   }
 }
 
@@ -1322,6 +1347,49 @@ const exportNoteItemsAsTextFile = () => {
   chrome.downloads.download({
     url: url,
     filename: formatDate() + '.txt',
+    saveAs: true
+  });
+}
+
+const exportJsonFile = () => {
+  const ids = [];
+
+  // get note item ids displayed
+  $('#textstack').find('.stackwrapper').each((index, wrapper) => {
+    if (!$(wrapper).is(":hidden")) {
+      ids.push($(wrapper).attr('id'));
+    }
+  })
+
+  // create exporting content
+  const content = stack.slice(0)
+    .filter(item => ids.includes(item.id))
+    .sort((a, b) => {
+      a = new Date(a.date);
+      b = new Date(b.date);
+      if (windowState.sortedByNew) {
+        // NEW => OLD
+        return a > b ? -1 : a < b ? 1 : 0;
+      } else {
+        // OLD => NEW
+        return a > b ? 1 : a < b ? -1 : 0;
+      }
+    });
+
+  // create blob
+  const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+  const blob = new Blob([bom, JSON.stringify(content)], {
+    type: 'data:text/plain'
+  });
+
+  // create url to download
+  window.URL = window.URL || window.webkitURL;
+  const url = window.URL.createObjectURL(blob);
+
+  // download the file
+  chrome.downloads.download({
+    url: url,
+    filename: formatDate() + '.json',
     saveAs: true
   });
 }

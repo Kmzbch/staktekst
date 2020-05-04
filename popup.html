@@ -17,7 +17,7 @@
   <!-- dialog window -->
   <div id="clearstack-window" class="modal hidden">
     <div class='overlay'></div>
-    <div id='messagebox'>
+    <div id='clearstack-messagebox'>
       <h4>スタックのクリア</h4>
       過去の保存データがすべて削除されます。<br>クリアしますか？
       <div class='button-container'>
@@ -26,6 +26,23 @@
       </div>
     </div>
   </div>
+  <div id="fileexport-window" class="modal hidden">
+    <div class='overlay'></div>
+    <div id='fileexport-messagebox'>
+      <h4>ファイルのエクスポート</h4>
+      表示中のノートをファイルに保存します。<br>フォーマットを選択してください。
+      <div class="radio-container">
+        <input type="radio" id="text" name="format" value="text" checked><label for="text">テキストファイル(*.txt)</label><br>
+        <input type="radio" id="json" name="format" value="json"><label for="json">JSONフォーマット(*.json)</label><br>
+      </div>
+      <div class='button-container'>
+        <button class='ok'>OK</button>
+        <button class='cancel'>キャンセル</button>
+      </div>
+    </div>
+  </div>
+  </div>
+
   <!-- main content -->
   <div id="container">
     <header class="sticky">
