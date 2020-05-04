@@ -117,8 +117,6 @@ const filterNoteItemsByTag = (tagName) => {
 
 
 const filterNoteItemsWithDateTag = (dateTag) => {
-  // dateTag = dateTag.substring(2);
-
   let hits = 0;
 
   Array.from(stackDOM.children)
@@ -135,7 +133,6 @@ const filterNoteItemsWithDateTag = (dateTag) => {
             textItem.classList.add('filtered');
           }
         })
-
       }
       return textItem;
     })
@@ -151,52 +148,38 @@ const filterNoteItems = (term) => {
   let termRegex;
   let hits = 0;
 
-
   // Search in Japanese/English
   if (containsJapanese(term)) {
-    termRegex = new RegExp(`(${escapeRegExp(term)})(.*?)`, 'ig');
+    termRegex = new RegExp(`(${escapeRegExp(term)})`, 'i');
   } else {
-    termRegex = new RegExp(`(?!<span .+? target="_blank"/>)(${escapeRegExp(term)})(.*?)(?!</span>)`, 'ig');
+    termRegex = new RegExp(`(?!<span .+? target="_blank"/>)(${escapeRegExp(term)})(.*?)(?!</span>)`, 'i');
   }
 
   Array.from(stackDOM.children)
     .map(textItem => {
-      // remove text decoration and highlight
-      textItem.firstChild.innerHTML = textItem.firstChild.innerHTML;
-
       if (textItem.textContent.match(termRegex)) {
         textItem.classList.remove('filtered');
         hits++;
       } else {
         textItem.classList.add('filtered');
       }
-
       return textItem;
     })
     .filter(textItem => !textItem.classList.contains('date'))
     .filter(textItem => !textItem.classList.contains('filtered'))
     .forEach(textItem => {
       let contentDIV = textItem.firstElementChild;
-
       // enable URL link
       contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
       contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
 
       if (term.length >= 1) {
-        // highlight text except those of pseudo anchor tag
-        let linkRegex = new RegExp(`(<span .+? target="_blank">.*?</span>)`, 'i');
-        let splitText = contentDIV.innerHTML.split(linkRegex);
-        splitText = splitText.map(item => {
-          return item.match(linkRegex) ? item : (item.replace(termRegex, "<span class='highlighted'>$1</span>$2"));
-        })
-        contentDIV.innerHTML = splitText.join('');
-
-        // $(contentDIV).highlight(term, { element: 'span', className: 'highlighted' });
-
+        $(contentDIV).highlight(term, { element: 'span', className: 'highlighted' });
       } else {
-        // get the text back to the initial state
-        contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
-        contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
+        // UNUSED
+        // // get the text back to the initial state
+        // contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
+        // contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
       }
     });
 
@@ -304,8 +287,6 @@ const setDropdownListItems = () => {
   // empty selections
   $('#tagsearch-result').empty();
 
-  // 
-  // tagStack = tagStack.slice(0, 3).concat(tagStack.slice(3).sort());
   let defaultTagStack = tagStack.slice(0, 3);
   let emojiTagStack = tagStack.filter((tag) =>
     tag.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu)
@@ -464,7 +445,6 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
       if (tagName.match(/pinned|📌/i)) {
         tagName = tagName.replace(/pinned/i, '📌');
       }
-
       tagsHTML += generateTagsHTML(tagName);
     })
   }
@@ -872,6 +852,7 @@ const initializeEventListeners = () => {
       let queryLength = $('.searchbox').val().length;
       switch (queryLength) {
         case 0:
+          milseconds = 1;
           break;
         case 1:
           milseconds = 500;
@@ -1390,7 +1371,9 @@ const renderStack = () => {
       $('.stackwrapper').each((index, item) => {
         // console.log(item);
         attachTagInputEvents(item);
-        attachNoteContentEvents(item);
+        if ($(item).hasClass('note')) {
+          attachNoteContentEvents(item);
+        }
       })
     }
   });
