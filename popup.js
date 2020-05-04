@@ -197,12 +197,15 @@ const selectOnDropdownList = (e) => {
   let index = unfiltered.index(liSelected);
 
   if (e.keyCode === 13) {
-    // ENTER
-    if (liSelected) {
-      liSelected.removeClass('selected');
-      fireNoteSearch('#' + liSelected.text().replace(/edit$/, ''));
+    if (!$('#tagsearch-result').is(":hidden")) {
+      // ENTER
+      if (liSelected) {
+        liSelected.removeClass('selected');
+        fireNoteSearch('#' + liSelected.text().replace(/edit$/, ''));
+      }
+      hideDropdownList()
+
     }
-    hideDropdownList()
   } else if (e.keyCode === 38) {
     // UP
     if (!$('#tagsearch-result').is(":hidden")) {
@@ -731,21 +734,21 @@ const attachNoteContentEvents = (wrapper) => {
     editorSel.addRange(editorRange)
   })
 
-  // ctrl + Enter to end editing
-  contentDIV.addEventListener('keydown', (e) => {
-    if (e.keyCode === 13 && e.ctrlKey) {
-      // Ctrl + Enter
-      toggleEditorMode(contentDIV, false);
+  // // ctrl + Enter to end editing
+  // contentDIV.addEventListener('keydown', (e) => {
+  //   if (e.keyCode === 13 && e.ctrlKey) {
+  //     // Ctrl + Enter
+  //     toggleEditorMode(contentDIV, false);
 
-      // create a new note
-      createNoteItem();
-      toggleEditorMode($('.content').last(), true);
+  //     // // create a new note
+  //     // createNoteItem();
+  //     // toggleEditorMode($('.content').last(), true);
 
-      updateStatusBoard($('.content').last().html());
+  //     // updateStatusBoard($('.content').last().html());
 
-      return false;
-    }
-  });
+  //     return false;
+  //   }
+  // });
 
   wrapper.addEventListener('mouseleave', (e) => {
     if ($(contentDIV).attr('contentEditable')) {
@@ -1486,5 +1489,28 @@ document.addEventListener('keyup', (e) => {
   // refresh with F5
   if (e.keyCode === 116) {
     renderStack();
+  } else if (e.keyCode === 13 && e.ctrlKey) {
+    let itemInEdit = null;
+
+    $('.content').each((index, item) => {
+      if ($(item).attr('contenteditable') === 'true') {
+        itemInEdit = item;
+        return false;
+      }
+    })
+
+    if (itemInEdit) {
+      // Ctrl + Enter
+      toggleEditorMode(itemInEdit, false);
+      return false;
+    } else {
+      // create a new note
+      createNoteItem();
+      toggleEditorMode($('.content').last(), true);
+
+      updateStatusBoard($('.content').last().html());
+
+      return false;
+    }
   }
 })
