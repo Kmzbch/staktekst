@@ -77,8 +77,8 @@ const updateSearchResult = () => {
       $('#statusboard').text('');
       // show/hide
       $('#toolbox').show();
-      $('.search-cancel-button').hide();
     }, 5000);
+
   } else {
     // reset
     $('#statusboard').text('');
@@ -356,7 +356,13 @@ const setDropdownListItems = () => {
                     $(elem).text(newTag)
                   }
                 })
-                tagStack.splice(tagStack.findIndex(t => t === oldTag), 1, newTag);
+
+                if (tagStack.findIndex(t => t === newTag) === -1) {
+                  tagStack.splice(tagStack.findIndex(t => t === oldTag), 1, newTag);
+                } else {
+                  tagStack.splice(tagStack.findIndex(t => t === oldTag), 1);
+                }
+
                 e.target.defaultValue = newTag;
 
                 // for search optimization
