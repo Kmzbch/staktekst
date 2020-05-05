@@ -841,7 +841,6 @@ const attachNoteContentEvents = (wrapper) => {
     if (dupNodes[0]) {
       $(dupNodes[0]).find('.stackwrapper').each((index, item) => {
         if ($(item).attr('id') === id) {
-          console.log('ASDF');
           item.innerHTML = wrapper.innerHTML;
 
           $(item).unhighlight({ element: 'span', className: 'highlighted' });
@@ -1015,8 +1014,8 @@ const initializeEventListeners = () => {
   });
 
 
-  // $('.export').click(exportNoteItemsAsTextFile);
-  $('.export').click(() => { toggleFileExportModal(true) });
+  $('.export').click(exportNoteItemsAsTextFile);
+  // $('.export').click(() => { toggleFileExportModal(true) });
 
   $('#statusboard').click(() => {
     $('#toolbox').show();
