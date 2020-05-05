@@ -550,6 +550,7 @@ const attachTagInputEvents = (stackWrapper) => {
   // BLUR event
   $(stackWrapper).find('.tagadd').blur(
     (ev) => {
+      ev.preventDefault();
       let tagName = ev.target.value.trim();
       if (tagName !== '') {
         // update tag information
@@ -799,7 +800,7 @@ const attachNoteContentEvents = (wrapper) => {
   // });
 
   wrapper.addEventListener('mouseleave', (e) => {
-    if ($(contentDIV).attr('contentEditable')) {
+    if ($(contentDIV).attr('contentEditable') === 'true') {
       toggleEditorMode(contentDIV, false);
     }
     return false;
@@ -818,26 +819,33 @@ const attachNoteContentEvents = (wrapper) => {
   wrapper.addEventListener('paste', fireChange);
   wrapper.addEventListener('copy', fireChange);
   wrapper.addEventListener('cut', fireChange);
-  wrapper.addEventListener('mouseup', fireChange);
+  // wrapper.addEventListener('mouseup', fireChange);
 
   // fire div change event used for content change event
   wrapper.addEventListener('change', (e) => {
-    const newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
+    let newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
     updateStatusBoard(newHTML);
 
     // find note item index
     const id = $(e.target).attr('id');
     const index = stack.findIndex(item => item.id === id);
 
+    newHTML = $(contentDIV).unhighlight({ element: 'span', className: 'highlighted' }).html();
+
     // update note item
     stack[index].content = newHTML.replace(/<br>/ig, '\n');
     stackStorage.set(JSON.stringify(stack));
 
     // for search optimization
+    /////
     if (dupNodes[0]) {
       $(dupNodes[0]).find('.stackwrapper').each((index, item) => {
         if ($(item).attr('id') === id) {
+          console.log('ASDF');
           item.innerHTML = wrapper.innerHTML;
+
+          $(item).unhighlight({ element: 'span', className: 'highlighted' });
+
           return false;
         }
       })
@@ -949,6 +957,8 @@ const initializeEventListeners = () => {
 
         // attach duplicated DOM
         document.querySelector('#main').insertAdjacentElement('beforeend', dupNodes[0]);
+        sortNotes(windowState.sortedByNew);
+
         stackDOM = document.querySelector('#textstack');
 
         // atach eventes
