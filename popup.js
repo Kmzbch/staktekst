@@ -988,11 +988,11 @@ const initializeEventListeners = () => {
     if ($('#textstack').hasClass('viewmode')) {
       $('#textstack').removeClass('viewmode');
       $('#toolbox').removeClass('viewmode');
-      $('.view').text('assignment');
+      // $('.view').text('assignment');
       fireNoteSearch('');
     } else {
       fireNoteSearch('');
-      $('.view').text('assignment');
+      // $('.view').text('assignment');
       $('#textstack').addClass('viewmode');
       $('#toolbox').addClass('viewmode');
     }
