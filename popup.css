@@ -191,7 +191,7 @@ input:focus {
 html {
     height: 700px;
     box-sizing: border-box;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.25);
 }
 
 /* container element styles */
@@ -490,6 +490,69 @@ footer {
     font-size: 16px;
     margin: 8px;
 }
+
+
+.separator .removing {
+    cursor: pointer;
+    font-weight: bold;
+    color: red;
+}
+
+.separator .removing:not(.default):hover:after {
+    /* z-index: 99999999 !important;
+    position: relative !important;
+    /* content: "\00d7"; */
+    color:red; */
+    /* margin-left: 2px; */
+}
+
+.separator input {
+    
+    background: none;
+    color: rgba(0, 0, 0, 0.7);
+    font-size: 16px;
+
+    outline: none;
+    border-color: inherit;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    border-width:0px;
+border:none;
+
+}
+
+.separator input:hover {
+    font-weight: red;
+    text-decoration: underline;
+    color: red;
+}
+.separator input:focus{
+    background: lemonchiffon;
+    
+    padding: 3px;
+    text-decoration: none;
+    /* text-decoration: underline; */
+}
+
+input.disabled {
+    /* user-select : none;
+    -moz-user-select : none;
+    -webkit-user-select : none; */
+    cursor: pointer;
+}
+
+.separator:hover {
+}
+.separator {
+    color: rgba(0, 0, 0, 0.7);
+    text-align: left;
+    font-size: 16px;
+    margin: 8px;
+    margin-left: 18px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
 
 /* bookmark note styles */
 .bookmark:hover {

@@ -55,6 +55,14 @@ const updateSearchResult = () => {
   // TODO: consider what special search tags to use
   if (query[0] === '#') {
     hits = filterNoteItemsByTag(query);
+    $('.separator').each((index, item) => {
+      if ($(item).find('.tag').text() === query) {
+        if (item.classList.contains('filtered')) {
+          console.log("?????");
+          item.classList.remove('filtered');
+        }
+      }
+    })
   } else if (query === ':d') {
     hits = filterNoteItemsWithDateTag(query);
   } else {
@@ -1011,6 +1019,13 @@ const initializeEventListeners = () => {
           attachNoteContentEvents(item);
         });
 
+
+        $('.separator').each((index, item) => {
+          item.classList.add('filtered');
+          attachSeparatorEvents(item);
+        })
+
+
         // reset and clone the current DOM
         dupNodes.length = 0;
         dupNodes.push(document.querySelector('#textstack').cloneNode(true))
@@ -1659,9 +1674,15 @@ const renderStack = () => {
 
       // NORMAL MODE
       let notesHTML = "";
-      stack.forEach(res => {
-        notesHTML = generateNoteItemHTML(res) + notesHTML;
-      });
+      stack
+        // .filter(res => { res.type !== 'separator' })
+        .forEach(res => {
+          if (res.type === 'separator') {
+            notesHTML = generateSeparatorHTML(res) + notesHTML;
+          } else {
+            notesHTML = generateNoteItemHTML(res) + notesHTML;
+          }
+        });
 
 
       // insert HTML
@@ -1669,6 +1690,11 @@ const renderStack = () => {
 
       // insert separators between items
       insertDateSeparator();
+
+      $('.separator').each((index, item) => {
+        console.log(item);
+        attachSeparatorEvents(item);
+      })
 
       $('.stackwrapper').each((index, item) => {
         // console.log(item);
@@ -1694,9 +1720,11 @@ const insertDateSeparator = () => {
       $(wrapper).get(0).insertAdjacentHTML('afterend', `<div class="date">${formatDate(date)}</div>`);
       dateStack.push({ id: id, date: date });
     } else {
-      if (formatDate(new Date(dateStack[dateStack.length - 1].date)) !== formatDate(new Date(date))) {
-        $(wrapper).get(0).insertAdjacentHTML('afterend', `<div class="date">${formatDate(date)}</div>`);
-        dateStack.push({ id: id, date: date });
+      if (!isNaN(new Date(date))) {
+        if (formatDate(new Date(dateStack[dateStack.length - 1].date)) !== formatDate(new Date(date))) {
+          $(wrapper).get(0).insertAdjacentHTML('afterend', `<div class="date">${formatDate(date)}</div>`);
+          dateStack.push({ id: id, date: date });
+        }
       }
     }
   });
@@ -1849,13 +1877,194 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
+
+const generateSeparatorHTML = ({ id, type, content, footnote, date }) => {
+  // add the most outer opening tag
+  let separatorHTML = `<div class="${type}" id="${id}">`
+
+  // add content body
+  separatorHTML += `<input class="separatorInput disabled" spellcheck="false" type="text" style="text-align:left;" value="${enableURLEmbededInText(content)}">`;
+  separatorHTML += `<div class="footnote hidden">`;
+
+  // add tags to footnote
+  if (typeof footnote.tags !== 'undefined') {
+    footnote.tags.forEach(tagName => {
+      separatorHTML += `<span class="tag">${tagName}</span>`
+    })
+  }
+
+  separatorHTML += "</div>"
+
+  // add the most outer closing tag
+  separatorHTML += "</div>"
+
+  return separatorHTML;
+}
+
+
+
+const createSeparator = () => {
+  let query = $('.searchbox').val();
+
+  if (query[0] === '#' && query.substring(1) !== '') {
+
+    const separator = {
+      id: uuidv4(),
+      type: 'separator',
+      content: 'New Item',
+      footnote: {
+        tags: [query],
+        pageTitle: '',
+        pageURL: ''
+      },
+      // date: formatDate()
+      date: new Date().toISOString()
+    }
+    // add item to stack
+    stack.push(separator);
+    stackStorage.set(JSON.stringify(stack));
+
+    let wrapper = $(generateSeparatorHTML(separator)).get(0);
+    attachSeparatorEvents(wrapper)
+
+    // render
+    if (windowState.sortedByNew) {
+      $('#textstack').prepend(wrapper);
+    } else {
+      $('#textstack').append(wrapper);
+    }
+
+    sortable.save();
+
+    // // for search optimization
+    // if (dupNodes[0]) {
+    //   // remove the item from duplicated textstack as well
+    //   let wrapper = $(generateNoteItemHTML(separator)).get(0);
+    //   attachTagInputEvents(wrapper);
+    //   attachNoteContentEvents(wrapper);
+    //   // $(dupNodes[0]).append(wrapper);
+    //   if (windowState.sortedByNew) {
+    //     $(dupNodes[0]).prepend(wrapper);
+    //   } else {
+    //     $(dupNodes[0]).append(wrapper);
+    //   }  
+    // }
+
+  }
+
+
+
+};
+
+const attachSeparatorEvents = (stackwrapper) => {
+
+  $(stackwrapper).find('.separatorInput').on({
+
+    mouseover: (e) => {
+      if (e.ctrlKey && !$(e.target).hasClass('removing')) {
+        $(e.target).addClass('removing');
+      }
+    },
+    mouseout: (e) => {
+      $(e.target).removeClass('removing');
+    },
+
+  });
+
+
+
+  $(stackwrapper).find('.separatorInput').blur(
+    (ev) => {
+      ev.preventDefault();
+
+      let separatorName = ev.target.value;
+
+      if (!separatorName.match(/^\s+$/)) {
+
+        separatorName = ev.target.value.trim();
+
+        // update tag information
+        const index = stack.findIndex(item => item.id === $(stackwrapper).attr('id'));
+
+        if (typeof stack[index].content === 'undefined') {
+          stack[index].content = '';
+        }
+
+        stack[index].content = separatorName;
+        stackStorage.set(JSON.stringify(stack));
+      } else {
+
+        ev.target.value = ev.target.defaultValue;
+      }
+
+      ev.target.classList.add('disabled');
+    }
+  )
+
+
+  $(stackwrapper).find('.separatorInput').on('click',
+    (ev) => {
+      let targetElem = ev.target;
+      if (ev.ctrlKey && $(targetElem).hasClass('removing')) {
+        // remove tag from footnote
+        let id = $(targetElem).parent().attr('id');
+        stack = stack.filter(item => item.id !== id);
+        stackStorage.set(JSON.stringify(stack));
+        // remove item in the UI
+        $(targetElem).parent().remove();
+      } else {
+
+        $(ev.target).focus();
+
+      }
+
+    }
+  )
+
+  $(stackwrapper).find('.separatorInput').on('focus', (ev) => {
+    ev.target.classList.remove('disabled');
+  });
+
+  // KEYUP
+  $(stackwrapper).find('.separatorInput').keyup(
+    (ev) => {
+      ev.preventDefault();
+
+      let separatorName = ev.target.value;
+
+      if (ev.keyCode === 13) {
+
+        separatorName = ev.target.value.trim();
+
+        if (separatorName !== '') {
+
+          // update tag information
+          const index = stack.findIndex(item => item.id === $(stackwrapper).attr('id'));
+
+          if (typeof stack[index].content === 'undefined') {
+            stack[index].content = '';
+          }
+
+          stack[index].content = separatorName;
+          stackStorage.set(JSON.stringify(stack));
+        }
+      }
+    })
+
+
+
+}
+
+
+
 document.addEventListener('keyup', (e) => {
   // refresh with F5
   if (e.keyCode === 116) {
     renderStack();
+  } else if (e.ctrlKey && e.keyCode === 191) {
+    createSeparator();
   } else if (e.keyCode === 13 && e.ctrlKey) {
     let itemInEdit = null;
-
     // when adding/editing a tag
     if ($('.tagadd').is(':focus')) {
       return false;
