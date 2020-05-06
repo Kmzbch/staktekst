@@ -930,6 +930,35 @@ const initializeEventListeners = () => {
     dblclick: showDropdownList,
     keydown: selectOnDropdownList,
     input: () => {
+
+
+      let query = $('.searchbox').val();
+
+      if (query[0] === '#' && query.length > 1) {
+        $(function () {
+          sortable = Sortable.create(document.querySelector('#textstack'), {
+            sort: true,
+            delay: 150,
+            animation: 150,
+            dataIdAttr: 'id',
+            filter: '.date',
+            group: query.substring(1),
+            store: {
+              get: function (sortable) {
+                var order = localStorage.getItem(sortable.options.group.name);
+                return order ? order.split('|') : [];
+              },
+              set: function (sortable) {
+                var order = sortable.toArray();
+                localStorage.setItem(sortable.options.group.name, order.join('|'));
+              }
+            }
+          });
+        });
+
+
+      }
+
       // wait a while for user input
 
       // TODO: compare the speed with normal
@@ -972,25 +1001,6 @@ const initializeEventListeners = () => {
 
         // attach duplicated DOM
         document.querySelector('#main').insertAdjacentElement('beforeend', dupNodes[0]);
-        $(function () {
-          sortable = Sortable.create(document.querySelector('#textstack'), {
-            delay: 150,
-            animation: 150,
-            dataIdAttr: 'id',
-            filter: '.date',
-            group: "shadow",
-            store: {
-              get: function (sortable) {
-                var order = localStorage.getItem(sortable.options.group.name);
-                return order ? order.split('|') : [];
-              },
-              set: function (sortable) {
-                var order = sortable.toArray();
-                localStorage.setItem(sortable.options.group.name, order.join('|'));
-              }
-            }
-          });
-        });
 
         stackDOM = document.querySelector('#textstack');
 
@@ -1566,7 +1576,9 @@ const removeNoteItem = (noteItem) => {
     stackStorage.set(JSON.stringify(stack));
     noteItem.remove();
 
-    sortable.save()
+    if (typeof sortable !== 'undefined') {
+      sortable.save()
+    }
     // show toolbox
     $('#toolbox').show();
     $('#statusboard').text('');
@@ -1656,7 +1668,7 @@ const renderStack = () => {
       document.querySelector('#textstack').insertAdjacentHTML('afterbegin', notesHTML)
 
       // insert separators between items
-      // insertDateSeparator();
+      insertDateSeparator();
 
       $('.stackwrapper').each((index, item) => {
         // console.log(item);
@@ -1677,6 +1689,7 @@ const insertDateSeparator = () => {
   $($(stackDOM.children).get().reverse()).each((index, wrapper) => {
     let date = new Date($(wrapper).find('.itemDate').val());
     let id = $(wrapper).attr('id')
+
     if (index === 0) {
       $(wrapper).get(0).insertAdjacentHTML('afterend', `<div class="date">${formatDate(date)}</div>`);
       dateStack.push({ id: id, date: date });
@@ -1687,6 +1700,8 @@ const insertDateSeparator = () => {
       }
     }
   });
+
+
 
   // insert current time
   let now = new Date();
@@ -1782,46 +1797,48 @@ document.addEventListener('DOMContentLoaded', () => {
   // })
 
   // make textstack draggable
-  $(function () {
-    sortable = Sortable.create(document.querySelector('#textstack'), {
-      delay: 150,
-      animation: 150,
-      dataIdAttr: 'id',
-      filter: '.date',
-      onChange: (e) => {
-        console.log('!!!');
-        console.log(e.originalEvent);
-        console.log('offsetY: ' + e.originalEvent.offsetY);
-        console.log('pageY: ' + e.originalEvent.pageY);
-        console.log('clientY: ' + e.originalEvent.clientY);
-        console.log('screenY: ' + e.originalEvent.screenY);
+  // $(function () {
+  //   sortable = Sortable.create(document.querySelector('#textstack'), {
+  //     delay: 150,
+  //     animation: 150,
+  //     dataIdAttr: 'id',
+  //     sort: false,
+  //     disable: true,
+  //     // filter: '.date',
+  //     onChange: (e) => {
+  //       console.log('!!!');
+  //       console.log(e.originalEvent);
+  //       console.log('offsetY: ' + e.originalEvent.offsetY);
+  //       console.log('pageY: ' + e.originalEvent.pageY);
+  //       console.log('clientY: ' + e.originalEvent.clientY);
+  //       console.log('screenY: ' + e.originalEvent.screenY);
 
-        if (e.originalEvent.offsetY > 0) {
-          console.log(e.originalEvent.offsetY + e.originalEvent.clientY);
-          if (e.originalEvent.offsetY + e.originalEvent.clientY > 500) {
-            window.scrollBy(0, e.originalEvent.offsetY) / 3;
-          }
-        } else {
-          if (e.originalEvent.clientY + e.originalEvent.offsetY < 150) {
-            window.scrollBy(0, e.originalEvent.offsetY);
-          }
-        }
+  //       if (e.originalEvent.offsetY > 0) {
+  //         console.log(e.originalEvent.offsetY + e.originalEvent.clientY);
+  //         if (e.originalEvent.offsetY + e.originalEvent.clientY > 500) {
+  //           window.scrollBy(0, e.originalEvent.offsetY) / 3;
+  //         }
+  //       } else {
+  //         if (e.originalEvent.clientY + e.originalEvent.offsetY < 150) {
+  //           window.scrollBy(0, e.originalEvent.offsetY);
+  //         }
+  //       }
 
-      },
-      group: "localStorage-example",
-      store: {
-        get: function (sortable) {
-          var order = localStorage.getItem(sortable.options.group.name);
-          return order ? order.split('|') : [];
-        },
-        set: function (sortable) {
-          var order = sortable.toArray();
-          localStorage.setItem(sortable.options.group.name, order.join('|'));
-          localStorage.setItem('shadow', order.join('|'));
-        }
-      }
-    });
-  });
+  //     },
+  //     group: "localStorage-example",
+  //     store: {
+  //       get: function (sortable) {
+  //         var order = localStorage.getItem(sortable.options.group.name);
+  //         return order ? order.split('|') : [];
+  //       },
+  //       set: function (sortable) {
+  //         var order = sortable.toArray();
+  //         localStorage.setItem(sortable.options.group.name, order.join('|'));
+  //         localStorage.setItem('shadow', order.join('|'));
+  //       }
+  //     }
+  //   });
+  // });
 
 
   initializeEventListeners();
