@@ -901,43 +901,6 @@ const initializeEventListeners = () => {
   // for optimization
   window.onload = () => {
     dupNodes.push(document.querySelector('#textstack').cloneNode(true));
-    // $(function () {
-    //   sortableForClone = Sortable.create(dupNodes[0], {
-    //     delay: 150,
-    //     disabled: true,
-    //     // direction: 'vertical',
-    //     animation: 150,
-    //     dataIdAttr: 'id',
-    //     filter: '.date',
-    //     onSort: function (e) {
-    //       let sortableTest = {
-    //         order: sortableForClone
-    //       }
-    //       chrome.storage.local.set(sortableTest)
-    //     },
-    //     group: "localStorage-example",
-    //     store: {
-    //       /**
-    //        * Get the order of elements. Called once during initialization.
-    //        * @param   {Sortable}  sortable
-    //        * @returns {Array}
-    //        */
-    //       get: function (sortable) {
-    //         var order = localStorage.getItem(sortable.options.group.name);
-    //         return order ? order.split('|') : [];
-    //       },
-
-    //       /**
-    //        * Save the order of elements. Called onEnd (when the item is dropped).
-    //        * @param {Sortable}  sortable
-    //        */
-    //       set: function (sortable) {
-    //         var order = sortable.toArray();
-    //         localStorage.setItem(sortable.options.group.name, order.join('|'));
-    //       }
-    //     }
-    //   });
-    // });
 
 
   }
@@ -972,43 +935,7 @@ const initializeEventListeners = () => {
       // TODO: compare the speed with normal
       if (dupNodes.length === 0) {
         dupNodes.push(document.querySelector('#textstack').cloneNode(true));
-        // $(function () {
-        //   sortableForClone = Sortable.create(dupNodes[0], {
-        //     delay: 150,
-        //     disabled: true,
-        //     // direction: 'vertical',
-        //     animation: 150,
-        //     dataIdAttr: 'id',
-        //     filter: '.date',
-        //     onSort: function (e) {
-        //       let sortableTest = {
-        //         order: sortableForClone
-        //       }
-        //       chrome.storage.local.set(sortableTest)
-        //     },
-        //     group: "localStorage-example",
-        //     store: {
-        //       /**
-        //        * Get the order of elements. Called once during initialization.
-        //        * @param   {Sortable}  sortable
-        //        * @returns {Array}
-        //        */
-        //       get: function (sortable) {
-        //         var order = localStorage.getItem(sortable.options.group.name);
-        //         return order ? order.split('|') : [];
-        //       },
 
-        //       /**
-        //        * Save the order of elements. Called onEnd (when the item is dropped).
-        //        * @param {Sortable}  sortable
-        //        */
-        //       set: function (sortable) {
-        //         var order = sortable.toArray();
-        //         localStorage.setItem(sortable.options.group.name, order.join('|'));
-        //       }
-        //     }
-        //   });
-        // });
       }
 
       let milseconds = 0;
@@ -1045,19 +972,25 @@ const initializeEventListeners = () => {
 
         // attach duplicated DOM
         document.querySelector('#main').insertAdjacentElement('beforeend', dupNodes[0]);
-
-        // sortable = sortableForClone;
-
-        // console.log(sortable);
-
-
-        // if (windowState.sortedByNew) {
-        //   switchSortOrder(true);
-        // } else {
-        //   switchSortOrder(false);
-        // }
-
-        // sortNotes(windowState.sortedByNew);
+        $(function () {
+          sortable = Sortable.create(document.querySelector('#textstack'), {
+            delay: 150,
+            animation: 150,
+            dataIdAttr: 'id',
+            filter: '.date',
+            group: "shadow",
+            store: {
+              get: function (sortable) {
+                var order = localStorage.getItem(sortable.options.group.name);
+                return order ? order.split('|') : [];
+              },
+              set: function (sortable) {
+                var order = sortable.toArray();
+                localStorage.setItem(sortable.options.group.name, order.join('|'));
+              }
+            }
+          });
+        });
 
         stackDOM = document.querySelector('#textstack');
 
@@ -1071,44 +1004,6 @@ const initializeEventListeners = () => {
         // reset and clone the current DOM
         dupNodes.length = 0;
         dupNodes.push(document.querySelector('#textstack').cloneNode(true))
-
-        // $(function () {
-        //   sortableForClone = Sortable.create(dupNodes[0], {
-        //     delay: 150,
-        //     // disabled: true,
-        //     // direction: 'vertical',
-        //     animation: 150,
-        //     dataIdAttr: 'id',
-        //     filter: '.date',
-        //     onSort: function (e) {
-        //       let sortableTest = {
-        //         order: sortableForClone
-        //       }
-        //       chrome.storage.local.set(sortableTest)
-        //     },
-        //     group: "localStorage-example",
-        //     store: {
-        //       /**
-        //        * Get the order of elements. Called once during initialization.
-        //        * @param   {Sortable}  sortable
-        //        * @returns {Array}
-        //        */
-        //       get: function (sortable) {
-        //         var order = localStorage.getItem(sortable.options.group.name);
-        //         return order ? order.split('|') : [];
-        //       },
-
-        //       /**
-        //        * Save the order of elements. Called onEnd (when the item is dropped).
-        //        * @param {Sortable}  sortable
-        //        */
-        //       set: function (sortable) {
-        //         var order = sortable.toArray();
-        //         localStorage.setItem(sortable.options.group.name, order.join('|'));
-        //       }
-        //     }
-        //   });
-        // });
 
 
         // show toolbox
@@ -1478,18 +1373,8 @@ const switchSortOrder = (sortingByNew) => {
   sortable.sort(sortable.toArray().reverse())
   sortable.save();
 
+
   windowState.sortedByNew = sortingByNew;
-
-  // let textStack = $('#textstack'); // your parent ul element
-  // textStack.children().each(function (i, wrapper) { textStack.prepend(wrapper) })
-
-  // // for search optimization
-  // if (dupNodes[0]) {
-  //   // remove the item from duplicated textstack as well
-  //   $(dupNodes[0]).children().each(function (i, wrapper) {
-  //     $(dupNodes[0]).prepend(wrapper);
-  //   })
-  // }
 
 }
 
@@ -1646,6 +1531,8 @@ const createNoteItem = () => {
     $('#textstack').append(wrapper);
   }
 
+  sortable.save();
+
   // for search optimization
   if (dupNodes[0]) {
     // remove the item from duplicated textstack as well
@@ -1678,6 +1565,8 @@ const removeNoteItem = (noteItem) => {
     stack = stack.filter(item => item.id !== id);
     stackStorage.set(JSON.stringify(stack));
     noteItem.remove();
+
+    sortable.save()
     // show toolbox
     $('#toolbox').show();
     $('#statusboard').text('');
@@ -1834,13 +1723,13 @@ const restorePreviousState = () => {
         } else {
           windowState.sortedByNew = state.sortedByNew;
           if (windowState.sortedByNew) {
-            console.log('!!!');
             $('#sort').html('New <i class="material-icons">arrow_upward</i>');
+
             // OLD
           } else {
             $('#sort').html('Old <i class="material-icons">arrow_downward</i>');
-            sortable.sort(sortable.toArray().reverse())
-            sortable.save();
+            // sortable.sort(sortable.toArray().reverse())
+            // sortable.save();
           }
 
         }
@@ -1879,7 +1768,7 @@ const importFromJsonFile = async (path) => {
   });
 }
 
-// let sortable;
+let sortable;
 // let sortableForClone;
 // ========== INITIALIZATION ==========
 // initialize
@@ -1896,36 +1785,22 @@ document.addEventListener('DOMContentLoaded', () => {
   $(function () {
     sortable = Sortable.create(document.querySelector('#textstack'), {
       delay: 150,
-      // disabled: true,
-      // direction: 'vertical',
       animation: 150,
       dataIdAttr: 'id',
       filter: '.date',
-      onSort: function (e) {
-        let sortableTest = {
-          order: sortable
-        }
-        chrome.storage.local.set(sortableTest)
+      onChange: (e) => {
+        console.log('!!!');
       },
       group: "localStorage-example",
       store: {
-        /**
-         * Get the order of elements. Called once during initialization.
-         * @param   {Sortable}  sortable
-         * @returns {Array}
-         */
         get: function (sortable) {
           var order = localStorage.getItem(sortable.options.group.name);
           return order ? order.split('|') : [];
         },
-
-        /**
-         * Save the order of elements. Called onEnd (when the item is dropped).
-         * @param {Sortable}  sortable
-         */
         set: function (sortable) {
           var order = sortable.toArray();
           localStorage.setItem(sortable.options.group.name, order.join('|'));
+          localStorage.setItem('shadow', order.join('|'));
         }
       }
     });
