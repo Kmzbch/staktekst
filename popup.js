@@ -899,6 +899,45 @@ const initializeEventListeners = () => {
   // for optimization
   window.onload = () => {
     dupNodes.push(document.querySelector('#textstack').cloneNode(true));
+    // $(function () {
+    //   sortableForClone = Sortable.create(dupNodes[0], {
+    //     delay: 150,
+    //     disabled: true,
+    //     // direction: 'vertical',
+    //     animation: 150,
+    //     dataIdAttr: 'id',
+    //     filter: '.date',
+    //     onSort: function (e) {
+    //       let sortableTest = {
+    //         order: sortableForClone
+    //       }
+    //       chrome.storage.local.set(sortableTest)
+    //     },
+    //     group: "localStorage-example",
+    //     store: {
+    //       /**
+    //        * Get the order of elements. Called once during initialization.
+    //        * @param   {Sortable}  sortable
+    //        * @returns {Array}
+    //        */
+    //       get: function (sortable) {
+    //         var order = localStorage.getItem(sortable.options.group.name);
+    //         return order ? order.split('|') : [];
+    //       },
+
+    //       /**
+    //        * Save the order of elements. Called onEnd (when the item is dropped).
+    //        * @param {Sortable}  sortable
+    //        */
+    //       set: function (sortable) {
+    //         var order = sortable.toArray();
+    //         localStorage.setItem(sortable.options.group.name, order.join('|'));
+    //       }
+    //     }
+    //   });
+    // });
+
+
   }
 
   $(window).on('unload blur', () => {
@@ -931,6 +970,43 @@ const initializeEventListeners = () => {
       // TODO: compare the speed with normal
       if (dupNodes.length === 0) {
         dupNodes.push(document.querySelector('#textstack').cloneNode(true));
+        // $(function () {
+        //   sortableForClone = Sortable.create(dupNodes[0], {
+        //     delay: 150,
+        //     disabled: true,
+        //     // direction: 'vertical',
+        //     animation: 150,
+        //     dataIdAttr: 'id',
+        //     filter: '.date',
+        //     onSort: function (e) {
+        //       let sortableTest = {
+        //         order: sortableForClone
+        //       }
+        //       chrome.storage.local.set(sortableTest)
+        //     },
+        //     group: "localStorage-example",
+        //     store: {
+        //       /**
+        //        * Get the order of elements. Called once during initialization.
+        //        * @param   {Sortable}  sortable
+        //        * @returns {Array}
+        //        */
+        //       get: function (sortable) {
+        //         var order = localStorage.getItem(sortable.options.group.name);
+        //         return order ? order.split('|') : [];
+        //       },
+
+        //       /**
+        //        * Save the order of elements. Called onEnd (when the item is dropped).
+        //        * @param {Sortable}  sortable
+        //        */
+        //       set: function (sortable) {
+        //         var order = sortable.toArray();
+        //         localStorage.setItem(sortable.options.group.name, order.join('|'));
+        //       }
+        //     }
+        //   });
+        // });
       }
 
       let milseconds = 0;
@@ -960,16 +1036,23 @@ const initializeEventListeners = () => {
         // reset task
         doTaskOnceInputIsDone.TID = {};
 
+
+
         // remove current DOM
         $('#textstack').remove();
 
         // attach duplicated DOM
         document.querySelector('#main').insertAdjacentElement('beforeend', dupNodes[0]);
+
+        // sortable = sortableForClone;
+
+        // console.log(sortable);
+
+
         if (windowState.sortedByNew) {
           prependNotes(true);
         } else {
           prependNotes(false);
-
         }
 
         // sortNotes(windowState.sortedByNew);
@@ -987,6 +1070,45 @@ const initializeEventListeners = () => {
         dupNodes.length = 0;
         dupNodes.push(document.querySelector('#textstack').cloneNode(true))
 
+        // $(function () {
+        //   sortableForClone = Sortable.create(dupNodes[0], {
+        //     delay: 150,
+        //     // disabled: true,
+        //     // direction: 'vertical',
+        //     animation: 150,
+        //     dataIdAttr: 'id',
+        //     filter: '.date',
+        //     onSort: function (e) {
+        //       let sortableTest = {
+        //         order: sortableForClone
+        //       }
+        //       chrome.storage.local.set(sortableTest)
+        //     },
+        //     group: "localStorage-example",
+        //     store: {
+        //       /**
+        //        * Get the order of elements. Called once during initialization.
+        //        * @param   {Sortable}  sortable
+        //        * @returns {Array}
+        //        */
+        //       get: function (sortable) {
+        //         var order = localStorage.getItem(sortable.options.group.name);
+        //         return order ? order.split('|') : [];
+        //       },
+
+        //       /**
+        //        * Save the order of elements. Called onEnd (when the item is dropped).
+        //        * @param {Sortable}  sortable
+        //        */
+        //       set: function (sortable) {
+        //         var order = sortable.toArray();
+        //         localStorage.setItem(sortable.options.group.name, order.join('|'));
+        //       }
+        //     }
+        //   });
+        // });
+
+
         // show toolbox
         $('#statusboard').text('');
         $('#toolbox').show();
@@ -996,6 +1118,11 @@ const initializeEventListeners = () => {
 
         windowState.searchQuery = '';
       } else {
+        // chrome.storage.local.get(['sortableTest'], state => {
+        //   sortable = state.order;
+        //   sortableForClone = state.order;
+        // })
+        // sortable.option("disabled", false);
         doTaskOnceInputIsDone(updateSearchResult, milseconds)
       }
     }
@@ -1630,20 +1757,12 @@ const renderStack = () => {
         notesHTML = generateNoteItemHTML(res) + notesHTML;
       });
 
-      // insert current time
-      let now = new Date();
-      let hours = ('0' + now.getHours()).slice(-2);
-      let minutes = ('0' + now.getMinutes()).slice(-2);
-
-      // add
-      // let currentDate = `<div class="date current">${formatDate() + ' ' + hours + ":" + minutes}</div>`
-      // notesHTML += currentDate;
 
       // insert HTML
       document.querySelector('#textstack').insertAdjacentHTML('afterbegin', notesHTML)
 
       // insert separators between items
-      insertDateSeparator();
+      // insertDateSeparator();
 
       $('.stackwrapper').each((index, item) => {
         // console.log(item);
@@ -1661,29 +1780,6 @@ const renderStack = () => {
  * insert date as a separator
  */
 const insertDateSeparator = () => {
-  // stack.forEach((item) => {
-  //   let date = new Date(item.date);
-  //   if (dateStack.length === 0) {
-  //     dateStack.push({ id: item.id, date: date });
-  //   } else {
-  //     // insert only between the date and the previous date
-  //     console.log(formatDate(new Date(date)));
-  //     if (formatDate(new Date(dateStack[dateStack.length - 1].date)) !== formatDate(new Date(date))) {
-  //       dateStack.push({ id: item.id, date: date });
-  //     }
-  //   }
-  // })
-
-  // dateStack = dateStack.reverse();
-
-  // dateStack.forEach(item => {
-  //   $(stackDOM.children).each((index, wrapper) => {
-  //     if ($(wrapper).attr("id") === item.id) {
-  //       $(wrapper).get(0).insertAdjacentHTML('afterend', `<div class="date">${formatDate(item.date)}</div>`);
-  //     }
-  //   });
-  // })
-
   $($(stackDOM.children).get().reverse()).each((index, wrapper) => {
     let date = new Date($(wrapper).find('.itemDate').val());
     let id = $(wrapper).attr('id')
@@ -1697,6 +1793,16 @@ const insertDateSeparator = () => {
       }
     }
   });
+
+  // insert current time
+  let now = new Date();
+  let hours = ('0' + now.getHours()).slice(-2);
+  let minutes = ('0' + now.getMinutes()).slice(-2);
+
+  let currentDate = `<div class="date current">${formatDate() + ' ' + hours + ":" + minutes}</div>`
+
+  $('#textstack').first().get(0).insertAdjacentHTML('afterbegin', currentDate)
+
 
 
 }
@@ -1727,16 +1833,6 @@ const restorePreviousState = () => {
           }
         }
 
-        // else {
-        //   console.log(state.sortedByNew);
-        //   if (state.sortedByNew) {
-        //     $('#sort').html('New <i class="material-icons">arrow_upward</i>');
-        //     windowState.sortedByNew = true;
-        //   } else {
-        //     prependNotes(false)
-        //     windowState.sortedByNew = false;
-        //   }
-        // }
         // restore scrollY
         if (typeof state.scrollY !== 'undefined') {
           window.scrollTo(0, state.scrollY);
@@ -1771,7 +1867,8 @@ const importFromJsonFile = async (path) => {
   });
 }
 
-let sortable;
+// let sortable;
+// let sortableForClone;
 // ========== INITIALIZATION ==========
 // initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -1784,16 +1881,43 @@ document.addEventListener('DOMContentLoaded', () => {
   // })
 
   // make textstack draggable
-  $(function () {
-    sortable = Sortable.create(document.querySelector('#textstack'), {
-      delay: 150,
-      // disabled: true,
-      // direction: 'vertical',
-      animation: 150,
-      dataIdAttr: 'id',
-      filter: '.date'
-    });
-  });
+  // $(function () {
+  //   sortable = Sortable.create(document.querySelector('#textstack'), {
+  //     delay: 150,
+  //     disabled: true,
+  //     // direction: 'vertical',
+  //     animation: 150,
+  //     dataIdAttr: 'id',
+  //     filter: '.date',
+  //     onSort: function (e) {
+  //       let sortableTest = {
+  //         order: sortable
+  //       }
+  //       chrome.storage.local.set(sortableTest)
+  //     },
+  //     group: "localStorage-example",
+  //     store: {
+  //       /**
+  //        * Get the order of elements. Called once during initialization.
+  //        * @param   {Sortable}  sortable
+  //        * @returns {Array}
+  //        */
+  //       get: function (sortable) {
+  //         var order = localStorage.getItem(sortable.options.group.name);
+  //         return order ? order.split('|') : [];
+  //       },
+
+  //       /**
+  //        * Save the order of elements. Called onEnd (when the item is dropped).
+  //        * @param {Sortable}  sortable
+  //        */
+  //       set: function (sortable) {
+  //         var order = sortable.toArray();
+  //         localStorage.setItem(sortable.options.group.name, order.join('|'));
+  //       }
+  //     }
+  //   });
+  // });
 
 
   initializeEventListeners();
