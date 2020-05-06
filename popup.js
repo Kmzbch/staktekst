@@ -1790,6 +1790,23 @@ document.addEventListener('DOMContentLoaded', () => {
       filter: '.date',
       onChange: (e) => {
         console.log('!!!');
+        console.log(e.originalEvent);
+        console.log('offsetY: ' + e.originalEvent.offsetY);
+        console.log('pageY: ' + e.originalEvent.pageY);
+        console.log('clientY: ' + e.originalEvent.clientY);
+        console.log('screenY: ' + e.originalEvent.screenY);
+
+        if (e.originalEvent.offsetY > 0) {
+          console.log(e.originalEvent.offsetY + e.originalEvent.clientY);
+          if (e.originalEvent.offsetY + e.originalEvent.clientY > 500) {
+            window.scrollBy(0, e.originalEvent.offsetY) / 3;
+          }
+        } else {
+          if (e.originalEvent.clientY + e.originalEvent.offsetY < 150) {
+            window.scrollBy(0, e.originalEvent.offsetY);
+          }
+        }
+
       },
       group: "localStorage-example",
       store: {
