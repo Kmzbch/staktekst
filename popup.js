@@ -896,6 +896,10 @@ const initializeEventListeners = () => {
     // save scrollY position
     windowState.scrollY = window.scrollY;
   }
+  // for optimization
+  window.onload = () => {
+    dupNodes.push(document.querySelector('#textstack').cloneNode(true));
+  }
 
   $(window).on('unload blur', () => {
     windowState.closedDateTime = new Date().toISOString();
@@ -962,7 +966,10 @@ const initializeEventListeners = () => {
         // attach duplicated DOM
         document.querySelector('#main').insertAdjacentElement('beforeend', dupNodes[0]);
         if (windowState.sortedByNew) {
+          prependNotes(true);
+        } else {
           prependNotes(false);
+
         }
 
         // sortNotes(windowState.sortedByNew);
@@ -1003,7 +1010,7 @@ const initializeEventListeners = () => {
   /* toolbox & text area*/
   $('.create').click(() => {
     createNoteItem();
-    if (!windowState.sortedByNew) {
+    if (windowState.sortedByNew) {
       toggleEditorMode($('.content').first(), true);
       updateStatusBoard($('.content').first().html());
     } else {
@@ -1041,7 +1048,7 @@ const initializeEventListeners = () => {
   // $('#sort').click(() => { sortNotes(!windowState.sortedByNew) });
 
   $('#sort').click(() => {
-    prependNotes(windowState.sortedByNew)
+    prependNotes(!windowState.sortedByNew)
   });
 
   attachEventsToTextStack();
@@ -1331,7 +1338,6 @@ const sortNotes = (sortingByNew) => {
 
 const prependNotes = (sortingByNew) => {
 
-  windowState.sortedByNew = !sortingByNew;
   // NEW
   if (sortingByNew) {
     $('#sort').html('New <i class="material-icons">arrow_upward</i>');
@@ -1339,17 +1345,17 @@ const prependNotes = (sortingByNew) => {
   } else {
     $('#sort').html('Old <i class="material-icons">arrow_downward</i>');
   }
+
+  windowState.sortedByNew = sortingByNew;
+
   let textStack = $('#textstack'); // your parent ul element
   textStack.children().each(function (i, wrapper) { textStack.prepend(wrapper) })
 
   // for search optimization
   if (dupNodes[0]) {
     // remove the item from duplicated textstack as well
-
     $(dupNodes[0]).children().each(function (i, wrapper) {
-      if (!windowState.sortedByNew) {
-        $(dupNodes[0]).prepend(wrapper);
-      }
+      $(dupNodes[0]).prepend(wrapper);
     })
   }
 
@@ -1502,10 +1508,8 @@ const createNoteItem = () => {
   attachNoteContentEvents(wrapper);
 
   // render
-  if (!windowState.sortedByNew) {
+  if (windowState.sortedByNew) {
     $('#textstack').prepend(wrapper);
-
-
   } else {
     $('#textstack').append(wrapper);
   }
@@ -1517,11 +1521,10 @@ const createNoteItem = () => {
     attachTagInputEvents(wrapper);
     attachNoteContentEvents(wrapper);
     // $(dupNodes[0]).append(wrapper);
-    if (!windowState.sortedByNew) {
+    if (windowState.sortedByNew) {
       $(dupNodes[0]).prepend(wrapper);
     } else {
-      console.log('!!!');
-      $(dupNodes[0]).prepend(wrapper);
+      $(dupNodes[0]).append(wrapper);
     }
 
   }
@@ -1609,6 +1612,18 @@ const renderStack = () => {
       stackStorage.reset();
     } else {
       stack = JSON.parse(rawData);
+
+
+      stack
+        .sort((a, b) => {
+          a = new Date(a.date);
+          b = new Date(b.date);
+          // OLD => NEW
+          return a > b ? 1 : a < b ? -1 : 0;
+        })
+
+
+
       // NORMAL MODE
       let notesHTML = "";
       stack.forEach(res => {
@@ -1706,10 +1721,8 @@ const restorePreviousState = () => {
         if (typeof state.sortedByNew === 'undefined') {
           windowState.sortedByNew = true;
         } else {
-          console.log("WIN:" + windowState.sortedByNew);
-          console.log("ST:" + state.sortedByNew);
           windowState.sortedByNew = state.sortedByNew;
-          if (state.searchQuery !== '' && windowState.sortedByNew) {
+          if (!windowState.sortedByNew) {
             prependNotes(false);
           }
         }
@@ -1762,6 +1775,7 @@ let sortable;
 // ========== INITIALIZATION ==========
 // initialize
 document.addEventListener('DOMContentLoaded', () => {
+
   // importFromJsonFile("/importData.json").then(() => {
   //   // convertDateToDateTimeFormat();
   //   initializeEventListeners();
@@ -1784,7 +1798,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initializeEventListeners();
   renderStack();
+
   restorePreviousState();
+
 
 });
 
@@ -1815,7 +1831,7 @@ document.addEventListener('keyup', (e) => {
       // create a new note
       createNoteItem();
 
-      if (!windowState.sortedByNew) {
+      if (windowState.sortedByNew) {
         toggleEditorMode($('.content').first(), true);
         updateStatusBoard($('.content').first().html());
       } else {
@@ -1829,3 +1845,4 @@ document.addEventListener('keyup', (e) => {
     }
   }
 })
+
