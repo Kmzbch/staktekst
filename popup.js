@@ -94,6 +94,10 @@ const updateSearchResult = () => {
  * 
  */
 const filterNoteItemsByTag = (tagName) => {
+  // let state = sortable.option("disabled"); // get
+
+  // sortable.option("disabled", false); // set
+
   if (tagName[0] === '#') {
     tagName = tagName.substring(1);
   }
@@ -764,6 +768,7 @@ const attachNoteContentEvents = (wrapper) => {
 
   contentDIV.addEventListener('focus', (e) => {
     // remove html tags
+
     Array.from(contentDIV.childNodes).forEach((item) => {
       $(item).contents().unwrap()
     }, '')
@@ -956,7 +961,11 @@ const initializeEventListeners = () => {
 
         // attach duplicated DOM
         document.querySelector('#main').insertAdjacentElement('beforeend', dupNodes[0]);
-        sortNotes(windowState.sortedByNew);
+        if (windowState.sortedByNew) {
+          prependNotes(false);
+        }
+
+        // sortNotes(windowState.sortedByNew);
 
         stackDOM = document.querySelector('#textstack');
 
@@ -994,9 +1003,17 @@ const initializeEventListeners = () => {
   /* toolbox & text area*/
   $('.create').click(() => {
     createNoteItem();
-    toggleEditorMode($('.content').last(), true);
+    if (!windowState.sortedByNew) {
+      toggleEditorMode($('.content').first(), true);
+      updateStatusBoard($('.content').first().html());
+    } else {
+      toggleEditorMode($('.content').last(), true);
+      updateStatusBoard($('.content').last().html());
+    }
 
-    updateStatusBoard($('.content').last().html());
+    // toggleEditorMode($('.content').last(), true);
+
+    // updateStatusBoard($('.content').last().html());
   });
 
   $('.view').click(() => {
@@ -1021,8 +1038,11 @@ const initializeEventListeners = () => {
     $('#toolbox').show();
     $('#statusboard').text('');
   })
-  $('#sort').click(() => { sortNotes(!windowState.sortedByNew) });
+  // $('#sort').click(() => { sortNotes(!windowState.sortedByNew) });
 
+  $('#sort').click(() => {
+    prependNotes(windowState.sortedByNew)
+  });
 
   attachEventsToTextStack();
 
@@ -1295,13 +1315,44 @@ const sortNotes = (sortingByNew) => {
   // NEW
   if (sortingByNew) {
     $('#sort').html('New <i class="material-icons">arrow_upward</i>');
-    $('#textstack').css('flexDirection', 'column-reverse')
+    // $('#textstack').css('flexDirection', 'column-reverse')
     // OLD
   } else {
     $('#sort').html('Old <i class="material-icons">arrow_downward</i>');
     $('#textstack').css('flexDirection', 'column')
+    // let textStack = $('#textstack'); // your parent ul element
+    // textStack.children().each(function (i, wrapper) { textStack.prepend(wrapper) })
   }
+  let textStack = $('#textstack'); // your parent ul element
+  textStack.children().each(function (i, wrapper) { textStack.prepend(wrapper) })
+
   windowState.sortedByNew = sortingByNew;
+}
+
+const prependNotes = (sortingByNew) => {
+
+  windowState.sortedByNew = !sortingByNew;
+  // NEW
+  if (sortingByNew) {
+    $('#sort').html('New <i class="material-icons">arrow_upward</i>');
+    // OLD
+  } else {
+    $('#sort').html('Old <i class="material-icons">arrow_downward</i>');
+  }
+  let textStack = $('#textstack'); // your parent ul element
+  textStack.children().each(function (i, wrapper) { textStack.prepend(wrapper) })
+
+  // for search optimization
+  if (dupNodes[0]) {
+    // remove the item from duplicated textstack as well
+
+    $(dupNodes[0]).children().each(function (i, wrapper) {
+      if (!windowState.sortedByNew) {
+        $(dupNodes[0]).prepend(wrapper);
+      }
+    })
+  }
+
 }
 
 // ========== EXPORT ==========
@@ -1325,7 +1376,7 @@ const exportNoteItemsAsTextFile = () => {
     .sort((a, b) => {
       a = new Date(a.date);
       b = new Date(b.date);
-      if (windowState.sortedByNew) {
+      if (!windowState.sortedByNew) {
         // NEW => OLD
         return a > b ? -1 : a < b ? 1 : 0;
       } else {
@@ -1451,7 +1502,13 @@ const createNoteItem = () => {
   attachNoteContentEvents(wrapper);
 
   // render
-  $('#textstack').append(wrapper);
+  if (!windowState.sortedByNew) {
+    $('#textstack').prepend(wrapper);
+
+
+  } else {
+    $('#textstack').append(wrapper);
+  }
 
   // for search optimization
   if (dupNodes[0]) {
@@ -1459,7 +1516,14 @@ const createNoteItem = () => {
     let wrapper = $(generateNoteItemHTML(note)).get(0);
     attachTagInputEvents(wrapper);
     attachNoteContentEvents(wrapper);
-    $(dupNodes[0]).append(wrapper);
+    // $(dupNodes[0]).append(wrapper);
+    if (!windowState.sortedByNew) {
+      $(dupNodes[0]).prepend(wrapper);
+    } else {
+      console.log('!!!');
+      $(dupNodes[0]).prepend(wrapper);
+    }
+
   }
 };
 
@@ -1548,7 +1612,7 @@ const renderStack = () => {
       // NORMAL MODE
       let notesHTML = "";
       stack.forEach(res => {
-        notesHTML += generateNoteItemHTML(res);
+        notesHTML = generateNoteItemHTML(res) + notesHTML;
       });
 
       // insert current time
@@ -1557,8 +1621,8 @@ const renderStack = () => {
       let minutes = ('0' + now.getMinutes()).slice(-2);
 
       // add
-      let currentDate = `<div class="date current">${formatDate() + ' ' + hours + ":" + minutes}</div>`
-      notesHTML += currentDate;
+      // let currentDate = `<div class="date current">${formatDate() + ' ' + hours + ":" + minutes}</div>`
+      // notesHTML += currentDate;
 
       // insert HTML
       document.querySelector('#textstack').insertAdjacentHTML('afterbegin', notesHTML)
@@ -1582,25 +1646,44 @@ const renderStack = () => {
  * insert date as a separator
  */
 const insertDateSeparator = () => {
-  stack.forEach((item) => {
-    let date = new Date(item.date);
-    if (dateStack.length === 0) {
-      dateStack.push({ id: item.id, date: date });
+  // stack.forEach((item) => {
+  //   let date = new Date(item.date);
+  //   if (dateStack.length === 0) {
+  //     dateStack.push({ id: item.id, date: date });
+  //   } else {
+  //     // insert only between the date and the previous date
+  //     console.log(formatDate(new Date(date)));
+  //     if (formatDate(new Date(dateStack[dateStack.length - 1].date)) !== formatDate(new Date(date))) {
+  //       dateStack.push({ id: item.id, date: date });
+  //     }
+  //   }
+  // })
+
+  // dateStack = dateStack.reverse();
+
+  // dateStack.forEach(item => {
+  //   $(stackDOM.children).each((index, wrapper) => {
+  //     if ($(wrapper).attr("id") === item.id) {
+  //       $(wrapper).get(0).insertAdjacentHTML('afterend', `<div class="date">${formatDate(item.date)}</div>`);
+  //     }
+  //   });
+  // })
+
+  $($(stackDOM.children).get().reverse()).each((index, wrapper) => {
+    let date = new Date($(wrapper).find('.itemDate').val());
+    let id = $(wrapper).attr('id')
+    if (index === 0) {
+      $(wrapper).get(0).insertAdjacentHTML('afterend', `<div class="date">${formatDate(date)}</div>`);
+      dateStack.push({ id: id, date: date });
     } else {
-      // insert only between the date and the previous date
       if (formatDate(new Date(dateStack[dateStack.length - 1].date)) !== formatDate(new Date(date))) {
-        dateStack.push({ id: item.id, date: date });
+        $(wrapper).get(0).insertAdjacentHTML('afterend', `<div class="date">${formatDate(date)}</div>`);
+        dateStack.push({ id: id, date: date });
       }
     }
-  })
+  });
 
-  dateStack.forEach(item => {
-    $(stackDOM.children).each((index, wrapper) => {
-      if ($(wrapper).attr("id") === item.id) {
-        $(wrapper).get(0).insertAdjacentHTML('beforebegin', `<div class="date">${formatDate(item.date)}</div>`);
-      }
-    });
-  })
+
 }
 
 /**
@@ -1620,9 +1703,27 @@ const restorePreviousState = () => {
           fireNoteSearch(state.searchQuery);
         }
         // restore sort order
-        if (typeof state.sortedByNew !== 'undefined') {
-          sortNotes(state.sortedByNew)
+        if (typeof state.sortedByNew === 'undefined') {
+          windowState.sortedByNew = true;
+        } else {
+          console.log("WIN:" + windowState.sortedByNew);
+          console.log("ST:" + state.sortedByNew);
+          windowState.sortedByNew = state.sortedByNew;
+          if (state.searchQuery !== '' && windowState.sortedByNew) {
+            prependNotes(false);
+          }
         }
+
+        // else {
+        //   console.log(state.sortedByNew);
+        //   if (state.sortedByNew) {
+        //     $('#sort').html('New <i class="material-icons">arrow_upward</i>');
+        //     windowState.sortedByNew = true;
+        //   } else {
+        //     prependNotes(false)
+        //     windowState.sortedByNew = false;
+        //   }
+        // }
         // restore scrollY
         if (typeof state.scrollY !== 'undefined') {
           window.scrollTo(0, state.scrollY);
@@ -1657,6 +1758,7 @@ const importFromJsonFile = async (path) => {
   });
 }
 
+let sortable;
 // ========== INITIALIZATION ==========
 // initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -1666,6 +1768,19 @@ document.addEventListener('DOMContentLoaded', () => {
   //   renderStack();
   //   restorePreviousState();
   // })
+
+  // make textstack draggable
+  $(function () {
+    sortable = Sortable.create(document.querySelector('#textstack'), {
+      delay: 150,
+      // disabled: true,
+      // direction: 'vertical',
+      animation: 150,
+      dataIdAttr: 'id',
+      filter: '.date'
+    });
+  });
+
 
   initializeEventListeners();
   renderStack();
@@ -1699,9 +1814,16 @@ document.addEventListener('keyup', (e) => {
     } else {
       // create a new note
       createNoteItem();
-      toggleEditorMode($('.content').last(), true);
 
-      updateStatusBoard($('.content').last().html());
+      if (!windowState.sortedByNew) {
+        toggleEditorMode($('.content').first(), true);
+        updateStatusBoard($('.content').first().html());
+      } else {
+        toggleEditorMode($('.content').last(), true);
+        updateStatusBoard($('.content').last().html());
+      }
+
+
 
       return false;
     }

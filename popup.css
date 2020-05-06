@@ -463,8 +463,9 @@ footer {
 
 #textstack {
     clear: right;
-    display: flex;
+    /* display: flex; */
     flex-direction: column-reverse;
+    /* flex-direction: column; */
     padding: 0;
 }
 
@@ -541,13 +542,13 @@ footer {
     text-decoration: none;
 }
 
-.note:hover {
+/* .note:hover {
     border-left: 6px solid goldenrod;
     border-right: 1px solid gray;
     margin-left: 10px;
     margin-right: 15px;
     background-color: lemonchiffon;
-}
+} */
 
 .note .footnote {
     color: rgba(0, 0, 0, 0.5);
