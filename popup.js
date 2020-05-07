@@ -63,10 +63,14 @@ const updateSearchResult = () => {
         }
       }
     })
+    //
+    $('.opener').show();
   } else if (query === ':d') {
     hits = filterNoteItemsWithDateTag(query);
+    $('.opener').hide();
   } else {
     hits = filterNoteItems(query);
+    $('.opener').hide();
   }
   filterDropdownListItems(query);
 
@@ -889,6 +893,15 @@ const attachNoteContentEvents = (wrapper) => {
  * Initialize events listners
  */
 const initializeEventListeners = () => {
+  $('.opener').hide();
+
+  $('.opener').on({
+    click:()=>{
+      createSeparator();
+    }    
+
+  }  )
+
   /* window events */
   window.onscroll = (e) => {
 
@@ -1032,6 +1045,7 @@ const initializeEventListeners = () => {
 
 
         // show toolbox
+        $('.opener').hide();
         $('#statusboard').text('');
         $('#toolbox').show();
         $('.search-cancel-button').hide();
@@ -1883,7 +1897,7 @@ const generateSeparatorHTML = ({ id, type, content, footnote, date }) => {
   let separatorHTML = `<div class="${type}" id="${id}">`
 
   // add content body
-  separatorHTML += `<input class="separatorInput disabled" spellcheck="false" type="text" style="text-align:left;" value="${enableURLEmbededInText(content)}">`;
+  separatorHTML += `<input class="separatorInput disabled" placeholder="新規セパレータを作成" spellcheck="false" type="text" style="text-align:left;" value="${enableURLEmbededInText(content)}">`;
   separatorHTML += `<div class="footnote hidden">`;
 
   // add tags to footnote
@@ -1911,7 +1925,7 @@ const createSeparator = () => {
     const separator = {
       id: uuidv4(),
       type: 'separator',
-      content: 'New Item',
+      content: '',
       footnote: {
         tags: [query],
         pageTitle: '',
@@ -1936,20 +1950,7 @@ const createSeparator = () => {
 
     sortable.save();
 
-    // // for search optimization
-    // if (dupNodes[0]) {
-    //   // remove the item from duplicated textstack as well
-    //   let wrapper = $(generateNoteItemHTML(separator)).get(0);
-    //   attachTagInputEvents(wrapper);
-    //   attachNoteContentEvents(wrapper);
-    //   // $(dupNodes[0]).append(wrapper);
-    //   if (windowState.sortedByNew) {
-    //     $(dupNodes[0]).prepend(wrapper);
-    //   } else {
-    //     $(dupNodes[0]).append(wrapper);
-    //   }  
-    // }
-
+    $(wrapper).find('input').focus();
   }
 
 
@@ -2000,6 +2001,10 @@ const attachSeparatorEvents = (stackwrapper) => {
       ev.target.classList.add('disabled');
     }
   )
+  $(stackwrapper).find('.separatorInput').on('click', (ev)=>{
+    ev.target.classList.remove('disabled');
+
+  });
 
 
   $(stackwrapper).find('.separatorInput').on('click',
