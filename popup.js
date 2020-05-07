@@ -1630,7 +1630,24 @@ const renderStack = () => {
 
 			// NORMAL MODE
 			let notesHTML = '';
-			stack.forEach((res) => {
+			let dateStack = [];
+			stack.forEach((res, index) => {
+				let date = new Date(res.date);
+				let id = res.id;
+
+				// insert date between items
+				if (index === 0) {
+					notesHTML = `<div class="date">${formatDate(date)}</div>` + notesHTML;
+					dateStack.push({ id: id, date: date });
+				} else {
+					if (!isNaN(new Date(date))) {
+						if (formatDate(new Date(dateStack[dateStack.length - 1].date)) !== formatDate(new Date(date))) {
+							notesHTML = `<div class="date">${formatDate(date)}</div>` + notesHTML;
+							dateStack.push({ id: id, date: date });
+						}
+					}
+				}
+				// generate note/separator items
 				if (res.type === 'separator') {
 					notesHTML = generateSeparatorHTML(res) + notesHTML;
 				} else {
@@ -1638,62 +1655,36 @@ const renderStack = () => {
 				}
 			});
 
+			// insert current time
+			let now = new Date();
+			let hours = ('0' + now.getHours()).slice(-2);
+			let minutes = ('0' + now.getMinutes()).slice(-2);
+
+			let currentDate = `<div class="date current">${formatDate() + ' ' + hours + ':' + minutes}</div>`;
+			notesHTML = currentDate + notesHTML;
+
 			// insert note items to stack
 			document.querySelector('#textstack').insertAdjacentHTML('afterbegin', notesHTML);
 
 			// process DOMs after loaded
-			setTimeout(() => {
-				insertDateSeparator();
-				$('.separator').each((index, item) => {
-					item.classList.add('filtered');
-					attachSeparatorEvents(item);
-				});
-				// attach events
-				$('.stackwrapper').each((index, item) => {
-					// console.log(item);
-					attachTagInputEvents(item);
-					if ($(item).hasClass('note')) {
-						attachNoteContentEvents(item);
-					}
-				});
-				// clone the current stack for search optimization
-				shadowNodes.push(document.querySelector('#textstack').cloneNode(true));
-			}, 100);
-		}
-	});
-};
+			$('.separator').each((index, item) => {
+				item.classList.add('filtered');
+				attachSeparatorEvents(item);
+			});
 
-/**
- * insert date as a separator
- */
-const insertDateSeparator = () => {
-	const dateStack = [];
-
-	$('#textstack').children().each((index, wrapper) => {
-		let date = new Date($(wrapper).find('.itemDate').val());
-		let id = $(wrapper).attr('id');
-
-		if (index === 0) {
-			$(wrapper).get(0).insertAdjacentHTML('afterend', `<div class="date">${formatDate(date)}</div>`);
-			dateStack.push({ id: id, date: date });
-		} else {
-			if (!isNaN(new Date(date))) {
-				if (formatDate(new Date(dateStack[dateStack.length - 1].date)) !== formatDate(new Date(date))) {
-					$(wrapper).get(0).insertAdjacentHTML('afterend', `<div class="date">${formatDate(date)}</div>`);
-					dateStack.push({ id: id, date: date });
+			// attach events
+			$('.stackwrapper').each((index, item) => {
+				// console.log(item);
+				attachTagInputEvents(item);
+				if ($(item).hasClass('note')) {
+					attachNoteContentEvents(item);
 				}
-			}
+			});
+
+			// clone the current stack for search optimization
+			shadowNodes.push(document.querySelector('#textstack').cloneNode(true));
 		}
 	});
-
-	// insert current time
-	let now = new Date();
-	let hours = ('0' + now.getHours()).slice(-2);
-	let minutes = ('0' + now.getMinutes()).slice(-2);
-
-	let currentDate = `<div class="date current">${formatDate() + ' ' + hours + ':' + minutes}</div>`;
-
-	$('#textstack').first().get(0).insertAdjacentHTML('afterbegin', currentDate);
 };
 
 /**
