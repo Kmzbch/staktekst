@@ -1,8 +1,3 @@
-// seachbox
-const dropdownList = document.querySelector('#tagsearch-result');
-let stackDOM = document.querySelector('#textstack');
-let dupNodes = [];
-
 // configration
 const config = {
   CACHE_DURATION: 30000
@@ -20,6 +15,9 @@ let windowState = {
   scrollY: 0,
   sortedByNew: true
 }
+
+// seach optimization
+let shadowNodes = [];
 
 const doTaskOnceInputIsDone = (task, time) => {
   // clear timeout of undone task
@@ -108,9 +106,6 @@ const updateSearchResult = () => {
  * 
  */
 const filterNoteItemsByTag = (tagName) => {
-  // let state = sortable.option("disabled"); // get
-
-  // sortable.option("disabled", false); // set
 
   if (tagName[0] === '#') {
     tagName = tagName.substring(1);
@@ -119,60 +114,54 @@ const filterNoteItemsByTag = (tagName) => {
   let hits = 0;
   const tagRegex = new RegExp(`^${escapeRegExp(tagName)}`, 'i');
 
-  Array.from(stackDOM.children)
-    .map(textItem => {
-      if ($(textItem).hasClass('date')) {
-        textItem.classList.add('filtered');
-      } else {
-        $(textItem).find('.tag').each((index, tag) => {
-
-          if ($(tag).text().match(tagRegex)) {
-            textItem.classList.remove('filtered');
-            hits++;
-            return false;
-          } else {
-            textItem.classList.add('filtered');
-          }
-        })
-
-      }
-      return textItem;
-    })
+  $('#textstack').children().each((index, textItem)=>{
+    // filter date item
+    if ($(textItem).hasClass('date')) {
+      textItem.classList.add('filtered');
+    } else {
+      $(textItem).find('.tag').each((index, tag) => {
+        if ($(tag).text().match(tagRegex)) {
+                // filter date item
+      textItem.classList.remove('filtered');
+      hits++;
+          return false;
+        } else {
+          textItem.classList.add('filtered');
+        }
+      })
+    }
+  })
+  
   return hits;
 }
-
-
-
 
 const filterNoteItemsWithDateTag = (dateTag) => {
   let hits = 0;
 
-  Array.from(stackDOM.children)
-    .map(textItem => {
-      if ($(textItem).hasClass('date')) {
-        textItem.classList.add('filtered');
-      } else {
-        $(textItem).find('.tag').each((index, tag) => {
-          if (!isNaN(Date.parse($(tag).text()))) {
-            textItem.classList.remove('filtered');
-            hits++;
-            return false;
-          } else {
-            textItem.classList.add('filtered');
-          }
-        })
-      }
-      return textItem;
-    })
+  $('#textstack').children().each((index, textItem)=>{
+    if ($(textItem).hasClass('date')) {
+      textItem.classList.add('filtered');
+    } else {
+      $(textItem).find('.tag').each((index, tag) => {
+        if (!isNaN(Date.parse($(tag).text()))) {
+          textItem.classList.remove('filtered');
+          hits++;
+          return false;
+        } else {
+          textItem.classList.add('filtered');
+        }
+      })
+    }
+  })
   return hits;
 }
-
 
 
 /**
  * 
  */
 const filterNoteItems = (term) => {
+  let stackDOM = document.querySelector('#textstack');
   let termRegex;
   let hits = 0;
 
@@ -384,8 +373,8 @@ const setDropdownListItems = () => {
                 e.target.defaultValue = newTag;
 
                 // for search optimization
-                if (dupNodes[0]) {
-                  $(dupNodes[0]).find('.tag').each((index, elem) => {
+                if (shadowNodes[0]) {
+                  $(shadowNodes[0]).find('.tag').each((index, elem) => {
                     if ($(elem).text() === oldTag) {
                       $(elem).text(newTag)
                     }
@@ -686,9 +675,9 @@ const attachTagInputEvents = (stackWrapper) => {
 
 
           // for search optimization
-          if (dupNodes[0]) {
+          if (shadowNodes[0]) {
             // remove the item from duplicated textstack as well
-            $(dupNodes[0]).find('.stackwrapper').each((index, item) => {
+            $(shadowNodes[0]).find('.stackwrapper').each((index, item) => {
               if ($(item).attr('id') === $(prevStackWrapper).attr('id')) {
                 $(item).find('.tag').each((index, tag) => {
                   if ($(tag).text() === prevTagName) {
@@ -802,22 +791,6 @@ const attachNoteContentEvents = (wrapper) => {
     editorSel.addRange(editorRange)
   })
 
-  // // ctrl + Enter to end editing
-  // contentDIV.addEventListener('keydown', (e) => {
-  //   if (e.keyCode === 13 && e.ctrlKey) {
-  //     // Ctrl + Enter
-  //     toggleEditorMode(contentDIV, false);
-
-  //     // // create a new note
-  //     // createNoteItem();
-  //     // toggleEditorMode($('.content').last(), true);
-
-  //     // updateStatusBoard($('.content').last().html());
-
-  //     return false;
-  //   }
-  // });
-
   wrapper.addEventListener('mouseleave', (e) => {
     if ($(contentDIV).attr('contentEditable') === 'true') {
       toggleEditorMode(contentDIV, false);
@@ -857,8 +830,8 @@ const attachNoteContentEvents = (wrapper) => {
 
     // for search optimization
     /////
-    if (dupNodes[0]) {
-      $(dupNodes[0]).find('.stackwrapper').each((index, item) => {
+    if (shadowNodes[0]) {
+      $(shadowNodes[0]).find('.stackwrapper').each((index, item) => {
         if ($(item).attr('id') === id) {
           item.innerHTML = wrapper.innerHTML;
 
@@ -893,18 +866,10 @@ const attachNoteContentEvents = (wrapper) => {
  * Initialize events listners
  */
 const initializeEventListeners = () => {
-  $('.opener').hide();
-
-  $('.opener').on({
-    click:()=>{
-      createSeparator();
-    }    
-
-  }  )
-
-  /* window events */
+  /**
+   * window events
+   */
   window.onscroll = (e) => {
-
     // show header and footer when scrolling to the top/bottom
     if (window.pageYOffset == 0) {
       $('header').css('opacity', 1)
@@ -919,31 +884,48 @@ const initializeEventListeners = () => {
     // save scrollY position
     windowState.scrollY = window.scrollY;
   }
-  // for optimization
+
+  // for search optimization
   window.onload = () => {
-    dupNodes.push(document.querySelector('#textstack').cloneNode(true));
-
-
+    shadowNodes.push(document.querySelector('#textstack').cloneNode(true));
   }
 
+  // save window state when the popup window is closed
   $(window).on('unload blur', () => {
     windowState.closedDateTime = new Date().toISOString();
     background.chrome.storage.local.set(windowState);
   })
 
-  /* header */
+  window.addEventListener('keyup', (e) => {
+    if (e.keyCode === Keys.F5) {
+      renderStack();
+    } else if (e.ctrlKey && e.keyCode === Keys.FORWARD_SLASH) {
+      createSeparator();
+    } else if (e.ctrlKey && e.keyCode === Keys.ENTER) {
+      // when another tag is on focus
+      if ($('.tagadd, .separatorInput').is(':focus')) {
+        return false;
+      }  
+      // create a note / focus on the note
+      const noteInEdit = $('[contenteditable=true]').get(0)
+      if (noteInEdit) {
+        toggleEditorMode(noteInEdit, false);
+        return false;
+      } else {
+        createNoteItem();
+        const newNote = windowState.sortedByNew ? $('.content').first() : $('.content').last()
+        toggleEditorMode(newNote, true);
+        updateStatusBoard(newNote.html());
+        return false;
+      }
+    }
+  })
+
+  /**
+   * header events
+   */
   /* dropdown list */
   $('#tagsearch-result, header').on('mouseleave', hideDropdownList);
-
-  $('#tagsearch-result').on('scroll', (e) => {
-    const clientHeight = $('#tagsearch-result').innerHeight();
-    const scrollHeight = $('#tagsearch-result').prop('scrollHeight')
-    if (scrollHeight - (clientHeight + $('#tagsearch-result').scrollTop()) <= 0) {
-      $('#tagsearch-result').addClass('dropdownlistBottom');
-    } else {
-      $('#tagsearch-result').removeClass('dropdownlistBottom');
-    }
-  });
 
   /* searchbox  */
   $('.searchbox').on({
@@ -951,8 +933,6 @@ const initializeEventListeners = () => {
     dblclick: showDropdownList,
     keydown: selectOnDropdownList,
     input: () => {
-
-
       let query = $('.searchbox').val();
 
       if (query[0] === '#' && query.length > 1) {
@@ -983,9 +963,8 @@ const initializeEventListeners = () => {
       // wait a while for user input
 
       // TODO: compare the speed with normal
-      if (dupNodes.length === 0) {
-        dupNodes.push(document.querySelector('#textstack').cloneNode(true));
-
+      if (shadowNodes.length === 0) {
+        shadowNodes.push(document.querySelector('#textstack').cloneNode(true));
       }
 
       let milseconds = 0;
@@ -1015,13 +994,32 @@ const initializeEventListeners = () => {
         // reset task
         doTaskOnceInputIsDone.TID = {};
 
-
-
         // remove current DOM
         $('#textstack').remove();
 
         // attach duplicated DOM
-        document.querySelector('#main').insertAdjacentElement('beforeend', dupNodes[0]);
+        document.querySelector('#main').insertAdjacentElement('beforeend', shadowNodes[0]);
+        $(function () {
+          sortable = Sortable.create(document.querySelector('#textstack'), {
+            sort: true,
+            delay: 150,
+            animation: 150,
+            dataIdAttr: 'id',
+            filter: '.date',
+            group: query.substring(1),
+            store: {
+              get: function (sortable) {
+                var order = localStorage.getItem(sortable.options.group.name);
+                return order ? order.split('|') : [];
+              },
+              set: function (sortable) {
+                var order = sortable.toArray();
+                localStorage.setItem(sortable.options.group.name, order.join('|'));
+              }
+            }
+          });
+        });
+
 
         stackDOM = document.querySelector('#textstack');
 
@@ -1040,8 +1038,8 @@ const initializeEventListeners = () => {
 
 
         // reset and clone the current DOM
-        dupNodes.length = 0;
-        dupNodes.push(document.querySelector('#textstack').cloneNode(true))
+        shadowNodes.length = 0;
+        shadowNodes.push(document.querySelector('#textstack').cloneNode(true))
 
 
         // show toolbox
@@ -1064,28 +1062,22 @@ const initializeEventListeners = () => {
     }
   }
   )
-
+  
+  /* search cancel button */
   $('.search-cancel-button').click((e) => {
     fireNoteSearch('');
     $('.searchbox').trigger('focus');
   });
 
-  /* toolbox & text area*/
+  /* toolbox & text area */
   $('.create').click(() => {
     createNoteItem();
-    if (windowState.sortedByNew) {
-      toggleEditorMode($('.content').first(), true);
-      updateStatusBoard($('.content').first().html());
-    } else {
-      toggleEditorMode($('.content').last(), true);
-      updateStatusBoard($('.content').last().html());
-    }
-
-    // toggleEditorMode($('.content').last(), true);
-
-    // updateStatusBoard($('.content').last().html());
+    const newNote = windowState.sortedByNew ? $('.content').first() : $('.content').last()
+    toggleEditorMode(newNote, true);
+    updateStatusBoard(newNote.html());
   });
 
+    /* view mode */
   $('.view').click(() => {
     if ($('#textstack').hasClass('viewmode')) {
       $('#textstack').removeClass('viewmode');
@@ -1100,7 +1092,7 @@ const initializeEventListeners = () => {
     }
   });
 
-
+  /* file export */
   $('.export').click(exportNoteItemsAsTextFile);
   // $('.export').click(() => { toggleFileExportModal(true) });
 
@@ -1108,15 +1100,25 @@ const initializeEventListeners = () => {
     $('#toolbox').show();
     $('#statusboard').text('');
   })
-  // $('#sort').click(() => { sortNotes(!windowState.sortedByNew) });
 
-  $('#sort').click(() => {
-    switchSortOrder(!windowState.sortedByNew)
-  });
+  $('#sort').click(() => { switchSortOrder(!windowState.sortedByNew) });
+
+  $('.opener').hide();
+
+  $('.opener').on({
+    click:()=>{
+      createSeparator();
+    }    
+
+  }  )
+
 
   attachEventsToTextStack();
 
-  /* footer & modal */
+
+  /**
+   * footer
+   */ 
   $('#clearstack').click(() => { toggleClearStackModal(true) });
   $('#clearstack-window .overlay').click(() => { toggleClearStackModal(false) });
   $('#clearstack-window .ok').click(() => {
@@ -1125,7 +1127,10 @@ const initializeEventListeners = () => {
   });
   $('#clearstack-window .cancel').click(() => { toggleClearStackModal(false) });
 
-  /* */
+
+  /**
+   * modal windows
+   */ 
   $('#fileexport-window .overlay').click(() => { toggleFileExportModal(false) });
   $('#fileexport-window .ok').click((e) => {
     if ($(':checked').val() === 'text') {
@@ -1171,9 +1176,9 @@ const attachEventsToTextStack = () => {
           $(targetElem).remove();
 
           // for search optimization
-          if (dupNodes[0]) {
+          if (shadowNodes[0]) {
             // remove the item from duplicated textstack as well
-            $(dupNodes[0]).find('.stackwrapper').each((index, item) => {
+            $(shadowNodes[0]).find('.stackwrapper').each((index, item) => {
               if ($(item).attr('id') === id) {
                 $(item).find('.tag').each((index, tag) => {
                   if ($(tag).text() === tagName) {
@@ -1573,16 +1578,16 @@ const createNoteItem = () => {
   sortable.save();
 
   // for search optimization
-  if (dupNodes[0]) {
+  if (shadowNodes[0]) {
     // remove the item from duplicated textstack as well
     let wrapper = $(generateNoteItemHTML(note)).get(0);
     attachTagInputEvents(wrapper);
     attachNoteContentEvents(wrapper);
     // $(dupNodes[0]).append(wrapper);
     if (windowState.sortedByNew) {
-      $(dupNodes[0]).prepend(wrapper);
+      $(shadowNodes[0]).prepend(wrapper);
     } else {
-      $(dupNodes[0]).append(wrapper);
+      $(shadowNodes[0]).append(wrapper);
     }
 
   }
@@ -1613,9 +1618,9 @@ const removeNoteItem = (noteItem) => {
     $('#statusboard').text('');
 
     // for search optimization
-    if (dupNodes[0]) {
+    if (shadowNodes[0]) {
       // remove the item from duplicated textstack as well
-      $(dupNodes[0]).find('.stackwrapper').each((index, item) => {
+      $(shadowNodes[0]).find('.stackwrapper').each((index, item) => {
         if ($(item).attr('id') === id) {
           $(item).remove();
           return false;
@@ -1726,7 +1731,7 @@ const renderStack = () => {
  * insert date as a separator
  */
 const insertDateSeparator = () => {
-  $($(stackDOM.children).get().reverse()).each((index, wrapper) => {
+  $('#textstack').children().each((index, wrapper) => {
     let date = new Date($(wrapper).find('.itemDate').val());
     let id = $(wrapper).attr('id')
 
@@ -1743,8 +1748,6 @@ const insertDateSeparator = () => {
     }
   });
 
-
-
   // insert current time
   let now = new Date();
   let hours = ('0' + now.getHours()).slice(-2);
@@ -1753,8 +1756,6 @@ const insertDateSeparator = () => {
   let currentDate = `<div class="date current">${formatDate() + ' ' + hours + ":" + minutes}</div>`
 
   $('#textstack').first().get(0).insertAdjacentHTML('afterbegin', currentDate)
-
-
 
 }
 
@@ -1839,48 +1840,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // })
 
   // make textstack draggable
-  // $(function () {
-  //   sortable = Sortable.create(document.querySelector('#textstack'), {
-  //     delay: 150,
-  //     animation: 150,
-  //     dataIdAttr: 'id',
-  //     sort: false,
-  //     disable: true,
-  //     // filter: '.date',
-  //     onChange: (e) => {
-  //       console.log('!!!');
-  //       console.log(e.originalEvent);
-  //       console.log('offsetY: ' + e.originalEvent.offsetY);
-  //       console.log('pageY: ' + e.originalEvent.pageY);
-  //       console.log('clientY: ' + e.originalEvent.clientY);
-  //       console.log('screenY: ' + e.originalEvent.screenY);
-
-  //       if (e.originalEvent.offsetY > 0) {
-  //         console.log(e.originalEvent.offsetY + e.originalEvent.clientY);
-  //         if (e.originalEvent.offsetY + e.originalEvent.clientY > 500) {
-  //           window.scrollBy(0, e.originalEvent.offsetY) / 3;
-  //         }
-  //       } else {
-  //         if (e.originalEvent.clientY + e.originalEvent.offsetY < 150) {
-  //           window.scrollBy(0, e.originalEvent.offsetY);
-  //         }
-  //       }
-
-  //     },
-  //     group: "localStorage-example",
-  //     store: {
-  //       get: function (sortable) {
-  //         var order = localStorage.getItem(sortable.options.group.name);
-  //         return order ? order.split('|') : [];
-  //       },
-  //       set: function (sortable) {
-  //         var order = sortable.toArray();
-  //         localStorage.setItem(sortable.options.group.name, order.join('|'));
-  //         localStorage.setItem('shadow', order.join('|'));
-  //       }
-  //     }
-  //   });
-  // });
+  $(function () {
+    sortable = Sortable.create(document.querySelector('#textstack'), {
+      delay: 150,
+      animation: 150,
+      dataIdAttr: 'id',
+      sort: false,
+      disable: true,
+    });
+  });
 
 
   initializeEventListeners();
@@ -2059,49 +2027,4 @@ const attachSeparatorEvents = (stackwrapper) => {
 
 
 }
-
-
-
-document.addEventListener('keyup', (e) => {
-  // refresh with F5
-  if (e.keyCode === 116) {
-    renderStack();
-  } else if (e.ctrlKey && e.keyCode === 191) {
-    createSeparator();
-  } else if (e.keyCode === 13 && e.ctrlKey) {
-    let itemInEdit = null;
-    // when adding/editing a tag
-    if ($('.tagadd').is(':focus')) {
-      return false;
-    }
-
-    $('.content').each((index, item) => {
-      if ($(item).attr('contenteditable') === 'true') {
-        itemInEdit = item;
-        return false;
-      }
-    })
-
-    if (itemInEdit) {
-      // Ctrl + Enter
-      toggleEditorMode(itemInEdit, false);
-      return false;
-    } else {
-      // create a new note
-      createNoteItem();
-
-      if (windowState.sortedByNew) {
-        toggleEditorMode($('.content').first(), true);
-        updateStatusBoard($('.content').first().html());
-      } else {
-        toggleEditorMode($('.content').last(), true);
-        updateStatusBoard($('.content').last().html());
-      }
-
-
-
-      return false;
-    }
-  }
-})
 
