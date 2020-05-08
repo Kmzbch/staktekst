@@ -490,6 +490,16 @@ footer {
 	margin: 8px;
 }
 
+.sepGenerator:hover {
+	background: lemonchiffon;
+}
+.sepGenerator {
+	position: relative;
+	opacity: 0.6;
+	width: 100%;
+	height: 10px;
+	top: 26px;
+}
 /* .opener */
 .opener:hover {
 	opacity: 0.6;

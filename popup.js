@@ -127,6 +127,7 @@ const filterNoteItemsByTag = (tagName) => {
 			});
 		}
 	});
+	$('.sepGenerator.hidden').removeClass('hidden');
 
 	return hits;
 };
@@ -531,6 +532,8 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 		noteItemHTML = noteItemHTML.replace(/stackwrapper/gi, 'stackwrapper priority');
 	}
 
+	noteItemHTML += '<div class="sepGenerator hidden">&nbsp;</div>';
+
 	// add the most outer closing tag
 	noteItemHTML += '</div>';
 
@@ -791,6 +794,12 @@ const attachNoteContentEvents = (wrapper) => {
 
 	// add to wrapper
 	wrapper.addEventListener('dblclick', (e) => {
+		if (e.target.classList.contains('sepGenerator')) {
+			if (!e.target.classList.contains('hidden')) {
+				createSeparator(wrapper);
+			}
+			return false;
+		}
 		if (wrapper.classList.contains('note')) {
 			// fire only when the area out of text body double clicked
 			if (!e.target.classList.contains('content')) {
@@ -1778,6 +1787,8 @@ const renderStack = () => {
 				}
 			});
 
+			$('.sepGenerator').addClass('hidden');
+
 			// clone the current stack for search optimization
 			shadowNodes.push(document.querySelector('#textstack').cloneNode(true));
 		}
@@ -1927,7 +1938,8 @@ const generateSeparatorHTML = ({ id, type, content, footnote, date }) => {
 	return separatorHTML;
 };
 
-const createSeparator = () => {
+const createSeparator = (targetWrapper = null) => {
+	console.log('asdf');
 	let query = $('.searchbox').val();
 
 	if (query[0] === '#' && query.substring(1) !== '') {
@@ -1951,10 +1963,14 @@ const createSeparator = () => {
 		attachSeparatorEvents(wrapper);
 
 		// render
-		if (windowState.sortedByNew) {
-			$('#textstack').prepend(wrapper);
+		if (targetWrapper) {
+			$(wrapper).insertAfter(targetWrapper);
 		} else {
-			$('#textstack').append(wrapper);
+			if (windowState.sortedByNew) {
+				$('#textstack').prepend(wrapper);
+			} else {
+				$('#textstack').append(wrapper);
+			}
 		}
 
 		sortable.save();
