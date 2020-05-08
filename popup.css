@@ -330,6 +330,10 @@ footer {
 	content: '#';
 }
 
+#tagsearch-result li.emoji::before {
+	content: '' !important;
+}
+
 #tagsearch-result li {
 	-webkit-user-select: none;
 	-moz-user-select: none;

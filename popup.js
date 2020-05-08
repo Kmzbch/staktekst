@@ -322,6 +322,14 @@ const setDropdownListItems = () => {
 					})
 				);
 
+				if (
+					tag.name.match(
+						/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
+					)
+				) {
+					liItem.addClass('emoji');
+				}
+
 				// append edit Icon to list item
 				// if (![ 'note', 'bookmark', 'clip' ].includes(tag)) {
 				if (![ 'note', 'bookmark', 'clip' ].includes(tag.name)) {
