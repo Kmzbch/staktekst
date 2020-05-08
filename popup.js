@@ -202,17 +202,15 @@ const selectOnDropdownList = (e) => {
 	let unfiltered = $('li').not('.filtered');
 	let index = unfiltered.index(liSelected);
 
-	if (e.keyCode === 13) {
+	if (e.keyCode === Keys.ENTER) {
 		if (!$('#tagsearch-result').is(':hidden')) {
-			// ENTER
 			if (liSelected) {
 				liSelected.removeClass('selected');
 				fireNoteSearch('#' + liSelected.text().replace(/edit$/, ''));
 			}
 			hideDropdownList();
 		}
-	} else if (e.keyCode === 38) {
-		// UP
+	} else if (e.keyCode === Keys.UP) {
 		if (!$('#tagsearch-result').is(':hidden')) {
 			if (liSelected) {
 				if (index - 1 >= 0) {
@@ -238,10 +236,9 @@ const selectOnDropdownList = (e) => {
 				}
 			}
 		}
-	} else if (e.keyCode === 40) {
-		// DOWN
+	} else if (e.keyCode === Keys.DOWN) {
 		if ($('#tagsearch-result').is(':hidden')) {
-			if ($('li.flitered').length > 0 || $('.searchbox').val() === '') {
+			if ($('li').not('.flitered').length > 0 || $('.searchbox').val() === '') {
 				showDropdownList();
 			}
 		} else {
@@ -299,10 +296,16 @@ const filterDropdownListItems = (query) => {
 const setDropdownListItems = () => {
 	// empty selections
 	$('#tagsearch-result').empty();
+	// $('#tagsearch-result').append(
+	// 	$('<li>', {
+	// 		addClass: 'placeholder',
+	// 		text: 'タグを選択してください'
+	// 	})
+	// );
 
 	// create list from tagStack
 	tagStack
-		.filter((item) => isNaN(Date.parse(item))) // filter duedate tag
+		.filter((item) => isNaN(Date.parse(item.name))) // filter duedate tag
 		.forEach((tag) => {
 			// if (tag !== '') {
 			if (tag.name !== '') {
@@ -447,11 +450,12 @@ const setDropdownListItems = () => {
 
 	tagSortable = Sortable.create(document.querySelector('#tagsearch-result'), {
 		sort: true,
-		delay: 150,
+		delay: 300,
 		animation: 150,
 		dataIdAttr: 'id',
 		// filter: '.date',
 		group: 'tagsearch',
+		filter: '.placeholder',
 		store: {
 			get: function(sortable) {
 				var order = localStorage.getItem(sortable.options.group.name);
@@ -1865,9 +1869,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	restorePreviousState();
 
-	setTimeout(() => {
-		setDropdownListItems();
-	}, 1000);
+	setDropdownListItems();
 });
 
 const generateSeparatorHTML = ({ id, type, content, footnote, date }) => {
