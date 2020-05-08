@@ -7,7 +7,8 @@ const background = chrome.extension.getBackgroundPage();
 
 // state variables
 let stack = [];
-let tagStack = [ 'bookmark', 'clip', 'note' ];
+let tagStack = [];
+
 let windowState = {
 	searchQuery: '',
 	scrollY: 0,
@@ -299,39 +300,33 @@ const setDropdownListItems = () => {
 	// empty selections
 	$('#tagsearch-result').empty();
 
-	let defaultTagStack = tagStack.slice(0, 3);
-	let emojiTagStack = tagStack.filter((tag) =>
-		tag.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu)
-	);
-
-	let customTagStack = tagStack
-		.slice(3)
-		.filter(
-			(tag) => !tag.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu)
-		);
-
-	tagStack = defaultTagStack.concat(customTagStack.sort()).concat(emojiTagStack.sort());
-
 	// create list from tagStack
 	tagStack
 		.filter((item) => isNaN(Date.parse(item))) // filter duedate tag
 		.forEach((tag) => {
-			if (tag !== '') {
+			// if (tag !== '') {
+			if (tag.name !== '') {
 				// create list item
-				let liItem = $('<li>');
+				let liItem = $('<li>', {
+					id: tag.id
+				});
 
 				liItem.append(
 					$('<span>', {
-						text: tag
+						// text: tag
+						text: tag.name
 					})
 				);
 
 				// append edit Icon to list item
-				if (![ 'note', 'bookmark', 'clip' ].includes(tag)) {
+				// if (![ 'note', 'bookmark', 'clip' ].includes(tag)) {
+				if (![ 'note', 'bookmark', 'clip' ].includes(tag.name)) {
 					let editTagInput = $('<input>', {
 						type: 'text',
 						addClass: 'tageditInput tagadd',
-						value: tag,
+						// value: tag,
+						value: tag.name,
+
 						spellCheck: 'false',
 						css: {
 							display: 'none'
@@ -355,11 +350,20 @@ const setDropdownListItems = () => {
 									}
 								});
 
-								if (tagStack.findIndex((t) => t === newTag) === -1) {
-									tagStack.splice(tagStack.findIndex((t) => t === oldTag), 1, newTag);
+								// if (tagStack.findIndex((t) => t === newTag) === -1) {
+								// 	tagStack.splice(tagStack.findIndex((t) => t === oldTag), 1, newTag);
+								// } else {
+								// 	tagStack.splice(tagStack.findIndex((t) => t === oldTag), 1);
+								// }
+
+								if (tagStack.findIndex((t) => t.name === newTag) === -1) {
+									tagStack.find((t) => t.name === oldTag).name = newTag;
+									// tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1, {});
 								} else {
-									tagStack.splice(tagStack.findIndex((t) => t === oldTag), 1);
+									tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1);
 								}
+								chrome.storage.local.set({ tagStack: tagStack });
+								setDropdownListItems();
 
 								e.target.defaultValue = newTag;
 
@@ -440,8 +444,28 @@ const setDropdownListItems = () => {
 				});
 			}
 		});
+
+	tagSortable = Sortable.create(document.querySelector('#tagsearch-result'), {
+		sort: true,
+		delay: 150,
+		animation: 150,
+		dataIdAttr: 'id',
+		// filter: '.date',
+		group: 'tagsearch',
+		store: {
+			get: function(sortable) {
+				var order = localStorage.getItem(sortable.options.group.name);
+				return order ? order.split('|') : [];
+			},
+			set: function(sortable) {
+				var order = sortable.toArray();
+				localStorage.setItem(sortable.options.group.name, order.join('|'));
+			}
+		}
+	});
 };
 
+let tagSortable;
 /**
  * generate note item HTML
  */
@@ -530,8 +554,12 @@ const generateTagsHTML = (tagName) => {
 		tagsHTML = `<span class="tag">${tagName}</span>`;
 	}
 	// save tags for tag search
-	if (!tagStack.includes(tagName)) {
-		tagStack.push(tagName);
+	// if (!tagStack.includes(tagName)) {
+	// 	tagStack.push(tagName);
+	// }
+
+	if (!tagStack.find((t) => t.name === tagName)) {
+		tagStack.push({ id: uuidv4(), name: tagName });
 	}
 
 	return tagsHTML;
@@ -563,7 +591,10 @@ const attachTagInputEvents = (stackWrapper) => {
 			}
 
 			//
+			console.log(tagName);
 			let tagsHTML = generateTagsHTML(tagName);
+			chrome.storage.local.set({ tagStack: tagStack });
+			setDropdownListItems();
 
 			// insert before tag input
 			// TODO: rename divWrap class
@@ -609,6 +640,8 @@ const attachTagInputEvents = (stackWrapper) => {
 				}
 
 				let tagsHTML = generateTagsHTML(tagName);
+				chrome.storage.local.set({ tagStack: tagStack });
+				setDropdownListItems();
 
 				// insert before tag input
 				// TODO: rename divWrap class
@@ -670,15 +703,20 @@ const attachTagInputEvents = (stackWrapper) => {
 				}
 
 				// remove the tag from tagStack if there is no item with the tag
-				tagStack.splice(tagStack.findIndex((t) => t === prevTagName), 1);
+				// tagStack.splice(tagStack.findIndex((t) => t === prevTagName), 1);
+				tagStack.splice(tagStack.findIndex((tag) => tag.name === prevTagName), 1);
 				$('.tag').each((index, item) => {
 					let tagRegex = new RegExp(`${escapeRegExp(prevTagName)}$`, 'i');
 
 					if ($(item).text().match(tagRegex)) {
-						tagStack.push(prevTagName);
+						// tagStack.push(prevTagName);
+						tagStack.push({ id: uuidv4(), name: prevTagName });
+
 						return false;
 					}
 				});
+				chrome.storage.local.set({ tagStack: tagStack });
+				setDropdownListItems();
 
 				// remove pinned styles
 				if (prevTagName.match(/pinned|📌/i)) {
@@ -1153,18 +1191,25 @@ const attachEventsToTextStack = () => {
 						});
 					}
 
+					// TODO: change the logic
 					// remove the tag from tagstack if there's no item with the tag
-					tagStack.splice(tagStack.findIndex((t) => t === tagName), 1);
+					// tagStack.splice(tagStack.findIndex((t) => t === tagName), 1);
+					tagStack.splice(tagStack.findIndex((tag) => tag.name === tagName), 1);
 
 					$('.tag').each((index, item) => {
 						let tagRegex = new RegExp(`${escapeRegExp(tagName)}`, 'i');
-						console.log($(item).text());
 
 						if ($(item).text().match(tagRegex)) {
-							tagStack.push(tagName);
+							// tagStack.push(tagName);
+
+							tagStack.push({ id: uuidv4(), name: tagName });
+
 							return false;
 						}
 					});
+					chrome.storage.local.set({ tagStack: tagStack });
+					setDropdownListItems();
+
 					stackWrapper.find('.footnote').find('.divWrap').removeClass('hidden');
 				}
 			} else {
@@ -1241,7 +1286,8 @@ const fireNoteSearch = (query) => {
  * 
  */
 const showDropdownList = () => {
-	setDropdownListItems();
+	// setDropdownListItems();
+
 	filterDropdownListItems($('.searchbox').val());
 	$('#tagsearch-result').animate({ scrollTop: 0 }, 20);
 
@@ -1586,7 +1632,23 @@ const clearAllItems = () => {
 
 	// reset state variables
 	stack = [];
-	tagStack = [ 'bookmark', 'clip', 'note' ];
+	// tagStack = [ 'bookmark', 'clip', 'note' ];
+	tagStack = [
+		{
+			id: uuidv4(),
+			name: 'bookmark'
+		},
+		{
+			id: uuidv4(),
+			name: 'clip'
+		},
+		{
+			id: uuidv4(),
+			name: 'note'
+		}
+	];
+	chrome.storage.local.set({ tagStack: tagStack });
+
 	windowState = {
 		searchQuery: '',
 		scrollY: 0,
@@ -1601,7 +1663,7 @@ const replaceTagName = (prevTag, newTag) => {
 	// add item to stack
 	stack.forEach((item) => {
 		if (item.footnote.tags.includes(prevTag)) {
-			item.footnote.tags.splice(item.footnote.tags.findIndex((tag) => tag == prevTag), 1, newTag);
+			item.footnote.tags.splice(item.footnote.tags.findIndex((tag) => tag.name == prevTag), 1, newTag);
 		}
 	});
 	stackStorage.set(JSON.stringify(stack));
@@ -1654,6 +1716,9 @@ const renderStack = () => {
 					notesHTML = generateNoteItemHTML(res) + notesHTML;
 				}
 			});
+
+			chrome.storage.local.set({ tagStack: tagStack });
+			setDropdownListItems();
 
 			// insert current time
 			let now = new Date();
@@ -1772,12 +1837,37 @@ document.addEventListener('DOMContentLoaded', () => {
 		filter: '.date'
 	});
 
-	console.log(sortable);
+	chrome.storage.local.get('tagStack', (res) => {
+		if (typeof res.tagStack === 'undefined' || res.tagStack.length === 0) {
+			tagStack = [
+				{
+					id: uuidv4(),
+					name: 'bookmark'
+				},
+				{
+					id: uuidv4(),
+					name: 'clip'
+				},
+				{
+					id: uuidv4(),
+					name: 'note'
+				}
+			];
+			chrome.storage.local.set({ tagStack: tagStack });
+		} else {
+			tagStack = res.tagStack;
+			console.log(tagStack);
+		}
+	});
 
 	initializeEventListeners();
 	renderStack();
 
 	restorePreviousState();
+
+	setTimeout(() => {
+		setDropdownListItems();
+	}, 1000);
 });
 
 const generateSeparatorHTML = ({ id, type, content, footnote, date }) => {
