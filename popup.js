@@ -306,6 +306,7 @@ const setDropdownListItems = () => {
 	// create list from tagStack
 	tagStack
 		.filter((item) => isNaN(Date.parse(item.name))) // filter duedate tag
+		.filter((item) => !item.name.match(/pinned|📌/)) // filter duedate tag
 		.forEach((tag) => {
 			// if (tag !== '') {
 			if (tag.name !== '') {
@@ -450,7 +451,7 @@ const setDropdownListItems = () => {
 
 	tagSortable = Sortable.create(document.querySelector('#tagsearch-result'), {
 		sort: true,
-		delay: 300,
+		delay: 200,
 		animation: 150,
 		dataIdAttr: 'id',
 		// filter: '.date',
@@ -517,8 +518,9 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 	noteItemHTML += '</div>';
 
 	// replace class names for setting styles
-	if (noteItemHTML.match(/pinned|📌/i)) {
-		noteItemHTML = noteItemHTML.replace(/stackwrapper/gi, 'stackwrapper pinned');
+	if (noteItemHTML.match(/pinned|📌|tagDate/i)) {
+		// noteItemHTML = noteItemHTML.replace(/stackwrapper/gi, 'stackwrapper pinned');
+		noteItemHTML = noteItemHTML.replace(/stackwrapper/gi, 'stackwrapper priority');
 	}
 
 	// add the most outer closing tag
@@ -591,7 +593,8 @@ const attachTagInputEvents = (stackWrapper) => {
 			// change the tag to emoji
 			if (tagName.match(/pinned|📌/i)) {
 				tagName = tagName.replace(/pinned/i, '📌');
-				$(stackWrapper).addClass('pinned');
+				// $(stackWrapper).addClass('pinned');
+				$(stackWrapper).addClass('priority');
 			}
 
 			//
@@ -640,7 +643,8 @@ const attachTagInputEvents = (stackWrapper) => {
 				// change the tag to emoji
 				if (tagName.match(/pinned|📌/i)) {
 					tagName = tagName.replace(/pinned/i, '📌');
-					$(stackWrapper).addClass('pinned');
+					// $(stackWrapper).addClass('pinned');
+					$(stackWrapper).addClass('priority');
 				}
 
 				let tagsHTML = generateTagsHTML(tagName);
@@ -724,7 +728,8 @@ const attachTagInputEvents = (stackWrapper) => {
 
 				// remove pinned styles
 				if (prevTagName.match(/pinned|📌/i)) {
-					$(stackWrapper).removeClass('pinned');
+					// $(stackWrapper).removeClass('pinned');
+					$(stackWrapper).removeClass('priority');
 					prevTag.removeClass('pinned');
 				}
 				// if (prevTagName.slice(1).match(/(fav|favourite|favorite)/i)) {
@@ -967,6 +972,26 @@ const initializeEventListeners = () => {
 								var order = sortable.toArray();
 								localStorage.setItem(sortable.options.group.name, order.join('|'));
 							}
+						},
+
+						onChange: (e) => {
+							// console.log(e.originalEvent.clientY);
+							// console.log(e.originalEvent.offsetY);
+							// if (e.originalEvent.clientY > 500) {
+							// 	window.scrollBy(0, e.originalEvent.offsetY);
+							// } else if (e.originalEvent.clientY < 200) {
+							// 	window.scrollBy(0, -e.originalEvent.offsetY);
+							// }
+							// if (e.originalEvent.offsetY > 0) {
+							// 	console.log(e.originalEvent.offsetY + e.originalEvent.clientY);
+							// 	if (e.originalEvent.offsetY + e.originalEvent.clientY > 500) {
+							// 		window.scrollBy(0, e.originalEvent.offsetY / 2);
+							// 	}
+							// } else {
+							// 	if (e.originalEvent.clientY + e.originalEvent.offsetY < 300) {
+							// 		window.scrollBy(0, e.originalEvent.offsetY * 2);
+							// 	}
+							// }
 						}
 					});
 				});
@@ -1078,11 +1103,11 @@ const initializeEventListeners = () => {
 		if ($('#textstack').hasClass('viewmode')) {
 			$('#textstack').removeClass('viewmode');
 			$('#toolbox').removeClass('viewmode');
-			// $('.view').text('assignment');
+			$('.view').removeClass('viewmode');
 			fireNoteSearch('');
 		} else {
 			fireNoteSearch('');
-			// $('.view').text('assignment');
+			$('.view').addClass('viewmode');
 			$('#textstack').addClass('viewmode');
 			$('#toolbox').addClass('viewmode');
 		}
@@ -1165,7 +1190,8 @@ const attachEventsToTextStack = () => {
 
 				// remove pinned styles
 				if (tagName.match(/pinned|📌/i)) {
-					$(stackWrapper).removeClass('pinned');
+					// $(stackWrapper).removeClass('pinned');
+					$(stackWrapper).removeClass('priority');
 				}
 
 				if (stackWrapper.find('.tag').length > 1 && $(targetElem).prev().length != 0) {
@@ -1400,9 +1426,6 @@ const sortNotes = (sortingByNew) => {
 };
 
 const switchSortOrder = (sortingByNew) => {
-	console.log(sortingByNew);
-	console.log($('#textstack').children().last().text());
-
 	// NEW
 	if (sortingByNew) {
 		$('#sort').html('New <i class="material-icons">arrow_upward</i>');
@@ -1410,9 +1433,6 @@ const switchSortOrder = (sortingByNew) => {
 	} else {
 		$('#sort').html('Old <i class="material-icons">arrow_downward</i>');
 	}
-
-	console.log('INSIDe:');
-	console.log(sortable);
 	sortable.sort(sortable.toArray().reverse());
 	sortable.save();
 
@@ -1828,12 +1848,6 @@ let sortable;
 
 // ========== INITIALIZATION ==========
 document.addEventListener('DOMContentLoaded', () => {
-	// importFromJsonFile("/importData.json").then(() => {
-	//   // convertDateToDateTimeFormat();
-	//   initializeEventListeners();
-	//   renderStack();
-	//   restorePreviousState();
-	// })
 	sortable = Sortable.create(document.querySelector('#textstack'), {
 		sort: false,
 		disabled: true,
@@ -1863,6 +1877,14 @@ document.addEventListener('DOMContentLoaded', () => {
 			console.log(tagStack);
 		}
 	});
+
+	// 	importFromJsonFile("/importData.json").then(() => {
+	//   // convertDateToDateTimeFormat();
+	//   initializeEventListeners();
+	//   renderStack();
+	//   restorePreviousState();
+	//   setDropdownListItems();
+	// })
 
 	initializeEventListeners();
 	renderStack();

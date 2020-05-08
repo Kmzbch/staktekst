@@ -857,8 +857,16 @@ input.disabled {
 	right: 5px !important;
 }
 
-.viewmode .stackwrapper:not(.pinned) {
+/* .viewmode .stackwrapper:not(.pinned) {
 	display: none;
+} */
+
+.viewmode .stackwrapper:not(.priority) {
+	display: none;
+}
+
+.viewmode .view {
+	color: lemonchiffon !important;
 }
 
 .viewmode div.date {
