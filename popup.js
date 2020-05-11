@@ -127,6 +127,7 @@ const filterNoteItemsByTag = (tagName) => {
 			});
 		}
 	});
+	$('#textstack').addClass('infilter');
 	$('.sepGenerator.hidden').removeClass('hidden');
 
 	return hits;
@@ -532,7 +533,7 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 		noteItemHTML = noteItemHTML.replace(/stackwrapper/gi, 'stackwrapper priority');
 	}
 
-	noteItemHTML += '<div class="sepGenerator hidden">&nbsp;</div>';
+	noteItemHTML += '<div class="sepGenerator hidden"></div>';
 
 	// add the most outer closing tag
 	noteItemHTML += '</div>';
@@ -786,12 +787,6 @@ const attachNoteContentEvents = (wrapper) => {
 	let contentDIV = wrapper.querySelector('.content');
 	let prevHTML = wrapper.innerHTML;
 
-	$(wrapper).find('.edit').click(() => {
-		setTimeout(() => {
-			toggleEditorMode(contentDIV, true);
-		}, 100);
-	});
-
 	// add to wrapper
 	wrapper.addEventListener('dblclick', (e) => {
 		if (e.target.classList.contains('sepGenerator')) {
@@ -810,6 +805,16 @@ const attachNoteContentEvents = (wrapper) => {
 				}, 100);
 			}
 		}
+	});
+
+	if ($(wrapper).hasClass('clip bookmark')) {
+		return false;
+	}
+
+	$(wrapper).find('.edit').click(() => {
+		setTimeout(() => {
+			toggleEditorMode(contentDIV, true);
+		}, 100);
 	});
 
 	contentDIV.addEventListener('focus', (e) => {
@@ -926,6 +931,16 @@ const initializeEventListeners = () => {
 		windowState.scrollY = window.scrollY;
 	};
 
+	window.onload = function() {
+		document.body.addEventListener('drag', (e) => {
+			if (e.clientY > 550) {
+				window.scrollBy(0, 75);
+			} else if (e.clientY < 100) {
+				window.scrollBy(0, -75);
+			}
+		});
+	};
+
 	// save window state when the popup window is closed
 	$(window).on('unload blur', () => {
 		windowState.closedDateTime = new Date().toISOString();
@@ -989,26 +1004,6 @@ const initializeEventListeners = () => {
 								var order = sortable.toArray();
 								localStorage.setItem(sortable.options.group.name, order.join('|'));
 							}
-						},
-
-						onChange: (e) => {
-							// console.log(e.originalEvent.clientY);
-							// console.log(e.originalEvent.offsetY);
-							// if (e.originalEvent.clientY > 500) {
-							// 	window.scrollBy(0, e.originalEvent.offsetY);
-							// } else if (e.originalEvent.clientY < 200) {
-							// 	window.scrollBy(0, -e.originalEvent.offsetY);
-							// }
-							// if (e.originalEvent.offsetY > 0) {
-							// 	console.log(e.originalEvent.offsetY + e.originalEvent.clientY);
-							// 	if (e.originalEvent.offsetY + e.originalEvent.clientY > 500) {
-							// 		window.scrollBy(0, e.originalEvent.offsetY / 2);
-							// 	}
-							// } else {
-							// 	if (e.originalEvent.clientY + e.originalEvent.offsetY < 300) {
-							// 		window.scrollBy(0, e.originalEvent.offsetY * 2);
-							// 	}
-							// }
 						}
 					});
 				});
@@ -1086,6 +1081,7 @@ const initializeEventListeners = () => {
 				shadowNodes.length = 0;
 				shadowNodes.push(document.querySelector('#textstack').cloneNode(true));
 
+				$('.textstack').removeClass('infilter');
 				// show toolbox
 				$('.opener').hide();
 				$('#statusboard').text('');
@@ -1782,9 +1778,9 @@ const renderStack = () => {
 			$('.stackwrapper').each((index, item) => {
 				// console.log(item);
 				attachTagInputEvents(item);
-				if ($(item).hasClass('note')) {
-					attachNoteContentEvents(item);
-				}
+				// if ($(item).hasClass('note')) {
+				attachNoteContentEvents(item);
+				// }
 			});
 
 			$('.sepGenerator').addClass('hidden');
