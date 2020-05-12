@@ -1632,9 +1632,35 @@ const removeNoteItem = (noteItem) => {
 	setTimeout(() => {
 		// remove the item
 		const id = noteItem.querySelector('input').value;
+		const idx = stack.findIndex((item) => item.id === id);
+		const tagsToRemove = stack[idx].footnote.tags;
+
 		stack = stack.filter((item) => item.id !== id);
 		stackStorage.set(JSON.stringify(stack));
 		noteItem.remove();
+
+		let noTag = true;
+		tagsToRemove.forEach((tagName) => {
+			$('.tag').each((index, item) => {
+				let tagRegex = new RegExp(`${escapeRegExp(tagName)}`, 'i');
+
+				if ($(item).text().match(tagRegex)) {
+					noTag = false;
+					return;
+					// 	// tagStack.push(tagName);
+
+					// 	tagStack.push({ id: uuidv4(), name: tagName });
+
+					// 	return false;
+				}
+			});
+			if (noTag) {
+				tagStack.splice(tagStack.findIndex((t) => t.name === tagName), 1);
+				noTag = true;
+			}
+		});
+		chrome.storage.local.set({ tagStack: tagStack });
+		setDropdownListItems();
 
 		if (typeof sortable !== 'undefined') {
 			sortable.save();
