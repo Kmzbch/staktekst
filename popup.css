@@ -783,6 +783,12 @@ input.disabled {
 	font-weight: bold !important;
 }
 
+.tageditInput::placeholder {
+	color: tomato;
+	text-decoration: underline;
+	font-weight: normal;
+}
+
 .footnote {
 	position: absolute;
 	bottom: 5px;

@@ -340,6 +340,7 @@ const setDropdownListItems = () => {
 						addClass: 'tageditInput tagadd',
 						// value: tag,
 						value: tag.name,
+						placeholder: 'Enterキーでタグを削除します',
 
 						spellCheck: 'false',
 						css: {
@@ -354,53 +355,97 @@ const setDropdownListItems = () => {
 							// ENTER
 							let newTag = e.target.value;
 							let oldTag = e.target.defaultValue;
-							if (newTag.match(/^\s*$/)) {
-								newTag = oldTag;
-							} else {
-								replaceTagName(oldTag, newTag);
+
+							if (newTag === '') {
 								$('.tag').each((index, elem) => {
 									if ($(elem).text() === oldTag) {
-										$(elem).text(newTag);
+										$(elem).remove();
 									}
 								});
-
-								// if (tagStack.findIndex((t) => t === newTag) === -1) {
-								// 	tagStack.splice(tagStack.findIndex((t) => t === oldTag), 1, newTag);
-								// } else {
-								// 	tagStack.splice(tagStack.findIndex((t) => t === oldTag), 1);
-								// }
-
-								if (tagStack.findIndex((t) => t.name === newTag) === -1) {
-									tagStack.find((t) => t.name === oldTag).name = newTag;
-									// tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1, {});
-								} else {
-									tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1);
-								}
+								tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1);
 								chrome.storage.local.set({ tagStack: tagStack });
 								setDropdownListItems();
 
-								e.target.defaultValue = newTag;
+								stack.forEach((item) => {
+									if (item.footnote.tags.includes(oldTag)) {
+										item.footnote.tags.splice(
+											item.footnote.tags.findIndex((t) => t.name === oldTag),
+											1
+										);
+									}
+								});
+								stackStorage.set(JSON.stringify(stack));
 
 								// for search optimization
 								if (shadowNodes[0]) {
 									$(shadowNodes[0]).find('.tag').each((index, elem) => {
 										if ($(elem).text() === oldTag) {
-											$(elem).text(newTag);
+											$(elem).remove();
 										}
 									});
 								}
-							}
+								$(e.target).parent().remove();
+							} else {
+								if (newTag.match(/^\s*$/)) {
+									newTag = oldTag;
+								} else {
+									replaceTagName(oldTag, newTag);
+									$('.tag').each((index, elem) => {
+										if ($(elem).text() === oldTag) {
+											$(elem).text(newTag);
+										}
+									});
 
-							$(e.target).parent().find('span').text(newTag);
-							$(e.target).parent().find('span').show();
-							$(e.target).parent().find('.tagedit').show();
-							$(e.target).hide();
+									// if (tagStack.findIndex((t) => t === newTag) === -1) {
+									// 	tagStack.splice(tagStack.findIndex((t) => t === oldTag), 1, newTag);
+									// } else {
+									// 	tagStack.splice(tagStack.findIndex((t) => t === oldTag), 1);
+									// }
 
-							if ($('.searchbox').val() !== '') {
-								$('.searchbox').val('#' + newTag);
-								windowState.searchQuery = '#' + newTag;
+									if (tagStack.findIndex((t) => t.name === newTag) === -1) {
+										tagStack.find((t) => t.name === oldTag).name = newTag;
+										// tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1, {});
+									} else {
+										tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1);
+									}
+									chrome.storage.local.set({ tagStack: tagStack });
+									setDropdownListItems();
+
+									e.target.defaultValue = newTag;
+
+									// for search optimization
+									if (shadowNodes[0]) {
+										$(shadowNodes[0]).find('.tag').each((index, elem) => {
+											if ($(elem).text() === oldTag) {
+												$(elem).text(newTag);
+											}
+										});
+									}
+									$(e.target).parent().find('span').text(newTag);
+									$(e.target).parent().find('span').show();
+									$(e.target).parent().find('.tagedit').show();
+									$(e.target).hide();
+
+									if ($('.searchbox').val() !== '') {
+										$('.searchbox').val('#' + newTag);
+										windowState.searchQuery = '#' + newTag;
+									}
+								}
 							}
 						}
+					});
+
+					editTagInput.blur((e) => {
+						let newTag = e.target.value;
+						let oldTag = e.target.defaultValue;
+
+						e.target.value = e.target.defaultValue;
+
+						newTag = oldTag;
+						$(e.target).parent().find('span').text(oldTag);
+						$(e.target).parent().find('span').show();
+						$(e.target).parent().find('.tagedit').show();
+						$(e.target).hide();
 					});
 
 					//
@@ -964,6 +1009,7 @@ const initializeEventListeners = () => {
 				return false;
 			} else {
 				createNoteItem();
+
 				const newNote = windowState.sortedByNew ? $('.content').first() : $('.content').last();
 				toggleEditorMode(newNote, true);
 				updateStatusBoard(newNote.html());
@@ -1602,7 +1648,6 @@ const createNoteItem = () => {
 	} else {
 		$('#textstack').append(wrapper);
 	}
-
 	sortable.save();
 
 	// for search optimization
