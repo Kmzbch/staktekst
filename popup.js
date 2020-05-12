@@ -834,6 +834,9 @@ const attachNoteContentEvents = (wrapper) => {
 
 	// add to wrapper
 	wrapper.addEventListener('dblclick', (e) => {
+		if (e.target.classList.contains('tagadd')) {
+			return false;
+		}
 		if (e.target.classList.contains('sepGenerator')) {
 			if (!e.target.classList.contains('hidden')) {
 				createSeparator(wrapper);
@@ -908,31 +911,33 @@ const attachNoteContentEvents = (wrapper) => {
 
 	// fire div change event used for content change event
 	wrapper.addEventListener('change', (e) => {
-		let newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
-		updateStatusBoard(newHTML);
+		if (!e.target.classList.contains('tagadd')) {
+			let newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
+			updateStatusBoard(newHTML);
 
-		// find note item index
-		const id = $(e.target).attr('id');
-		const index = stack.findIndex((item) => item.id === id);
+			// find note item index
+			const id = $(e.target).attr('id');
+			const index = stack.findIndex((item) => item.id === id);
 
-		newHTML = $(contentDIV).unhighlight({ element: 'span', className: 'highlighted' }).html();
+			newHTML = $(contentDIV).unhighlight({ element: 'span', className: 'highlighted' }).html();
 
-		// update note item
-		stack[index].content = newHTML.replace(/<br>/gi, '\n');
-		stackStorage.set(JSON.stringify(stack));
+			// update note item
+			stack[index].content = newHTML.replace(/<br>/gi, '\n');
+			stackStorage.set(JSON.stringify(stack));
 
-		// for search optimization
-		/////
-		if (shadowNodes[0]) {
-			$(shadowNodes[0]).find('.stackwrapper').each((index, item) => {
-				if ($(item).attr('id') === id) {
-					item.innerHTML = wrapper.innerHTML;
+			// for search optimization
+			/////
+			if (shadowNodes[0]) {
+				$(shadowNodes[0]).find('.stackwrapper').each((index, item) => {
+					if ($(item).attr('id') === id) {
+						item.innerHTML = wrapper.innerHTML;
 
-					$(item).unhighlight({ element: 'span', className: 'highlighted' });
+						$(item).unhighlight({ element: 'span', className: 'highlighted' });
 
-					return false;
-				}
-			});
+						return false;
+					}
+				});
+			}
 		}
 	});
 
@@ -984,6 +989,31 @@ const initializeEventListeners = () => {
 				window.scrollBy(0, -75);
 			}
 		});
+
+		// $('#textstack .tagadd').autocomplete({
+		// 	source: tagStack.map((item) => item.name)
+		// });
+
+		let tagSet = tagStack.map((item) => item.name).filter((tag) => isNaN(new Date(tag))).sort();
+
+		jQuery('#textstack .tagadd')
+			.autocomplete({
+				minLength: 0,
+				delay: 0,
+				source: function(request, response) {
+					response(
+						jQuery.grep(tagSet, function(value) {
+							return value.includes(request.term);
+						})
+					);
+				},
+				select: function(event, ui) {
+					jQuery('#textstack .tagadd').val(ui.item.name);
+				}
+			})
+			.dblclick(function() {
+				jQuery(this).autocomplete('search', '');
+			});
 	};
 
 	// save window state when the popup window is closed
@@ -1649,6 +1679,50 @@ const createNoteItem = () => {
 		$('#textstack').append(wrapper);
 	}
 	sortable.save();
+
+	let tagSet = tagStack.map((item) => item.name).filter((tag) => isNaN(new Date(tag))).sort();
+
+	if (windowState.sortedByNew) {
+		jQuery('#textstack .tagadd')
+			.first()
+			.autocomplete({
+				minLength: 0,
+				delay: 0,
+				source: function(request, response) {
+					response(
+						jQuery.grep(tagSet, function(value) {
+							return value.includes(request.term);
+						})
+					);
+				},
+				select: function(event, ui) {
+					jQuery('#textstack .tagadd').val(ui.item.name);
+				}
+			})
+			.dblclick(function() {
+				jQuery(this).autocomplete('search', '');
+			});
+	} else {
+		jQuery('#textstack .tagadd')
+			.last()
+			.autocomplete({
+				minLength: 0,
+				delay: 0,
+				source: function(request, response) {
+					response(
+						jQuery.grep(tagSet, function(value) {
+							return value.includes(request.term);
+						})
+					);
+				},
+				select: function(event, ui) {
+					jQuery('#textstack .tagadd').val(ui.item.name);
+				}
+			})
+			.dblclick(function() {
+				jQuery(this).autocomplete('search', '');
+			});
+	}
 
 	// for search optimization
 	if (shadowNodes[0]) {
