@@ -432,33 +432,31 @@ const attachListItemEvents = (liItem) => {
 				e.preventDefault();
 
 				const liSelected = $('#tagsearch-result .selected');
+				const tagName = $(liSelected).find('.tageditInput').val();
 
-				$(liSelected).find('span').hide();
+				// turn on tageditInput
 				$(e.target).hide();
+				$(liSelected).find('span').hide();
 				$(liSelected).find('.tageditInput').show();
 				$(liSelected).find('.tageditInput').focus();
-				const val = $(liSelected).find('.tageditInput').val();
-				$(liSelected).find('.tageditInput').val(val);
+				$(liSelected).find('.tageditInput').val(tagName);
 
 				return false;
-			} else if (e.target.classList.contains('tageditInput')) {
-				e.preventDefault();
-				return false;
-			} else {
+			} else if (!e.target.classList.contains('tageditInput')) {
 				fireSearch('#' + $(e.target).text().replace(/edit$/, ''));
 				hideDropdownList();
 			}
 		}
 	});
 
-	// events
+	// keyboard events
 	$('.tageditInput').keyup((e) => {
 		if (e.keyCode === Keys.ENTER) {
-			// ENTER
 			let newTag = e.target.value;
 			let oldTag = e.target.defaultValue;
 
 			if (newTag === '') {
+				// remove the tag from tagstack
 				$('.tag').each((index, elem) => {
 					if ($(elem).text() === oldTag) {
 						$(elem).remove();
@@ -466,8 +464,8 @@ const attachListItemEvents = (liItem) => {
 				});
 				tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1);
 				chrome.storage.local.set({ tagStack: tagStack });
-				setDropdownListItems();
 
+				// remove the tag from stack
 				stack.forEach((item) => {
 					if (item.footnote.tags.includes(oldTag)) {
 						item.footnote.tags.splice(item.footnote.tags.findIndex((t) => t.name === oldTag), 1);
@@ -475,7 +473,7 @@ const attachListItemEvents = (liItem) => {
 				});
 				stackStorage.set(JSON.stringify(stack));
 
-				// for search optimization
+				// remove the tag from shadow nodes for search optimization
 				if (shadowNodes[0]) {
 					$(shadowNodes[0]).find('.tag').each((index, elem) => {
 						if ($(elem).text() === oldTag) {
@@ -483,29 +481,40 @@ const attachListItemEvents = (liItem) => {
 						}
 					});
 				}
+				// remove the tag DOM
 				$(e.target).parent().remove();
 			} else {
+				// update the tag
 				if (newTag.match(/^\s*$/)) {
+					// cancel tag edit
 					newTag = oldTag;
 				} else {
 					replaceTagName(oldTag, newTag);
+
+					// replace all the tags in the textstack
 					$('.tag').each((index, elem) => {
 						if ($(elem).text() === oldTag) {
 							$(elem).text(newTag);
 						}
 					});
 
+					// update tagstack
 					if (tagStack.findIndex((t) => t.name === newTag) === -1) {
 						tagStack.find((t) => t.name === oldTag).name = newTag;
 					} else {
 						tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1);
 					}
 					chrome.storage.local.set({ tagStack: tagStack });
-					setDropdownListItems();
 
 					e.target.defaultValue = newTag;
 
-					// for search optimization
+					// turn off tageditInput
+					$(e.target).parent().find('span').text(newTag);
+					$(e.target).parent().find('span').show();
+					$(e.target).parent().find('.tagedit').show();
+					$(e.target).hide();
+
+					// replace tags of shadow nodes for search optimization
 					if (shadowNodes[0]) {
 						$(shadowNodes[0]).find('.tag').each((index, elem) => {
 							if ($(elem).text() === oldTag) {
@@ -513,27 +522,23 @@ const attachListItemEvents = (liItem) => {
 							}
 						});
 					}
-					$(e.target).parent().find('span').text(newTag);
-					$(e.target).parent().find('span').show();
-					$(e.target).parent().find('.tagedit').show();
-					$(e.target).hide();
 
+					// update search query as well
 					if ($('.searchbox').val() !== '') {
 						$('.searchbox').val('#' + newTag);
 						windowState.searchQuery = '#' + newTag;
 					}
 				}
 			}
+			setDropdownListItems();
 		}
 	});
 
 	$('.tageditInput').blur((e) => {
+		// cancel tag edit
 		const oldTag = e.target.defaultValue;
-		let newTag = e.target.value;
-
-		e.target.value = e.target.defaultValue;
-
-		newTag = oldTag;
+		e.target.value = oldTag;
+		// turn off tageditInput
 		$(e.target).parent().find('span').text(oldTag);
 		$(e.target).parent().find('span').show();
 		$(e.target).parent().find('.tagedit').show();
@@ -541,7 +546,6 @@ const attachListItemEvents = (liItem) => {
 	});
 };
 
-// TODO: refactor
 const setDropdownListItems = () => {
 	$('#tagsearch-result').empty();
 
@@ -719,9 +723,9 @@ const generateTagsHTML = (tagName) => {
 
 const generateCurrentDateHTML = () => {
 	// insert current time
-	let now = new Date();
-	let hours = ('0' + now.getHours()).slice(-2);
-	let minutes = ('0' + now.getMinutes()).slice(-2);
+	const now = new Date();
+	const hours = ('0' + now.getHours()).slice(-2);
+	const minutes = ('0' + now.getMinutes()).slice(-2);
 
 	return `<div class="date current">${formatDate() + ' ' + hours + ':' + minutes}</div>`;
 };
