@@ -327,21 +327,28 @@ const filterNoteItems = (term) => {
 };
 
 // ========== dropdown list functions ==========
+
 const selectOnDropdownList = (e) => {
 	const liSelected = $('#tagsearch-result .selected');
-	let unfiltered = $('li').not('.filtered');
-	let index = unfiltered.index(liSelected);
+	const unfiltered = $('li').not('.filtered');
+	const index = unfiltered.index(liSelected);
 
-	if (e.keyCode === Keys.ENTER) {
-		if (!$('#tagsearch-result').is(':hidden')) {
+	if ($('#tagsearch-result').is(':hidden')) {
+		if (e.keyCode === Keys.DOWN) {
+			// display dropdownlist
+			if ($('li').not('.flitered').length > 0 || $('.searchbox').val() === '') {
+				showDropdownList();
+			}
+		}
+	} else {
+		if (e.keyCode === Keys.ENTER) {
 			if (liSelected) {
+				// search by the tag
 				liSelected.removeClass('selected');
 				fireSearch('#' + liSelected.text().replace(/edit$/, ''));
 			}
 			hideDropdownList();
-		}
-	} else if (e.keyCode === Keys.UP) {
-		if (!$('#tagsearch-result').is(':hidden')) {
+		} else if (e.keyCode === Keys.UP) {
 			if (liSelected) {
 				if (index - 1 >= 0) {
 					// move up
@@ -365,13 +372,7 @@ const selectOnDropdownList = (e) => {
 					hideDropdownList();
 				}
 			}
-		}
-	} else if (e.keyCode === Keys.DOWN) {
-		if ($('#tagsearch-result').is(':hidden')) {
-			if ($('li').not('.flitered').length > 0 || $('.searchbox').val() === '') {
-				showDropdownList();
-			}
-		} else {
+		} else if (e.keyCode === Keys.DOWN) {
 			if (liSelected) {
 				if (unfiltered.length > index + 1) {
 					// move down
@@ -417,193 +418,142 @@ const filterDropdownListItems = (query) => {
 	});
 };
 
+const attachListItemEvents = (liItem) => {
+	// mouse events
+	liItem.on({
+		mouseover: (e) => {
+			$(e.target).addClass('selected');
+		},
+		mouseleave: (e) => {
+			$(e.target).removeClass('selected');
+		},
+		click: (e) => {
+			if (e.target.classList.contains('tagedit')) {
+				e.preventDefault();
+
+				const liSelected = $('#tagsearch-result .selected');
+
+				$(liSelected).find('span').hide();
+				$(e.target).hide();
+				$(liSelected).find('.tageditInput').show();
+				$(liSelected).find('.tageditInput').focus();
+				const val = $(liSelected).find('.tageditInput').val();
+				$(liSelected).find('.tageditInput').val(val);
+
+				return false;
+			} else if (e.target.classList.contains('tageditInput')) {
+				e.preventDefault();
+				return false;
+			} else {
+				fireSearch('#' + $(e.target).text().replace(/edit$/, ''));
+				hideDropdownList();
+			}
+		}
+	});
+
+	// events
+	$('.tageditInput').keyup((e) => {
+		if (e.keyCode === Keys.ENTER) {
+			// ENTER
+			let newTag = e.target.value;
+			let oldTag = e.target.defaultValue;
+
+			if (newTag === '') {
+				$('.tag').each((index, elem) => {
+					if ($(elem).text() === oldTag) {
+						$(elem).remove();
+					}
+				});
+				tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1);
+				chrome.storage.local.set({ tagStack: tagStack });
+				setDropdownListItems();
+
+				stack.forEach((item) => {
+					if (item.footnote.tags.includes(oldTag)) {
+						item.footnote.tags.splice(item.footnote.tags.findIndex((t) => t.name === oldTag), 1);
+					}
+				});
+				stackStorage.set(JSON.stringify(stack));
+
+				// for search optimization
+				if (shadowNodes[0]) {
+					$(shadowNodes[0]).find('.tag').each((index, elem) => {
+						if ($(elem).text() === oldTag) {
+							$(elem).remove();
+						}
+					});
+				}
+				$(e.target).parent().remove();
+			} else {
+				if (newTag.match(/^\s*$/)) {
+					newTag = oldTag;
+				} else {
+					replaceTagName(oldTag, newTag);
+					$('.tag').each((index, elem) => {
+						if ($(elem).text() === oldTag) {
+							$(elem).text(newTag);
+						}
+					});
+
+					if (tagStack.findIndex((t) => t.name === newTag) === -1) {
+						tagStack.find((t) => t.name === oldTag).name = newTag;
+					} else {
+						tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1);
+					}
+					chrome.storage.local.set({ tagStack: tagStack });
+					setDropdownListItems();
+
+					e.target.defaultValue = newTag;
+
+					// for search optimization
+					if (shadowNodes[0]) {
+						$(shadowNodes[0]).find('.tag').each((index, elem) => {
+							if ($(elem).text() === oldTag) {
+								$(elem).text(newTag);
+							}
+						});
+					}
+					$(e.target).parent().find('span').text(newTag);
+					$(e.target).parent().find('span').show();
+					$(e.target).parent().find('.tagedit').show();
+					$(e.target).hide();
+
+					if ($('.searchbox').val() !== '') {
+						$('.searchbox').val('#' + newTag);
+						windowState.searchQuery = '#' + newTag;
+					}
+				}
+			}
+		}
+	});
+
+	$('.tageditInput').blur((e) => {
+		const oldTag = e.target.defaultValue;
+		let newTag = e.target.value;
+
+		e.target.value = e.target.defaultValue;
+
+		newTag = oldTag;
+		$(e.target).parent().find('span').text(oldTag);
+		$(e.target).parent().find('span').show();
+		$(e.target).parent().find('.tagedit').show();
+		$(e.target).hide();
+	});
+};
+
+// TODO: refactor
 const setDropdownListItems = () => {
-	// empty selections
 	$('#tagsearch-result').empty();
 
 	// create list from tagStack
 	tagStack
 		.filter((item) => isNaN(Date.parse(item.name))) // filter duedate tag
-		.filter((item) => !item.name.match(/pinned|📌/)) // filter duedate tag
+		.filter((item) => !item.name.match(/pinned|📌/)) // filter pinned tag
 		.forEach((tag) => {
-			// if (tag !== '') {
 			if (tag.name !== '') {
-				// create list item
-				let liItem = $('<li>', {
-					id: tag.id
-				});
-
-				liItem.append(
-					$('<span>', {
-						// text: tag
-						text: tag.name
-					})
-				);
-
-				if (
-					tag.name.match(
-						/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu
-					)
-				) {
-					liItem.addClass('emoji');
-				}
-
-				// append edit Icon to list item
-				// if (![ 'note', 'bookmark', 'clip' ].includes(tag)) {
-				if (![ 'note', 'bookmark', 'clip' ].includes(tag.name)) {
-					let editTagInput = $('<input>', {
-						type: 'text',
-						addClass: 'tageditInput tagadd',
-						// value: tag,
-						value: tag.name,
-						placeholder: 'Enterキーでタグを削除します',
-
-						spellCheck: 'false',
-						css: {
-							display: 'none'
-						}
-					});
-					//
-
-					// events
-					editTagInput.keyup((e) => {
-						if (e.keyCode === Keys.ENTER) {
-							// ENTER
-							let newTag = e.target.value;
-							let oldTag = e.target.defaultValue;
-
-							if (newTag === '') {
-								$('.tag').each((index, elem) => {
-									if ($(elem).text() === oldTag) {
-										$(elem).remove();
-									}
-								});
-								tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1);
-								chrome.storage.local.set({ tagStack: tagStack });
-								setDropdownListItems();
-
-								stack.forEach((item) => {
-									if (item.footnote.tags.includes(oldTag)) {
-										item.footnote.tags.splice(
-											item.footnote.tags.findIndex((t) => t.name === oldTag),
-											1
-										);
-									}
-								});
-								stackStorage.set(JSON.stringify(stack));
-
-								// for search optimization
-								if (shadowNodes[0]) {
-									$(shadowNodes[0]).find('.tag').each((index, elem) => {
-										if ($(elem).text() === oldTag) {
-											$(elem).remove();
-										}
-									});
-								}
-								$(e.target).parent().remove();
-							} else {
-								if (newTag.match(/^\s*$/)) {
-									newTag = oldTag;
-								} else {
-									replaceTagName(oldTag, newTag);
-									$('.tag').each((index, elem) => {
-										if ($(elem).text() === oldTag) {
-											$(elem).text(newTag);
-										}
-									});
-
-									if (tagStack.findIndex((t) => t.name === newTag) === -1) {
-										tagStack.find((t) => t.name === oldTag).name = newTag;
-										// tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1, {});
-									} else {
-										tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1);
-									}
-									chrome.storage.local.set({ tagStack: tagStack });
-									setDropdownListItems();
-
-									e.target.defaultValue = newTag;
-
-									// for search optimization
-									if (shadowNodes[0]) {
-										$(shadowNodes[0]).find('.tag').each((index, elem) => {
-											if ($(elem).text() === oldTag) {
-												$(elem).text(newTag);
-											}
-										});
-									}
-									$(e.target).parent().find('span').text(newTag);
-									$(e.target).parent().find('span').show();
-									$(e.target).parent().find('.tagedit').show();
-									$(e.target).hide();
-
-									if ($('.searchbox').val() !== '') {
-										$('.searchbox').val('#' + newTag);
-										windowState.searchQuery = '#' + newTag;
-									}
-								}
-							}
-						}
-					});
-
-					editTagInput.blur((e) => {
-						let newTag = e.target.value;
-						let oldTag = e.target.defaultValue;
-
-						e.target.value = e.target.defaultValue;
-
-						newTag = oldTag;
-						$(e.target).parent().find('span').text(oldTag);
-						$(e.target).parent().find('span').show();
-						$(e.target).parent().find('.tagedit').show();
-						$(e.target).hide();
-					});
-
-					//
-					liItem.append(editTagInput);
-
-					liItem.append(
-						$('<i>', {
-							addClass: 'material-icons tagedit',
-							text: 'edit'
-						})
-					);
-				}
-				$('#tagsearch-result').append(liItem);
-
-				// atach events for selected item
-				liItem.on({
-					mouseover: (e) => {
-						$(e.target).addClass('selected');
-					},
-					mouseleave: (e) => {
-						$(e.target).removeClass('selected');
-					}
-				});
-
-				//
-				liItem.click((e) => {
-					if (e.target.classList.contains('tagedit')) {
-						e.preventDefault();
-
-						const liSelected = $('#tagsearch-result .selected');
-						let orgTag = liSelected.find('span').text();
-
-						$(liSelected).find('span').hide();
-						$(e.target).hide();
-						$(liSelected).find('.tageditInput').show();
-						$(liSelected).find('.tageditInput').focus();
-						let val = $(liSelected).find('.tageditInput').val();
-						$(liSelected).find('.tageditInput').val(val);
-
-						return false;
-					} else if (e.target.classList.contains('tageditInput')) {
-						e.preventDefault();
-						return false;
-					} else {
-						fireSearch('#' + $(e.target).text().replace(/edit$/, ''));
-						hideDropdownList();
-					}
-				});
+				const listItem = generateListItemHTML(tag);
+				$('#tagsearch-result').append(listItem);
+				attachListItemEvents(listItem);
 			}
 		});
 
@@ -613,16 +563,15 @@ const setDropdownListItems = () => {
 		delay: 200,
 		animation: 150,
 		dataIdAttr: 'id',
-		// filter: '.date',
 		group: 'tagsearch',
 		filter: '.placeholder',
 		store: {
-			get: function(sortable) {
-				var order = localStorage.getItem(sortable.options.group.name);
+			get: (sortable) => {
+				const order = localStorage.getItem(sortable.options.group.name);
 				return order ? order.split('|') : [];
 			},
-			set: function(sortable) {
-				var order = sortable.toArray();
+			set: (sortable) => {
+				const order = sortable.toArray();
 				localStorage.setItem(sortable.options.group.name, order.join('|'));
 			}
 		}
@@ -775,6 +724,35 @@ const generateCurrentDateHTML = () => {
 	let minutes = ('0' + now.getMinutes()).slice(-2);
 
 	return `<div class="date current">${formatDate() + ' ' + hours + ':' + minutes}</div>`;
+};
+
+const generateListItemHTML = (tag) => {
+	const liItem = $(`<li id=${tag.id}><span>${tag.name}</span></li>`);
+
+	// add class for emoji styles
+	if (tag.name.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu)) {
+		liItem.addClass('emoji');
+	}
+
+	// append editIcon to list item
+	if (![ 'note', 'bookmark', 'clip' ].includes(tag.name)) {
+		const editTagInput = $('<input>', {
+			type: 'text',
+			addClass: 'tageditInput tagadd',
+			// value: tag,
+			value: tag.name,
+			placeholder: 'Enterキーでタグを削除します',
+
+			spellCheck: 'false',
+			css: {
+				display: 'none'
+			}
+		});
+		liItem.append(editTagInput);
+		liItem.append('<i class="material-icons tagedit">edit</i>');
+	}
+
+	return liItem;
 };
 
 // ========== Event attacher functions ==========
@@ -1470,15 +1448,9 @@ const initializeEventListeners = () => {
 
 				// atach eventes
 				attachEventsToTextStack();
-				$('.stackwrapper').each((index, item) => {
-					attachTagInputEvents(item);
-					attachNoteContentEvents(item);
-				});
 
-				$('.separator').each((index, item) => {
-					item.classList.add('filtered');
-					attachSeparatorEvents(item);
-				});
+				attachEventsAndClassesToNotes();
+
 				$('.textstack').removeClass('infilter');
 
 				// reset shadow nodes;
