@@ -607,6 +607,7 @@ const setDropdownListItems = () => {
 			}
 		});
 
+	// create SortableJS instance for dropdownlist tag
 	tagSortable = Sortable.create(document.querySelector('#tagsearch-result'), {
 		sort: true,
 		delay: 200,
