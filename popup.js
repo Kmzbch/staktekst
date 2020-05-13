@@ -59,7 +59,7 @@ const replaceTagName = (prevTag, newTag) => {
 	stackStorage.set(JSON.stringify(stack));
 };
 
-const exportNotes = (ext) => {
+const exportStack = (ext) => {
 	const IDs = [];
 
 	// get IDs of unfiltered items
@@ -211,25 +211,20 @@ const updateSearchResult = () => {
 	let hits;
 
 	if (query[0] === '#') {
-		// if the query is a tag
 		hits = filterNoteItemsByTag(query);
-		$('.separator').each((index, item) => {
-			if ($(item).find('.tag').text() === query) {
-				// display separators associated to the tag
-				if (item.classList.contains('filtered')) {
-					item.classList.remove('filtered');
-				}
+		$('.separator .tag').each((index, tag) => {
+			// display separators associated to the tag
+			if ($(tag).text() === query) {
+				const separator = $(tag).parent().parent();
+				separator.removeClass('filtered');
 			}
 		});
-		$('.opener').show();
 	} else if (query === ':d') {
 		// search items with date tag
 		hits = filterNoteItemsWithDateTag(query);
-		$('.opener').hide();
 	} else {
 		// search note items
 		hits = filterNoteItems(query);
-		$('.opener').hide();
 	}
 	filterDropdownListItems(query);
 
@@ -1311,7 +1306,6 @@ const initializeEventListeners = () => {
 
 				$('.textstack').removeClass('infilter');
 				// show toolbox
-				$('.opener').hide();
 				$('#statusboard').text('');
 				$('#toolbox').show();
 				$('.search-cancel-button').hide();
@@ -1369,14 +1363,6 @@ const initializeEventListeners = () => {
 		toggleSortOrder(!windowState.sortedByNew);
 	});
 
-	$('.opener').hide();
-
-	$('.opener').on({
-		click: () => {
-			createSeparator();
-		}
-	});
-
 	attachEventsToTextStack();
 
 	/**
@@ -1405,7 +1391,7 @@ const initializeEventListeners = () => {
 		toggleFileExportModal(false);
 	});
 	$('#fileexport-window .ok').click((e) => {
-		exportNotes($(':checked').val());
+		exportStack($(':checked').val());
 		toggleFileExportModal(false);
 	});
 	$('#fileexport-window .cancel').click(() => {
