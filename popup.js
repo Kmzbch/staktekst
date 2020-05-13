@@ -17,15 +17,23 @@ let windowState = {
 };
 let shadowNodes = []; // clonde nodes for seach optimization
 
-const doTaskOnceInputIsDone = (task, time) => {
+// ========== UTILITIES ==========
+const importNotesFromJSON = async (path) => {
+	const URL = chrome.runtime.getURL(path);
+	$.getJSON(URL, (data) => {
+		console.log('done');
+		stackStorage.set(JSON.stringify(data.raw));
+	});
+};
+
+const doAfterInputIsDone = (task, time) => {
 	// clear timeout of undone task
-	if (task in doTaskOnceInputIsDone.TID) {
-		window.clearTimeout(doTaskOnceInputIsDone.TID[task]);
+	if (task in doAfterInputIsDone.TID) {
+		window.clearTimeout(doAfterInputIsDone.TID[task]);
 	}
-	//
-	doTaskOnceInputIsDone.TID[task] = window.setTimeout(() => {
+	doAfterInputIsDone.TID[task] = window.setTimeout(() => {
 		// clear task ID previously registered
-		delete doTaskOnceInputIsDone.TID[task];
+		delete doAfterInputIsDone.TID[task];
 		try {
 			task.call();
 		} catch (e) {
@@ -34,7 +42,88 @@ const doTaskOnceInputIsDone = (task, time) => {
 	}, time);
 };
 
-doTaskOnceInputIsDone.TID = {};
+doAfterInputIsDone.TID = {};
+
+const fireNoteSearch = (query) => {
+	$('.searchbox').val(query);
+	$('.searchbox').trigger('input');
+};
+
+const replaceTagName = (prevTag, newTag) => {
+	stack.forEach((item) => {
+		if (item.footnote.tags.includes(prevTag)) {
+			const prevTagIndex = item.footnote.tags.findIndex((tag) => tag.name == prevTag);
+			item.footnote.tags.splice(prevTagIndex, 1, newTag);
+		}
+	});
+	stackStorage.set(JSON.stringify(stack));
+};
+
+const exportNotes = (ext) => {
+	const IDs = [];
+
+	// get IDs of unfiltered items
+	$('#textstack .stackwrapper').each((index, wrapper) => {
+		if (!$(wrapper).is(':hidden')) {
+			IDs.push($(wrapper).attr('id'));
+		}
+	});
+
+	// create exporting content
+	const stackToExport = stack.slice(0).filter((item) => IDs.includes(item.id)).sort((a, b) => {
+		a = new Date(a.date);
+		b = new Date(b.date);
+		if (!windowState.sortedByNew) {
+			// NEW => OLD
+			return a > b ? -1 : a < b ? 1 : 0;
+		} else {
+			// OLD => NEW
+			return a > b ? 1 : a < b ? -1 : 0;
+		}
+	});
+
+	if (ext === 'txt') {
+		content = stackToExport.reduce((content, item) => {
+			let header = '-----\n';
+			header += 'created: ' + `'${item.date}'\n`;
+			header += 'type: ' + `${item.type}\n`;
+			header += 'tags: ' + `[${item.footnote.tags.join(',')}]\n`;
+			header += '-----\n\n';
+
+			// remove html tags
+			const sanitizedContent = $('<div>', {
+				html: item.content
+			}).text();
+
+			content += header + sanitizedContent + '\n';
+
+			if (item.type === 'clip') {
+				content += '\n';
+				content += `${item.footnote.pageTitle}\n`;
+				content += `${item.footnote.pageURL}\n`;
+			}
+
+			return (content += '\n');
+		}, '');
+	} else if (ext === 'json') {
+		content = JSON.stringify(stackToExport);
+	}
+
+	// create blob
+	const bom = new Uint8Array([ 0xef, 0xbb, 0xbf ]);
+	const blob = new Blob([ bom, content ], {
+		type: 'data:text/plain'
+	});
+
+	// create url and download the file
+	window.URL = window.URL || window.webkitURL;
+	const url = window.URL.createObjectURL(blob);
+	chrome.downloads.download({
+		url: url,
+		filename: formatDate() + '.' + ext,
+		saveAs: true
+	});
+};
 
 // ========== DISPLAY ==========
 const showDropdownList = () => {
@@ -349,9 +438,6 @@ const selectOnDropdownList = (e) => {
 	}
 };
 
-/**
- * 
- */
 const filterDropdownListItems = (query) => {
 	const tagName = query.trim()[0] === '#' ? query.trim().toLowerCase().slice(1) : query.trim().toLowerCase();
 	const termRegex = new RegExp(`^(${escapeRegExp(tagName)})(.*?)`, 'i');
@@ -365,9 +451,6 @@ const filterDropdownListItems = (query) => {
 	});
 };
 
-/**
- * 
- */
 const setDropdownListItems = () => {
 	// empty selections
 	$('#tagsearch-result').empty();
@@ -1165,7 +1248,7 @@ const initializeEventListeners = () => {
 			// optimization for reset search
 			if (queryLength === 0 && !$('#textstack').hasClass('viewmode')) {
 				// reset task
-				doTaskOnceInputIsDone.TID = {};
+				doAfterInputIsDone.TID = {};
 
 				// remove current DOM
 				$('#textstack').remove();
@@ -1237,7 +1320,7 @@ const initializeEventListeners = () => {
 
 				windowState.searchQuery = '';
 			} else {
-				doTaskOnceInputIsDone(updateSearchResult, milseconds);
+				doAfterInputIsDone(updateSearchResult, milseconds);
 			}
 		}
 	});
@@ -1272,8 +1355,10 @@ const initializeEventListeners = () => {
 	});
 
 	/* file export */
-	$('.export').click(exportNoteItemsAsTextFile);
-	// $('.export').click(() => { toggleFileExportModal(true) });
+	// $('.export').click(exportNoteItemsAsTextFile);
+	$('.export').click(() => {
+		toggleFileExportModal(true);
+	});
 
 	$('#statusboard').click(() => {
 		$('#toolbox').show();
@@ -1320,11 +1405,7 @@ const initializeEventListeners = () => {
 		toggleFileExportModal(false);
 	});
 	$('#fileexport-window .ok').click((e) => {
-		if ($(':checked').val() === 'text') {
-			exportNoteItemsAsTextFile();
-		} else if ($(':checked').val() === 'json') {
-			exportJsonFile();
-		}
+		exportNotes($(':checked').val());
 		toggleFileExportModal(false);
 	});
 	$('#fileexport-window .cancel').click(() => {
@@ -1460,133 +1541,6 @@ const attachEventsToTextStack = () => {
 				}
 			}
 		}
-	});
-};
-
-// ==========  ==========
-const fireNoteSearch = (query) => {
-	$('.searchbox').val(query);
-	$('.searchbox').trigger('input');
-};
-
-const replaceTagName = (prevTag, newTag) => {
-	// add item to stack
-	stack.forEach((item) => {
-		if (item.footnote.tags.includes(prevTag)) {
-			item.footnote.tags.splice(item.footnote.tags.findIndex((tag) => tag.name == prevTag), 1, newTag);
-		}
-	});
-	stackStorage.set(JSON.stringify(stack));
-};
-
-/**
- * export the note items visible in the stack
- */
-const exportNoteItemsAsTextFile = () => {
-	const ids = [];
-
-	// get note item ids displayed
-	$('#textstack').find('.stackwrapper').each((index, wrapper) => {
-		if (!$(wrapper).is(':hidden')) {
-			ids.push($(wrapper).attr('id'));
-		}
-	});
-
-	// create exporting content
-	const content = stack
-		.slice(0)
-		.filter((item) => ids.includes(item.id))
-		.sort((a, b) => {
-			a = new Date(a.date);
-			b = new Date(b.date);
-			if (!windowState.sortedByNew) {
-				// NEW => OLD
-				return a > b ? -1 : a < b ? 1 : 0;
-			} else {
-				// OLD => NEW
-				return a > b ? 1 : a < b ? -1 : 0;
-			}
-		})
-		.reduce((content, item) => {
-			let header = '-----\n';
-			header += 'created: ' + `'${item.date}'\n`;
-			header += 'type: ' + `${item.type}\n`;
-			header += 'tags: ' + `[${item.footnote.tags.join(',')}]\n`;
-			header += '-----\n\n';
-
-			// remove html tags
-			const sanitizedContent = $('<div>', {
-				html: item.content
-			}).text();
-
-			content += header + sanitizedContent + '\n';
-
-			//
-			if (item.type === 'clip') {
-				content += '\n';
-				content += `${item.footnote.pageTitle}\n`;
-				content += `${item.footnote.pageURL}\n`;
-			}
-
-			return (content += '\n');
-		}, '');
-
-	// create blob
-	const bom = new Uint8Array([ 0xef, 0xbb, 0xbf ]);
-	const blob = new Blob([ bom, content ], {
-		type: 'data:text/plain'
-	});
-
-	// create url to download
-	window.URL = window.URL || window.webkitURL;
-	const url = window.URL.createObjectURL(blob);
-
-	// download the file
-	chrome.downloads.download({
-		url: url,
-		filename: formatDate() + '.txt',
-		saveAs: true
-	});
-};
-
-const exportJsonFile = () => {
-	const ids = [];
-
-	// get note item ids displayed
-	$('#textstack').find('.stackwrapper').each((index, wrapper) => {
-		if (!$(wrapper).is(':hidden')) {
-			ids.push($(wrapper).attr('id'));
-		}
-	});
-
-	// create exporting content
-	const content = stack.slice(0).filter((item) => ids.includes(item.id)).sort((a, b) => {
-		a = new Date(a.date);
-		b = new Date(b.date);
-		if (windowState.sortedByNew) {
-			// NEW => OLD
-			return a > b ? -1 : a < b ? 1 : 0;
-		} else {
-			// OLD => NEW
-			return a > b ? 1 : a < b ? -1 : 0;
-		}
-	});
-
-	// create blob
-	const bom = new Uint8Array([ 0xef, 0xbb, 0xbf ]);
-	const blob = new Blob([ bom, JSON.stringify(content) ], {
-		type: 'data:text/plain'
-	});
-
-	// create url to download
-	window.URL = window.URL || window.webkitURL;
-	const url = window.URL.createObjectURL(blob);
-
-	// download the file
-	chrome.downloads.download({
-		url: url,
-		filename: formatDate() + '.json',
-		saveAs: true
 	});
 };
 
@@ -1893,10 +1847,7 @@ const restorePreviousState = () => {
 				windowState.sortedByNew = true;
 			} else {
 				windowState.sortedByNew = state.sortedByNew;
-				// switchSortOrder(windowState.sortedByNew);
-				if (windowState.sortedByNew) {
-					// 	$('#sort').html('New <i class="material-icons">arrow_upward</i>');
-				} else {
+				if (!windowState.sortedByNew) {
 					$('#sort').html('Old <i class="material-icons">arrow_downward</i>');
 					sortable.sort(sortable.toArray().reverse());
 				}
@@ -1906,32 +1857,6 @@ const restorePreviousState = () => {
 				window.scrollTo(0, state.scrollY);
 			}
 		}
-	});
-};
-
-// utilities
-const convertDateToDateTimeFormat = () => {
-	const convertedData = [];
-
-	stackStorage.get((rawData) => {
-		if (typeof rawData === 'undefined') {
-			stackStorage.reset();
-		} else {
-			stack = JSON.parse(rawData);
-			stack.forEach((res) => {
-				res.date = new Date(res.date).toISOString();
-				convertedata.push(res);
-			});
-		}
-	});
-	stackStorage.set(JSON.stringify(convertedData));
-};
-
-const importFromJsonFile = async (path) => {
-	const url = chrome.runtime.getURL(path);
-	$.getJSON(url, function(data) {
-		console.log('done');
-		stackStorage.set(JSON.stringify(data.raw));
 	});
 };
 
