@@ -1135,6 +1135,27 @@ const initializeEventListeners = () => {
 					});
 				});
 
+				let tagSet = tagStack.map((item) => item.name).filter((tag) => isNaN(new Date(tag))).sort();
+
+				jQuery('#textstack .tagadd')
+					.autocomplete({
+						minLength: 0,
+						delay: 0,
+						source: function(request, response) {
+							response(
+								jQuery.grep(tagSet, function(value) {
+									return value.includes(request.term);
+								})
+							);
+						},
+						select: function(event, ui) {
+							jQuery('#textstack .tagadd').val(ui.item.name);
+						}
+					})
+					.dblclick(function() {
+						jQuery(this).autocomplete('search', '');
+					});
+
 				if (!windowState.sortedByNew) {
 					switchSortOrder(false);
 				}
