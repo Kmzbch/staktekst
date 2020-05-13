@@ -195,6 +195,8 @@ const toggleEditorMode = (div, display = !$(div).attr('contentEditable') ? true 
 		// change visual styles
 		$(div).parent().addClass('editing');
 		$(div).next().hide(); // edit icon
+
+		updateStatusBoard($(div).html());
 	} else {
 		$(div).attr('contentEditable', false);
 		// replace new lines with br tag
@@ -626,6 +628,29 @@ const setDropdownListItems = () => {
 	});
 };
 
+const setTagAddAutoComplete = (jqueryDOM) => {
+	const tagSet = tagStack.map((item) => item.name).filter((tag) => isNaN(new Date(tag))).sort();
+
+	$(jqueryDOM)
+		.autocomplete({
+			minLength: 0,
+			delay: 0,
+			source: function(request, response) {
+				response(
+					jQuery.grep(tagSet, function(value) {
+						return value.includes(request.term);
+					})
+				);
+			},
+			select: function(event, ui) {
+				jqueryDOM.val(ui.item.name);
+			}
+		})
+		.dblclick(function() {
+			jQuery(this).autocomplete('search', '');
+		});
+};
+
 // ========== HTML generators ==========
 const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 	// add the most outer opening tag
@@ -971,6 +996,7 @@ const attachNoteContentEvents = (wrapper) => {
 		if (e.target.classList.contains('sepGenerator')) {
 			if (!e.target.classList.contains('hidden')) {
 				createSeparator(wrapper);
+				sortable.save();
 			}
 			return false;
 		}
@@ -1183,6 +1209,8 @@ const attachEventsToTextStack = () => {
 			$(targetElem).css('color', 'white !important');
 			let textItem = $(targetElem).parent().parent().get(0);
 			removeNoteItem(textItem);
+			// save sort order
+			sortable.save();
 			// PSEUDOLINK
 		} else if ($(targetElem).hasClass('pseudolink')) {
 			// use span tag as a link
@@ -1320,26 +1348,7 @@ const initializeEventListeners = () => {
 			}
 		});
 
-		let tagSet = tagStack.map((item) => item.name).filter((tag) => isNaN(new Date(tag))).sort();
-
-		jQuery('#textstack .tagadd')
-			.autocomplete({
-				minLength: 0,
-				delay: 0,
-				source: function(request, response) {
-					response(
-						jQuery.grep(tagSet, function(value) {
-							return value.includes(request.term);
-						})
-					);
-				},
-				select: function(event, ui) {
-					jQuery('#textstack .tagadd').val(ui.item.name);
-				}
-			})
-			.dblclick(function() {
-				jQuery(this).autocomplete('search', '');
-			});
+		setTagAddAutoComplete($('#textstack .tagadd'));
 	};
 
 	// save window state when the popup window is closed
@@ -1362,9 +1371,11 @@ const initializeEventListeners = () => {
 			} else {
 				createNoteItem();
 
+				// save sort order
+				sortable.save();
+
 				const newNote = windowState.sortedByNew ? $('.content').first() : $('.content').last();
 				toggleEditorMode(newNote, true);
-				updateStatusBoard(newNote.html());
 				return false;
 			}
 		}
@@ -1379,101 +1390,76 @@ const initializeEventListeners = () => {
 		dblclick: showDropdownList,
 		keydown: selectOnDropdownList,
 		input: () => {
-			let query = $('.searchbox').val();
+			const query = $('.searchbox').val();
+			const queryLength = query.length;
 
-			if (query[0] === '#' && query.length > 1) {
-				$(function() {
-					sortable = Sortable.create(document.querySelector('#textstack'), {
-						sort: true,
-						delay: 150,
-						animation: 150,
-						dataIdAttr: 'id',
-						filter: '.date',
-						group: query.substring(1),
-						store: {
-							get: function(sortable) {
-								var order = localStorage.getItem(sortable.options.group.name);
-								return order ? order.split('|') : [];
-							},
-							set: function(sortable) {
-								var order = sortable.toArray();
-								localStorage.setItem(sortable.options.group.name, order.join('|'));
-							}
+			if (query[0] === '#' && queryLength > 1) {
+				// create SortableJS instance
+				sortable = Sortable.create(document.querySelector('#textstack'), {
+					sort: true,
+					delay: 150,
+					animation: 150,
+					dataIdAttr: 'id',
+					filter: '.date',
+					group: query.substring(1),
+					store: {
+						get: (sortable) => {
+							const order = localStorage.getItem(sortable.options.group.name);
+							return order ? order.split('|') : [];
+						},
+						set: (sortable) => {
+							const order = sortable.toArray();
+							localStorage.setItem(sortable.options.group.name, order.join('|'));
 						}
-					});
+					}
 				});
 			}
 
-			// wait a while for user input
+			// change wait time for starting search
+			let waittime = 0;
 
-			// TODO: compare the speed with normal
-			if (shadowNodes.length === 0) {
-				shadowNodes.push(document.querySelector('#textstack').cloneNode(true));
-			}
-
-			let milseconds = 0;
-			let queryLength = $('.searchbox').val().length;
 			switch (queryLength) {
 				case 0:
-					milseconds = 1;
+					waittime = 1;
 					break;
 				case 1:
-					milseconds = 500;
+					waittime = 500;
 					break;
 				case 2:
-					milseconds = 400;
+					waittime = 400;
 					break;
 				case 3:
-					milseconds = 300;
+					waittime = 300;
 					break;
 				case 4:
-					milseconds = 100;
+					waittime = 100;
 					break;
 				default:
-					milseconds = 50;
+					waittime = 50;
 			}
 
 			// optimization for reset search
-			if (queryLength === 0 && !$('#textstack').hasClass('viewmode')) {
+			if (queryLength > 0 || $('#textstack').hasClass('viewmode')) {
+				doAfterInputIsDone(updateSearchResult, waittime);
+			} else {
 				// reset task
 				doAfterInputIsDone.TID = {};
 
-				// remove current DOM
+				// replace textstack with shadow nodes
 				$('#textstack').remove();
-
-				// attach duplicated DOM
 				document.querySelector('#main').insertAdjacentElement('beforeend', shadowNodes[0]);
-				$(function() {
-					sortable = Sortable.create(document.querySelector('#textstack'), {
-						sort: false,
-						disabled: true,
-						delay: 150,
-						animation: 150,
-						dataIdAttr: 'id',
-						filter: '.date'
-					});
+
+				setTagAddAutoComplete($('#textstack .tagadd'));
+
+				// reset SortableJS instance
+				sortable = Sortable.create(document.querySelector('#textstack'), {
+					sort: false,
+					disabled: true,
+					delay: 150,
+					animation: 150,
+					dataIdAttr: 'id',
+					filter: '.date'
 				});
-
-				let tagSet = tagStack.map((item) => item.name).filter((tag) => isNaN(new Date(tag))).sort();
-
-				jQuery('#textstack .tagadd')
-					.autocomplete({
-						minLength: 0,
-						delay: 0,
-						source: function(request, response) {
-							response(
-								jQuery.grep(tagSet, function(value) {
-									return value.includes(request.term);
-								})
-							);
-						},
-						select: function(event, ui) {
-							jQuery('#textstack .tagadd').val(ui.item.name);
-						}
-					})
-					.dblclick(function() {
-						jQuery(this).autocomplete('search', '');
-					});
 
 				if (!windowState.sortedByNew) {
 					toggleSortOrder(false);
@@ -1492,21 +1478,20 @@ const initializeEventListeners = () => {
 					item.classList.add('filtered');
 					attachSeparatorEvents(item);
 				});
+				$('.textstack').removeClass('infilter');
 
-				// reset and clone the current DOM
+				// reset shadow nodes;
 				shadowNodes.length = 0;
 				shadowNodes.push(document.querySelector('#textstack').cloneNode(true));
 
-				$('.textstack').removeClass('infilter');
 				// show toolbox
 				clearMessage();
 				$('.search-cancel-button').hide();
 				$('footer').show();
 				hideDropdownList();
 
+				// reset state
 				windowState.searchQuery = '';
-			} else {
-				doAfterInputIsDone(updateSearchResult, milseconds);
 			}
 		}
 	});
@@ -1520,9 +1505,12 @@ const initializeEventListeners = () => {
 	/* toolbox & text area */
 	$('.create').click(() => {
 		createNoteItem();
+
+		// save sort order
+		sortable.save();
+
 		const newNote = windowState.sortedByNew ? $('.content').first() : $('.content').last();
 		toggleEditorMode(newNote, true);
-		updateStatusBoard(newNote.html());
 	});
 
 	/* view mode */
@@ -1550,8 +1538,6 @@ const initializeEventListeners = () => {
 	$('#sort').click(() => {
 		toggleSortOrder(!windowState.sortedByNew);
 	});
-
-	attachEventsToTextStack();
 
 	// footer
 	$('#clearstack').click(() => {
@@ -1601,82 +1587,39 @@ const createNoteItem = () => {
 		date: new Date().toISOString()
 	};
 
-	// add the current tag in the seachbox
+	// add the current tag in the seachbox to the new note
 	const searchQuery = windowState.searchQuery;
 	if (searchQuery[0] === '#' && searchQuery.length > 0) {
 		note.footnote.tags.push(searchQuery.substring(1));
 	}
 
-	// add item to stack
+	// add an empty note to stack
 	stack.push(note);
 	stackStorage.set(JSON.stringify(stack));
 
-	let wrapper = $(generateNoteItemHTML(note)).get(0);
+	// attach events
+	const wrapper = $(generateNoteItemHTML(note)).get(0);
 	attachTagInputEvents(wrapper);
 	attachNoteContentEvents(wrapper);
 
 	// render
 	if (windowState.sortedByNew) {
 		$('#textstack').prepend(wrapper);
+		setTagAddAutoComplete($('#textstack .tagadd').first());
 	} else {
 		$('#textstack').append(wrapper);
-	}
-	sortable.save();
-
-	let tagSet = tagStack.map((item) => item.name).filter((tag) => isNaN(new Date(tag))).sort();
-
-	if (windowState.sortedByNew) {
-		jQuery('#textstack .tagadd')
-			.first()
-			.autocomplete({
-				minLength: 0,
-				delay: 0,
-				source: function(request, response) {
-					response(
-						jQuery.grep(tagSet, function(value) {
-							return value.includes(request.term);
-						})
-					);
-				},
-				select: function(event, ui) {
-					jQuery('#textstack .tagadd').val(ui.item.name);
-				}
-			})
-			.dblclick(function() {
-				jQuery(this).autocomplete('search', '');
-			});
-	} else {
-		jQuery('#textstack .tagadd')
-			.last()
-			.autocomplete({
-				minLength: 0,
-				delay: 0,
-				source: function(request, response) {
-					response(
-						jQuery.grep(tagSet, function(value) {
-							return value.includes(request.term);
-						})
-					);
-				},
-				select: function(event, ui) {
-					jQuery('#textstack .tagadd').val(ui.item.name);
-				}
-			})
-			.dblclick(function() {
-				jQuery(this).autocomplete('search', '');
-			});
+		setTagAddAutoComplete($('#textstack .tagadd').last());
 	}
 
-	// for search optimization
+	// clone for search optimization
 	if (shadowNodes[0]) {
-		// remove the item from duplicated textstack as well
-		let wrapper = $(generateNoteItemHTML(note)).get(0);
-		attachTagInputEvents(wrapper);
-		attachNoteContentEvents(wrapper);
+		const shadowWrapper = $(generateNoteItemHTML(note)).get(0);
+		attachTagInputEvents(shadowWrapper);
+		attachNoteContentEvents(shadowWrapper);
 		if (windowState.sortedByNew) {
-			$(shadowNodes[0]).prepend(wrapper);
+			$(shadowNodes[0]).prepend(shadowWrapper);
 		} else {
-			$(shadowNodes[0]).append(wrapper);
+			$(shadowNodes[0]).append(shadowWrapper);
 		}
 	}
 };
@@ -1688,13 +1631,13 @@ const removeNoteItem = (noteItem) => {
 
 	// remove from stack and storage after a while
 	setTimeout(() => {
-		// remove the item
 		const id = noteItem.querySelector('input').value;
 		const idx = stack.findIndex((item) => item.id === id);
 		const tagsToRemove = stack[idx].footnote.tags;
-
+		// remove from storage
 		stack = stack.filter((item) => item.id !== id);
 		stackStorage.set(JSON.stringify(stack));
+		// remove from textstack
 		noteItem.remove();
 
 		let noTag = true;
@@ -1706,6 +1649,7 @@ const removeNoteItem = (noteItem) => {
 					return;
 				}
 			});
+			// remove the tag from tagstack if no other notes have the tag
 			if (noTag) {
 				tagStack.splice(tagStack.findIndex((t) => t.name === tagName), 1);
 				noTag = true;
@@ -1718,8 +1662,6 @@ const removeNoteItem = (noteItem) => {
 		// reset dropdownlist
 		chrome.storage.local.set({ tagStack: tagStack });
 		setDropdownListItems();
-
-		sortable.save();
 
 		// for search optimization
 		if (shadowNodes[0]) {
@@ -1759,7 +1701,6 @@ const createSeparator = (wrapper) => {
 		$(separatorDOM).find('input').focus();
 
 		attachSeparatorEvents(separatorDOM);
-		sortable.save();
 	}
 };
 
@@ -1853,6 +1794,7 @@ const renderStack = () => {
 			//
 			attachEventsAndClassesToNotes();
 			setDropdownListItems();
+			attachEventsToTextStack();
 		}
 	});
 };
@@ -1925,7 +1867,6 @@ document.addEventListener('DOMContentLoaded', () => {
 			chrome.storage.local.set({ tagStack: tagStack });
 		} else {
 			tagStack = res.tagStack;
-			console.log(tagStack);
 		}
 	});
 
