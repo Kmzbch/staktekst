@@ -210,6 +210,7 @@ const updateSearchResult = () => {
 	const query = $('.searchbox').val().trim().toLowerCase();
 	let hits;
 
+	// filter note items
 	if (query[0] === '#') {
 		hits = filterNoteItemsByTag(query);
 		$('.separator .tag').each((index, tag) => {
@@ -226,6 +227,7 @@ const updateSearchResult = () => {
 		// search note items
 		hits = filterNoteItems(query);
 	}
+
 	filterDropdownListItems(query);
 
 	// save sort order
@@ -252,7 +254,8 @@ const updateSearchResult = () => {
 		$('.search-cancel-button').hide();
 		hideDropdownList();
 	}
-	// save when the search result updated
+
+	// save window state
 	windowState.searchQuery = query;
 };
 
@@ -315,7 +318,7 @@ const filterNoteItemsWithDateTag = (dateTag) => {
  * 
  */
 const filterNoteItems = (term) => {
-	let stackDOM = document.querySelector('#textstack');
+	const stackDOM = document.querySelector('#textstack');
 	let termRegex;
 	let hits = 0;
 
@@ -353,11 +356,8 @@ const filterNoteItems = (term) => {
 	return hits;
 };
 
-/**
- * 
- */
 const selectOnDropdownList = (e) => {
-	let liSelected = $('#tagsearch-result').find('.selected');
+	const liSelected = $('#tagsearch-result .selected');
 	let unfiltered = $('li').not('.filtered');
 	let index = unfiltered.index(liSelected);
 
@@ -602,15 +602,10 @@ const setDropdownListItems = () => {
 				// atach events for selected item
 				liItem.on({
 					mouseover: (e) => {
-						// work as hover
 						$(e.target).addClass('selected');
 					},
 					mouseleave: (e) => {
-						// work as hover
-						let liSelected = $('#tagsearch-result').find('.selected');
-						if (liSelected) {
-							liSelected.removeClass('selected');
-						}
+						$(e.target).removeClass('selected');
 					}
 				});
 
@@ -619,7 +614,7 @@ const setDropdownListItems = () => {
 					if (e.target.classList.contains('tagedit')) {
 						e.preventDefault();
 
-						let liSelected = $('#tagsearch-result').find('.selected');
+						const liSelected = $('#tagsearch-result .selected');
 						let orgTag = liSelected.find('span').text();
 
 						$(liSelected).find('span').hide();
@@ -627,13 +622,11 @@ const setDropdownListItems = () => {
 						$(liSelected).find('.tageditInput').show();
 						$(liSelected).find('.tageditInput').focus();
 						let val = $(liSelected).find('.tageditInput').val();
-						$(liSelected).find('.tageditInput').val('');
 						$(liSelected).find('.tageditInput').val(val);
 
 						return false;
 					} else if (e.target.classList.contains('tageditInput')) {
 						e.preventDefault();
-
 						return false;
 					} else {
 						fireNoteSearch('#' + $(e.target).text().replace(/edit$/, ''));
@@ -749,7 +742,6 @@ const generateTagsHTML = (tagName) => {
 		tagsHTML = `<span class="tag tagDate">${formatDate()}</span>`;
 	} else if (!isNaN(new Date(tagName))) {
 		// datetag
-		// TODO: rename tagDate class
 		tagsHTML = `<span class="tag tagDate">${tagName}</span>`;
 	} else {
 		tagsHTML = `<span class="tag">${tagName}</span>`;
@@ -795,7 +787,6 @@ const attachTagInputEvents = (stackWrapper) => {
 			setDropdownListItems();
 
 			// insert before tag input
-			// TODO: rename divWrap class
 			let divWrap = $(stackWrapper).find('.divWrap');
 			divWrap.get(0).insertAdjacentHTML('beforebegin', tagsHTML);
 
