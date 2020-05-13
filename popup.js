@@ -44,7 +44,7 @@ const doAfterInputIsDone = (task, time) => {
 
 doAfterInputIsDone.TID = {};
 
-const fireNoteSearch = (query) => {
+const fireSearch = (query) => {
 	$('.searchbox').val(query);
 	$('.searchbox').trigger('input');
 };
@@ -147,6 +147,11 @@ const displayMessage = (message) => {
 	$('#toolbox').hide();
 };
 
+const clearMessage = () => {
+	$('#statusboard').text('');
+	$('#toolbox').show();
+};
+
 const updateStatusBoard = (text) => {
 	const info = extractTextInfo(text.replace(String.fromCharCode(8203), ''));
 	$('#toolbox').hide();
@@ -235,22 +240,11 @@ const updateSearchResult = () => {
 
 	// change styles on search
 	if (query) {
-		// hide toolbox and footer
-		$('#toolbox').hide();
-		$('footer').hide();
-		// show search result
-		$('#statusboard').text(hits === 0 ? 'No Results' : `${hits} of ${stack.length}`);
+		displayMessage(hits === 0 ? 'No Results' : `${hits} of ${stack.length}`);
 		$('.search-cancel-button').show();
-		// show toolbox after a while
-		setTimeout(() => {
-			$('#statusboard').text('');
-			$('#toolbox').show();
-		}, 5000);
+		setTimeout(clearMessage, 5000);
 	} else {
-		// set to the defalt
-		$('#toolbox').show();
-		$('footer').show();
-		$('#statusboard').text('');
+		clearMessage();
 		$('.search-cancel-button').hide();
 		hideDropdownList();
 	}
@@ -322,11 +316,8 @@ const filterNoteItems = (term) => {
 		.filter((textItem) => !textItem.classList.contains('filtered'))
 		.forEach((textItem) => {
 			let contentDIV = textItem.firstElementChild;
-			// enable URL link
 			contentDIV.innerHTML = enableURLEmbededInText(contentDIV.innerText);
 			contentDIV.innerHTML = contentDIV.innerHTML.replace(/\n/gi, '<br>');
-
-			// restore the DOM when the length = 0 for search optimization
 			if (term.length >= 1) {
 				$(contentDIV).highlight(term, { element: 'span', className: 'highlighted' });
 			}
@@ -344,7 +335,7 @@ const selectOnDropdownList = (e) => {
 		if (!$('#tagsearch-result').is(':hidden')) {
 			if (liSelected) {
 				liSelected.removeClass('selected');
-				fireNoteSearch('#' + liSelected.text().replace(/edit$/, ''));
+				fireSearch('#' + liSelected.text().replace(/edit$/, ''));
 			}
 			hideDropdownList();
 		}
@@ -608,7 +599,7 @@ const setDropdownListItems = () => {
 						e.preventDefault();
 						return false;
 					} else {
-						fireNoteSearch('#' + $(e.target).text().replace(/edit$/, ''));
+						fireSearch('#' + $(e.target).text().replace(/edit$/, ''));
 						hideDropdownList();
 					}
 				});
@@ -733,9 +724,6 @@ const generateTagsHTML = (tagName) => {
 	return tagsHTML;
 };
 
-/**
- * 
- */
 const attachTagInputEvents = (stackWrapper) => {
 	// BLUR event
 	$(stackWrapper).find('.tagadd').blur((ev) => {
@@ -1287,7 +1275,7 @@ const initializeEventListeners = () => {
 
 	/* search cancel button */
 	$('.search-cancel-button').click((e) => {
-		fireNoteSearch('');
+		fireSearch('');
 		$('.searchbox').trigger('focus');
 	});
 
@@ -1305,9 +1293,9 @@ const initializeEventListeners = () => {
 			$('#textstack').removeClass('viewmode');
 			$('#toolbox').removeClass('viewmode');
 			$('.view').removeClass('viewmode');
-			fireNoteSearch('');
+			fireSearch('');
 		} else {
-			fireNoteSearch('');
+			fireSearch('');
 			$('.view').addClass('viewmode');
 			$('#textstack').addClass('viewmode');
 			$('#toolbox').addClass('viewmode');
@@ -1442,7 +1430,7 @@ const attachEventsToTextStack = () => {
 
 					$('#statusboard').removeClass('entering');
 				} else {
-					fireNoteSearch('#' + $(targetElem).html());
+					fireSearch('#' + $(targetElem).html());
 				}
 
 				$('#statusboard').removeClass('entering');
@@ -1790,7 +1778,7 @@ const restorePreviousState = () => {
 			// restore searchbox
 			if (typeof state.searchQuery !== 'undefined') {
 				if (state.searchQuery !== '') {
-					fireNoteSearch(state.searchQuery);
+					fireSearch(state.searchQuery);
 				} else {
 					$('.search-cancel-button').hide();
 				}
