@@ -627,29 +627,29 @@ const setDropdownListItems = () => {
 	});
 };
 
-/**
- * generate note item HTML
- */
+// ========== HTML generators ==========
 const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 	// add the most outer opening tag
 	let noteItemHTML = `<div class="stackwrapper ${type}" id="${id}">`;
 
 	// add content body
-	noteItemHTML += `<div class='content'>${enableURLEmbededInText(content).replace(
-		/\n/gi,
-		'<br>'
-	)}</div><i class="material-icons edit">edit</i><div><i class="material-icons checkbox">check</i></div><input type="hidden" value="${id}"><input class='itemDate' type='hidden' value="${date}"><div class="spacer"></div>`;
+	noteItemHTML += `<div class='content'>${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div>`;
+	noteItemHTML += `<i class="material-icons edit">edit</i>`;
+	noteItemHTML += `<div><i class="material-icons checkbox">check</i></div>`;
+	noteItemHTML += `<input type="hidden" value="${id}">`;
+	noteItemHTML += `<input class='itemDate' type='hidden' value="${date}">`;
+	noteItemHTML += `<div class="spacer"></div>`;
 
 	// add footnote
 	if (type === 'clip') {
-		noteItemHTML += `<div class="footnote"><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span><span class="tag type clip">clip</span>`;
+		noteItemHTML += `<div class="footnote"><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span>`;
+		noteItemHTML += `<span class="tag type clip">clip</span>`;
 	} else {
 		noteItemHTML += `<div class="footnote"><span class="tag type">${type}</span>`;
 	}
 
 	// add tags to footnote
 	let tagsHTML = '';
-
 	if (typeof footnote.tags !== 'undefined') {
 		footnote.tags.forEach((tagName) => {
 			// change the tag to emoji
@@ -659,26 +659,21 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 			tagsHTML += generateTagsHTML(tagName);
 		});
 	}
-
 	noteItemHTML += tagsHTML;
 
-	// omit input of tag addition
-	// TODO: rename tagadd class
-	if (footnote.tags.length < 4) {
-		noteItemHTML += '<div class="divWrap"><input type="text" class="tagadd"></div>';
-	} else {
-		noteItemHTML += '<div class="divWrap hidden"><input type="text" class="tagadd"></div>';
-	}
+	// hide tag input if the note has more than 5 tags;
+	const classes = footnote.tags.length < 4 ? 'divWrap' : 'divWrap hidden';
+	noteItemHTML += `<div class="${classes}"><input type="text" class="tagadd"></div>`;
 
 	// add the closing tag of footnote
 	noteItemHTML += '</div>';
 
 	// replace class names for setting styles
 	if (noteItemHTML.match(/pinned|📌|tagDate/i)) {
-		// noteItemHTML = noteItemHTML.replace(/stackwrapper/gi, 'stackwrapper pinned');
 		noteItemHTML = noteItemHTML.replace(/stackwrapper/gi, 'stackwrapper priority');
 	}
 
+	// add separator generator
 	noteItemHTML += '<div class="sepGenerator hidden"></div>';
 
 	// add the most outer closing tag
@@ -687,13 +682,36 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 	return noteItemHTML;
 };
 
+const generateSeparatorHTML = ({ id, type, content, footnote, date }) => {
+	// add the most outer opening tag
+	let separatorHTML = `<div class="${type}" id="${id}">`;
+
+	// add body HTML
+	separatorHTML += `<input class="separatorInput" type="text" value="${content}" placeholder="セパレータを新規作成" spellcheck="false">`;
+	separatorHTML += `<i class="material-icons separatorCheckbox">check</i>`;
+
+	// add tags to footnote
+	separatorHTML += `<div class="footnote hidden">`;
+	if (typeof footnote.tags !== 'undefined') {
+		footnote.tags.forEach((tagName) => {
+			separatorHTML += `<span class="tag">${tagName}</span>`;
+		});
+	}
+
+	// add closing tags
+	separatorHTML += '</div>';
+	separatorHTML += '</div>';
+
+	return separatorHTML;
+};
+
 /**
- * 
+ * 	generate HTML for footnote tags
+ *  classes are added for special tags
  */
 const generateTagsHTML = (tagName) => {
 	let tagsHTML = '';
 
-	// add classes for special tags
 	if (tagName.match(/pinned|📌/i)) {
 		// pinned
 		tagsHTML = `<span class="tag pinned emoji">${tagName}</span>`;
@@ -717,6 +735,7 @@ const generateTagsHTML = (tagName) => {
 		tagsHTML = `<span class="tag">${tagName}</span>`;
 	}
 
+	// push the tag to stack if it has not yet
 	if (!tagStack.find((t) => t.name === tagName)) {
 		tagStack.push({ id: uuidv4(), name: tagName });
 	}
@@ -724,6 +743,7 @@ const generateTagsHTML = (tagName) => {
 	return tagsHTML;
 };
 
+// ========== attach events ==========
 const attachTagInputEvents = (stackWrapper) => {
 	// BLUR event
 	$(stackWrapper).find('.tagadd').blur((ev) => {
@@ -1353,138 +1373,6 @@ const initializeEventListeners = () => {
 	});
 };
 
-const attachEventsToTextStack = () => {
-	/**
- * the text stack dynamically changes
- */
-	$('#textstack').click((e) => {
-		let targetElem = e.target;
-		let stackWrapper = $(e.target).parent().parent();
-
-		// TAG
-		if ($(targetElem).hasClass('tag')) {
-			if (e.ctrlKey && $(targetElem).hasClass('removing')) {
-				let tagName = $(targetElem).text();
-				let stackWrapper = $(targetElem).parent().parent();
-
-				// remove pinned styles
-				if (tagName.match(/pinned|📌/i)) {
-					// $(stackWrapper).removeClass('pinned');
-					$(stackWrapper).removeClass('priority');
-				}
-
-				if (stackWrapper.find('.tag').length > 1 && $(targetElem).prev().length != 0) {
-					// remove tag from footnote
-					let id = stackWrapper.find('input').val();
-					let index = stack.findIndex((item) => item.id === id);
-					let tagIndex = stack[index].footnote.tags.indexOf(tagName);
-					// remove the tag
-					stack[index].footnote.tags.splice(tagIndex, 1);
-					stackStorage.set(JSON.stringify(stack));
-
-					// remove item in the UI
-					$(targetElem).remove();
-
-					// for search optimization
-					if (shadowNodes[0]) {
-						// remove the item from duplicated textstack as well
-						$(shadowNodes[0]).find('.stackwrapper').each((index, item) => {
-							if ($(item).attr('id') === id) {
-								$(item).find('.tag').each((index, tag) => {
-									if ($(tag).text() === tagName) {
-										$(tag).remove();
-										return false;
-									}
-								});
-							}
-						});
-					}
-
-					// TODO: change the logic
-					// remove the tag from tagstack if there's no item with the tag
-					// tagStack.splice(tagStack.findIndex((t) => t === tagName), 1);
-					tagStack.splice(tagStack.findIndex((tag) => tag.name === tagName), 1);
-
-					$('.tag').each((index, item) => {
-						let tagRegex = new RegExp(`${escapeRegExp(tagName)}`, 'i');
-
-						if ($(item).text().match(tagRegex)) {
-							// tagStack.push(tagName);
-
-							tagStack.push({ id: uuidv4(), name: tagName });
-
-							return false;
-						}
-					});
-					chrome.storage.local.set({ tagStack: tagStack });
-					setDropdownListItems();
-
-					stackWrapper.find('.footnote').find('.divWrap').removeClass('hidden');
-				}
-			} else {
-				// when hashtag clicked
-				if (!isNaN(Date.parse($(targetElem).html()))) {
-					filterNoteItemsByTag(':d');
-
-					$('.searchbox').val(':d');
-
-					$('#statusboard').removeClass('entering');
-				} else {
-					fireSearch('#' + $(targetElem).html());
-				}
-
-				$('#statusboard').removeClass('entering');
-
-				// stay at the position
-				let stackWrapper = $(targetElem).parent().parent();
-				let id = stackWrapper.find('input').val();
-				let prevYOffset = window.pageYOffset;
-				location.href = '#' + id;
-				if (window.pageYOffset < window.offsetHeight) {
-					window.scrollTo(0, 0);
-				} else {
-					window.scrollTo(0, prevYOffset);
-				}
-			}
-			// CHECKBOX
-		} else if ($(targetElem).hasClass('checkbox')) {
-			// when checkbox clicked
-			$(targetElem).css('color', 'white !important');
-			let textItem = $(targetElem).parent().parent().get(0);
-			removeNoteItem(textItem);
-			// PSEUDOLINK
-		} else if ($(targetElem).hasClass('pseudolink')) {
-			// use span tag as a link
-			// open url in a background with Ctrl key
-			chrome.tabs.create({
-				url: $(targetElem).attr('href'),
-				active: e.ctrlKey ? false : true
-			});
-			return false;
-		}
-	});
-
-	$('#textstack').on({
-		mouseover: (e) => {
-			if ($(e.target).hasClass('tag')) {
-				let stackWrapper = $(e.target).parent().parent();
-				if ($(stackWrapper).find('.tag').length > 1 && !$(e.target).hasClass('type')) {
-					if (e.ctrlKey && !$(e.target).hasClass('removing')) {
-						$(e.target).addClass('removing');
-					}
-				}
-			}
-		},
-		mouseout: (e) => {
-			if ($(e.target).hasClass('tag')) {
-				if (![ 'note', 'clip', 'bookmark' ].includes(e.target.textContent)) {
-					$(e.target).removeClass('removing');
-				}
-			}
-		}
-	});
-};
-
 // ========== STORAGE ==========
 /**
  * 
@@ -1841,29 +1729,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	setDropdownListItems();
 });
 
-const generateSeparatorHTML = ({ id, type, content, footnote, date }) => {
-	// add the most outer opening tag
-	let separatorHTML = `<div class="${type}" id="${id}">`;
-
-	// add content body
-	separatorHTML += `<input class="separatorInput disabled" placeholder="新規セパレータを作成" spellcheck="false" type="text" style="text-align:left;" value="${enableURLEmbededInText(
-		content
-	)}"><i class="material-icons separatorCheckbox">check</i>`;
-	separatorHTML += `<div class="footnote hidden">`;
-
-	// add tags to footnote
-	if (typeof footnote.tags !== 'undefined') {
-		footnote.tags.forEach((tagName) => {
-			separatorHTML += `<span class="tag">${tagName}</span>`;
-		});
-	}
-
-	// add closing tags
-	separatorHTML += '</div></div>';
-
-	return separatorHTML;
-};
-
 const createSeparator = (targetWrapper = null) => {
 	let query = $('.searchbox').val();
 
@@ -1904,6 +1769,137 @@ const createSeparator = (targetWrapper = null) => {
 	}
 };
 
+const attachEventsToTextStack = () => {
+	/**
+ * the text stack dynamically changes
+ */
+	$('#textstack').click((e) => {
+		let targetElem = e.target;
+		let stackWrapper = $(e.target).parent().parent();
+
+		// TAG
+		if ($(targetElem).hasClass('tag')) {
+			if (e.ctrlKey && $(targetElem).hasClass('removing')) {
+				let tagName = $(targetElem).text();
+				let stackWrapper = $(targetElem).parent().parent();
+
+				// remove pinned styles
+				if (tagName.match(/pinned|📌/i)) {
+					// $(stackWrapper).removeClass('pinned');
+					$(stackWrapper).removeClass('priority');
+				}
+
+				if (stackWrapper.find('.tag').length > 1 && $(targetElem).prev().length != 0) {
+					// remove tag from footnote
+					let id = stackWrapper.find('input').val();
+					let index = stack.findIndex((item) => item.id === id);
+					let tagIndex = stack[index].footnote.tags.indexOf(tagName);
+					// remove the tag
+					stack[index].footnote.tags.splice(tagIndex, 1);
+					stackStorage.set(JSON.stringify(stack));
+
+					// remove item in the UI
+					$(targetElem).remove();
+
+					// for search optimization
+					if (shadowNodes[0]) {
+						// remove the item from duplicated textstack as well
+						$(shadowNodes[0]).find('.stackwrapper').each((index, item) => {
+							if ($(item).attr('id') === id) {
+								$(item).find('.tag').each((index, tag) => {
+									if ($(tag).text() === tagName) {
+										$(tag).remove();
+										return false;
+									}
+								});
+							}
+						});
+					}
+
+					// TODO: change the logic
+					// remove the tag from tagstack if there's no item with the tag
+					// tagStack.splice(tagStack.findIndex((t) => t === tagName), 1);
+					tagStack.splice(tagStack.findIndex((tag) => tag.name === tagName), 1);
+
+					$('.tag').each((index, item) => {
+						let tagRegex = new RegExp(`${escapeRegExp(tagName)}`, 'i');
+
+						if ($(item).text().match(tagRegex)) {
+							// tagStack.push(tagName);
+
+							tagStack.push({ id: uuidv4(), name: tagName });
+
+							return false;
+						}
+					});
+					chrome.storage.local.set({ tagStack: tagStack });
+					setDropdownListItems();
+
+					stackWrapper.find('.footnote').find('.divWrap').removeClass('hidden');
+				}
+			} else {
+				// when hashtag clicked
+				if (!isNaN(Date.parse($(targetElem).html()))) {
+					filterNoteItemsByTag(':d');
+
+					$('.searchbox').val(':d');
+
+					$('#statusboard').removeClass('entering');
+				} else {
+					fireSearch('#' + $(targetElem).html());
+				}
+
+				$('#statusboard').removeClass('entering');
+
+				// stay at the position
+				let stackWrapper = $(targetElem).parent().parent();
+				let id = stackWrapper.find('input').val();
+				let prevYOffset = window.pageYOffset;
+				location.href = '#' + id;
+				if (window.pageYOffset < window.offsetHeight) {
+					window.scrollTo(0, 0);
+				} else {
+					window.scrollTo(0, prevYOffset);
+				}
+			}
+			// CHECKBOX
+		} else if ($(targetElem).hasClass('checkbox')) {
+			// when checkbox clicked
+			$(targetElem).css('color', 'white !important');
+			let textItem = $(targetElem).parent().parent().get(0);
+			removeNoteItem(textItem);
+			// PSEUDOLINK
+		} else if ($(targetElem).hasClass('pseudolink')) {
+			// use span tag as a link
+			// open url in a background with Ctrl key
+			chrome.tabs.create({
+				url: $(targetElem).attr('href'),
+				active: e.ctrlKey ? false : true
+			});
+			return false;
+		}
+	});
+
+	$('#textstack').on({
+		mouseover: (e) => {
+			if ($(e.target).hasClass('tag')) {
+				let stackWrapper = $(e.target).parent().parent();
+				if ($(stackWrapper).find('.tag').length > 1 && !$(e.target).hasClass('type')) {
+					if (e.ctrlKey && !$(e.target).hasClass('removing')) {
+						$(e.target).addClass('removing');
+					}
+				}
+			}
+		},
+		mouseout: (e) => {
+			if ($(e.target).hasClass('tag')) {
+				if (![ 'note', 'clip', 'bookmark' ].includes(e.target.textContent)) {
+					$(e.target).removeClass('removing');
+				}
+			}
+		}
+	});
+};
 const attachSeparatorEvents = (stackwrapper) => {
 	$(stackwrapper).find('.separatorInput').blur((ev) => {
 		ev.preventDefault();

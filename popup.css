@@ -351,6 +351,9 @@ footer {
 	border-bottom: 1px dotted lightgray;
 }
 
+.separatorInput {
+	text-align: left;
+}
 /* tag edit button */
 #tagsearch-result li .tagedit:hover {
 	color: rgba(32, 32, 32, 0.8);
