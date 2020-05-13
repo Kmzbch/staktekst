@@ -211,6 +211,7 @@ const toggleEditorMode = (div, display = !$(div).attr('contentEditable') ? true 
 	}
 };
 
+// ========== search functions ==========
 const updateSearchResult = () => {
 	const query = $('.searchbox').val().trim().toLowerCase();
 	let hits;
@@ -326,6 +327,7 @@ const filterNoteItems = (term) => {
 	return hits;
 };
 
+// ========== dropdown list functions ==========
 const selectOnDropdownList = (e) => {
 	const liSelected = $('#tagsearch-result .selected');
 	let unfiltered = $('li').not('.filtered');
@@ -743,7 +745,7 @@ const generateTagsHTML = (tagName) => {
 	return tagsHTML;
 };
 
-// ========== attach events ==========
+// ========== Event attacher functions ==========
 const attachTagInputEvents = (stackWrapper) => {
 	// BLUR event
 	$(stackWrapper).find('.tagadd').blur((ev) => {
@@ -1065,9 +1067,213 @@ const attachNoteContentEvents = (wrapper) => {
 	}
 };
 
-/**
- * Initialize events listners
+const attachEventsToTextStack = () => {
+	/**
+ * the text stack dynamically changes
  */
+	$('#textstack').click((e) => {
+		let targetElem = e.target;
+		let stackWrapper = $(e.target).parent().parent();
+
+		// TAG
+		if ($(targetElem).hasClass('tag')) {
+			if (e.ctrlKey && $(targetElem).hasClass('removing')) {
+				let tagName = $(targetElem).text();
+				let stackWrapper = $(targetElem).parent().parent();
+
+				// remove pinned styles
+				if (tagName.match(/pinned|📌/i)) {
+					// $(stackWrapper).removeClass('pinned');
+					$(stackWrapper).removeClass('priority');
+				}
+
+				if (stackWrapper.find('.tag').length > 1 && $(targetElem).prev().length != 0) {
+					// remove tag from footnote
+					let id = stackWrapper.find('input').val();
+					let index = stack.findIndex((item) => item.id === id);
+					let tagIndex = stack[index].footnote.tags.indexOf(tagName);
+					// remove the tag
+					stack[index].footnote.tags.splice(tagIndex, 1);
+					stackStorage.set(JSON.stringify(stack));
+
+					// remove item in the UI
+					$(targetElem).remove();
+
+					// for search optimization
+					if (shadowNodes[0]) {
+						// remove the item from duplicated textstack as well
+						$(shadowNodes[0]).find('.stackwrapper').each((index, item) => {
+							if ($(item).attr('id') === id) {
+								$(item).find('.tag').each((index, tag) => {
+									if ($(tag).text() === tagName) {
+										$(tag).remove();
+										return false;
+									}
+								});
+							}
+						});
+					}
+
+					// TODO: change the logic
+					// remove the tag from tagstack if there's no item with the tag
+					// tagStack.splice(tagStack.findIndex((t) => t === tagName), 1);
+					tagStack.splice(tagStack.findIndex((tag) => tag.name === tagName), 1);
+
+					$('.tag').each((index, item) => {
+						let tagRegex = new RegExp(`${escapeRegExp(tagName)}`, 'i');
+
+						if ($(item).text().match(tagRegex)) {
+							// tagStack.push(tagName);
+
+							tagStack.push({ id: uuidv4(), name: tagName });
+
+							return false;
+						}
+					});
+					chrome.storage.local.set({ tagStack: tagStack });
+					setDropdownListItems();
+
+					stackWrapper.find('.footnote').find('.divWrap').removeClass('hidden');
+				}
+			} else {
+				// when hashtag clicked
+				if (!isNaN(Date.parse($(targetElem).html()))) {
+					filterNoteItemsByTag(':d');
+
+					$('.searchbox').val(':d');
+
+					$('#statusboard').removeClass('entering');
+				} else {
+					fireSearch('#' + $(targetElem).html());
+				}
+
+				$('#statusboard').removeClass('entering');
+
+				// stay at the position
+				let stackWrapper = $(targetElem).parent().parent();
+				let id = stackWrapper.find('input').val();
+				let prevYOffset = window.pageYOffset;
+				location.href = '#' + id;
+				if (window.pageYOffset < window.offsetHeight) {
+					window.scrollTo(0, 0);
+				} else {
+					window.scrollTo(0, prevYOffset);
+				}
+			}
+			// CHECKBOX
+		} else if ($(targetElem).hasClass('checkbox')) {
+			// when checkbox clicked
+			$(targetElem).css('color', 'white !important');
+			let textItem = $(targetElem).parent().parent().get(0);
+			removeNoteItem(textItem);
+			// PSEUDOLINK
+		} else if ($(targetElem).hasClass('pseudolink')) {
+			// use span tag as a link
+			// open url in a background with Ctrl key
+			chrome.tabs.create({
+				url: $(targetElem).attr('href'),
+				active: e.ctrlKey ? false : true
+			});
+			return false;
+		}
+	});
+
+	$('#textstack').on({
+		mouseover: (e) => {
+			if ($(e.target).hasClass('tag')) {
+				let stackWrapper = $(e.target).parent().parent();
+				if ($(stackWrapper).find('.tag').length > 1 && !$(e.target).hasClass('type')) {
+					if (e.ctrlKey && !$(e.target).hasClass('removing')) {
+						$(e.target).addClass('removing');
+					}
+				}
+			}
+		},
+		mouseout: (e) => {
+			if ($(e.target).hasClass('tag')) {
+				if (![ 'note', 'clip', 'bookmark' ].includes(e.target.textContent)) {
+					$(e.target).removeClass('removing');
+				}
+			}
+		}
+	});
+};
+const attachSeparatorEvents = (stackwrapper) => {
+	$(stackwrapper).find('.separatorInput').blur((ev) => {
+		ev.preventDefault();
+
+		let separatorName = ev.target.value;
+
+		if (!separatorName.match(/^\s+$/)) {
+			separatorName = ev.target.value.trim();
+
+			// update tag information
+			const index = stack.findIndex((item) => item.id === $(stackwrapper).attr('id'));
+
+			if (typeof stack[index].content === 'undefined') {
+				stack[index].content = '';
+			}
+
+			stack[index].content = separatorName;
+			stackStorage.set(JSON.stringify(stack));
+		} else {
+			ev.target.value = ev.target.defaultValue;
+		}
+
+		ev.target.classList.add('disabled');
+	});
+	$(stackwrapper).find('.separatorInput').on('click', (ev) => {
+		ev.target.classList.remove('disabled');
+	});
+
+	$(stackwrapper).find('.separatorCheckbox').on('click', (ev) => {
+		let targetElem = ev.target;
+
+		// when checkbox clicked
+		$(targetElem).css('color', 'white !important');
+		$(targetElem).parent().addClass('removed');
+
+		setTimeout(() => {
+			// remove tag from footnote
+			let id = $(targetElem).parent().attr('id');
+			stack = stack.filter((item) => item.id !== id);
+			stackStorage.set(JSON.stringify(stack));
+			// remove item in the UI
+			$(targetElem).parent().remove();
+		}, 450);
+	});
+
+	$(stackwrapper).find('.separatorInput').on('focus', (ev) => {
+		ev.target.classList.remove('disabled');
+	});
+
+	// KEYUP
+	$(stackwrapper).find('.separatorInput').keyup((ev) => {
+		ev.preventDefault();
+
+		let separatorName = ev.target.value;
+
+		if (ev.keyCode === Keys.ENTER) {
+			separatorName = ev.target.value.trim();
+
+			if (separatorName !== '') {
+				// update tag information
+				const index = stack.findIndex((item) => item.id === $(stackwrapper).attr('id'));
+
+				if (typeof stack[index].content === 'undefined') {
+					stack[index].content = '';
+				}
+
+				stack[index].content = separatorName;
+				stackStorage.set(JSON.stringify(stack));
+				console.log('asdf');
+				$(ev.target).trigger('blur');
+			}
+		}
+	});
+};
+
+// ========== Initializer ==========
 const initializeEventListeners = () => {
 	/**
    * window events
@@ -1374,9 +1580,6 @@ const initializeEventListeners = () => {
 };
 
 // ========== STORAGE ==========
-/**
- * 
- */
 const createNoteItem = () => {
 	const note = {
 		id: uuidv4(),
@@ -1471,9 +1674,6 @@ const createNoteItem = () => {
 	}
 };
 
-/**
- * 
- */
 const removeNoteItem = (noteItem) => {
 	// apply visual effects and display message
 	noteItem.classList.add('removed');
@@ -1528,9 +1728,46 @@ const removeNoteItem = (noteItem) => {
 	}, 450);
 };
 
-/**
- * 
- */
+const createSeparator = (targetWrapper = null) => {
+	let query = $('.searchbox').val();
+
+	if (query[0] === '#' && query.substring(1) !== '') {
+		const separator = {
+			id: uuidv4(),
+			type: 'separator',
+			content: '',
+			footnote: {
+				tags: [ query ],
+				pageTitle: '',
+				pageURL: ''
+			},
+			// date: formatDate()
+			date: new Date().toISOString()
+		};
+		// add item to stack
+		stack.push(separator);
+		stackStorage.set(JSON.stringify(stack));
+
+		let wrapper = $(generateSeparatorHTML(separator)).get(0);
+		attachSeparatorEvents(wrapper);
+
+		// render
+		if (targetWrapper) {
+			$(wrapper).insertAfter(targetWrapper);
+		} else {
+			if (windowState.sortedByNew) {
+				$('#textstack').prepend(wrapper);
+			} else {
+				$('#textstack').append(wrapper);
+			}
+		}
+
+		sortable.save();
+
+		$(wrapper).find('input').focus();
+	}
+};
+
 const clearAllItems = () => {
 	// clear storage
 	stackStorage.reset();
@@ -1565,9 +1802,6 @@ const clearAllItems = () => {
 	};
 };
 
-/**
- * render textitems on text stack
- */
 const renderStack = () => {
 	// remove all text items
 	$('#textstack').empty();
@@ -1650,9 +1884,6 @@ const renderStack = () => {
 	});
 };
 
-/**
- * Function to restore the previous window state
- */
 const restorePreviousState = () => {
 	chrome.storage.local.get([ 'searchQuery', 'scrollY', 'closedDateTime', 'sortedByNew' ], (state) => {
 		windowState = state;
@@ -1728,249 +1959,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	setDropdownListItems();
 });
-
-const createSeparator = (targetWrapper = null) => {
-	let query = $('.searchbox').val();
-
-	if (query[0] === '#' && query.substring(1) !== '') {
-		const separator = {
-			id: uuidv4(),
-			type: 'separator',
-			content: '',
-			footnote: {
-				tags: [ query ],
-				pageTitle: '',
-				pageURL: ''
-			},
-			// date: formatDate()
-			date: new Date().toISOString()
-		};
-		// add item to stack
-		stack.push(separator);
-		stackStorage.set(JSON.stringify(stack));
-
-		let wrapper = $(generateSeparatorHTML(separator)).get(0);
-		attachSeparatorEvents(wrapper);
-
-		// render
-		if (targetWrapper) {
-			$(wrapper).insertAfter(targetWrapper);
-		} else {
-			if (windowState.sortedByNew) {
-				$('#textstack').prepend(wrapper);
-			} else {
-				$('#textstack').append(wrapper);
-			}
-		}
-
-		sortable.save();
-
-		$(wrapper).find('input').focus();
-	}
-};
-
-const attachEventsToTextStack = () => {
-	/**
- * the text stack dynamically changes
- */
-	$('#textstack').click((e) => {
-		let targetElem = e.target;
-		let stackWrapper = $(e.target).parent().parent();
-
-		// TAG
-		if ($(targetElem).hasClass('tag')) {
-			if (e.ctrlKey && $(targetElem).hasClass('removing')) {
-				let tagName = $(targetElem).text();
-				let stackWrapper = $(targetElem).parent().parent();
-
-				// remove pinned styles
-				if (tagName.match(/pinned|📌/i)) {
-					// $(stackWrapper).removeClass('pinned');
-					$(stackWrapper).removeClass('priority');
-				}
-
-				if (stackWrapper.find('.tag').length > 1 && $(targetElem).prev().length != 0) {
-					// remove tag from footnote
-					let id = stackWrapper.find('input').val();
-					let index = stack.findIndex((item) => item.id === id);
-					let tagIndex = stack[index].footnote.tags.indexOf(tagName);
-					// remove the tag
-					stack[index].footnote.tags.splice(tagIndex, 1);
-					stackStorage.set(JSON.stringify(stack));
-
-					// remove item in the UI
-					$(targetElem).remove();
-
-					// for search optimization
-					if (shadowNodes[0]) {
-						// remove the item from duplicated textstack as well
-						$(shadowNodes[0]).find('.stackwrapper').each((index, item) => {
-							if ($(item).attr('id') === id) {
-								$(item).find('.tag').each((index, tag) => {
-									if ($(tag).text() === tagName) {
-										$(tag).remove();
-										return false;
-									}
-								});
-							}
-						});
-					}
-
-					// TODO: change the logic
-					// remove the tag from tagstack if there's no item with the tag
-					// tagStack.splice(tagStack.findIndex((t) => t === tagName), 1);
-					tagStack.splice(tagStack.findIndex((tag) => tag.name === tagName), 1);
-
-					$('.tag').each((index, item) => {
-						let tagRegex = new RegExp(`${escapeRegExp(tagName)}`, 'i');
-
-						if ($(item).text().match(tagRegex)) {
-							// tagStack.push(tagName);
-
-							tagStack.push({ id: uuidv4(), name: tagName });
-
-							return false;
-						}
-					});
-					chrome.storage.local.set({ tagStack: tagStack });
-					setDropdownListItems();
-
-					stackWrapper.find('.footnote').find('.divWrap').removeClass('hidden');
-				}
-			} else {
-				// when hashtag clicked
-				if (!isNaN(Date.parse($(targetElem).html()))) {
-					filterNoteItemsByTag(':d');
-
-					$('.searchbox').val(':d');
-
-					$('#statusboard').removeClass('entering');
-				} else {
-					fireSearch('#' + $(targetElem).html());
-				}
-
-				$('#statusboard').removeClass('entering');
-
-				// stay at the position
-				let stackWrapper = $(targetElem).parent().parent();
-				let id = stackWrapper.find('input').val();
-				let prevYOffset = window.pageYOffset;
-				location.href = '#' + id;
-				if (window.pageYOffset < window.offsetHeight) {
-					window.scrollTo(0, 0);
-				} else {
-					window.scrollTo(0, prevYOffset);
-				}
-			}
-			// CHECKBOX
-		} else if ($(targetElem).hasClass('checkbox')) {
-			// when checkbox clicked
-			$(targetElem).css('color', 'white !important');
-			let textItem = $(targetElem).parent().parent().get(0);
-			removeNoteItem(textItem);
-			// PSEUDOLINK
-		} else if ($(targetElem).hasClass('pseudolink')) {
-			// use span tag as a link
-			// open url in a background with Ctrl key
-			chrome.tabs.create({
-				url: $(targetElem).attr('href'),
-				active: e.ctrlKey ? false : true
-			});
-			return false;
-		}
-	});
-
-	$('#textstack').on({
-		mouseover: (e) => {
-			if ($(e.target).hasClass('tag')) {
-				let stackWrapper = $(e.target).parent().parent();
-				if ($(stackWrapper).find('.tag').length > 1 && !$(e.target).hasClass('type')) {
-					if (e.ctrlKey && !$(e.target).hasClass('removing')) {
-						$(e.target).addClass('removing');
-					}
-				}
-			}
-		},
-		mouseout: (e) => {
-			if ($(e.target).hasClass('tag')) {
-				if (![ 'note', 'clip', 'bookmark' ].includes(e.target.textContent)) {
-					$(e.target).removeClass('removing');
-				}
-			}
-		}
-	});
-};
-const attachSeparatorEvents = (stackwrapper) => {
-	$(stackwrapper).find('.separatorInput').blur((ev) => {
-		ev.preventDefault();
-
-		let separatorName = ev.target.value;
-
-		if (!separatorName.match(/^\s+$/)) {
-			separatorName = ev.target.value.trim();
-
-			// update tag information
-			const index = stack.findIndex((item) => item.id === $(stackwrapper).attr('id'));
-
-			if (typeof stack[index].content === 'undefined') {
-				stack[index].content = '';
-			}
-
-			stack[index].content = separatorName;
-			stackStorage.set(JSON.stringify(stack));
-		} else {
-			ev.target.value = ev.target.defaultValue;
-		}
-
-		ev.target.classList.add('disabled');
-	});
-	$(stackwrapper).find('.separatorInput').on('click', (ev) => {
-		ev.target.classList.remove('disabled');
-	});
-
-	$(stackwrapper).find('.separatorCheckbox').on('click', (ev) => {
-		let targetElem = ev.target;
-
-		// when checkbox clicked
-		$(targetElem).css('color', 'white !important');
-		$(targetElem).parent().addClass('removed');
-
-		setTimeout(() => {
-			// remove tag from footnote
-			let id = $(targetElem).parent().attr('id');
-			stack = stack.filter((item) => item.id !== id);
-			stackStorage.set(JSON.stringify(stack));
-			// remove item in the UI
-			$(targetElem).parent().remove();
-		}, 450);
-	});
-
-	$(stackwrapper).find('.separatorInput').on('focus', (ev) => {
-		ev.target.classList.remove('disabled');
-	});
-
-	// KEYUP
-	$(stackwrapper).find('.separatorInput').keyup((ev) => {
-		ev.preventDefault();
-
-		let separatorName = ev.target.value;
-
-		if (ev.keyCode === Keys.ENTER) {
-			separatorName = ev.target.value.trim();
-
-			if (separatorName !== '') {
-				// update tag information
-				const index = stack.findIndex((item) => item.id === $(stackwrapper).attr('id'));
-
-				if (typeof stack[index].content === 'undefined') {
-					stack[index].content = '';
-				}
-
-				stack[index].content = separatorName;
-				stackStorage.set(JSON.stringify(stack));
-				console.log('asdf');
-				$(ev.target).trigger('blur');
-			}
-		}
-	});
-};
