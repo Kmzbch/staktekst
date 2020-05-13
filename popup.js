@@ -210,7 +210,7 @@ const toggleEditorMode = (div, display = !$(div).attr('contentEditable') ? true 
 	}
 };
 
-// ========== search functions ==========
+// ========== FILTER ==========
 const updateSearchResult = () => {
 	const query = $('.searchbox').val().trim().toLowerCase();
 	let hits;
@@ -326,8 +326,7 @@ const filterNoteItems = (term) => {
 	return hits;
 };
 
-// ========== dropdown list functions ==========
-
+// ========== DROPDOWN LIST ==========
 const selectOnDropdownList = (e) => {
 	const liSelected = $('#tagsearch-result .selected');
 	const unfiltered = $('li').not('.filtered');
@@ -415,134 +414,6 @@ const filterDropdownListItems = (query) => {
 			listItem.classList.add('filtered');
 		}
 		return listItem;
-	});
-};
-
-const attachListItemEvents = (liItem) => {
-	// mouse events
-	liItem.on({
-		mouseover: (e) => {
-			$(e.target).addClass('selected');
-		},
-		mouseleave: (e) => {
-			$(e.target).removeClass('selected');
-		},
-		click: (e) => {
-			if (e.target.classList.contains('tagedit')) {
-				e.preventDefault();
-
-				const liSelected = $('#tagsearch-result .selected');
-				const tagName = $(liSelected).find('.tageditInput').val();
-
-				// turn on tageditInput
-				$(e.target).hide();
-				$(liSelected).find('span').hide();
-				$(liSelected).find('.tageditInput').show();
-				$(liSelected).find('.tageditInput').focus();
-				$(liSelected).find('.tageditInput').val(tagName);
-
-				return false;
-			} else if (!e.target.classList.contains('tageditInput')) {
-				fireSearch('#' + $(e.target).text().replace(/edit$/, ''));
-				hideDropdownList();
-			}
-		}
-	});
-
-	// keyboard events
-	$('.tageditInput').keyup((e) => {
-		if (e.keyCode === Keys.ENTER) {
-			let newTag = e.target.value;
-			let oldTag = e.target.defaultValue;
-
-			if (newTag === '') {
-				// remove the tag from tagstack
-				$('.tag').each((index, elem) => {
-					if ($(elem).text() === oldTag) {
-						$(elem).remove();
-					}
-				});
-				tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1);
-				chrome.storage.local.set({ tagStack: tagStack });
-
-				// remove the tag from stack
-				stack.forEach((item) => {
-					if (item.footnote.tags.includes(oldTag)) {
-						item.footnote.tags.splice(item.footnote.tags.findIndex((t) => t.name === oldTag), 1);
-					}
-				});
-				stackStorage.set(JSON.stringify(stack));
-
-				// remove the tag from shadow nodes for search optimization
-				if (shadowNodes[0]) {
-					$(shadowNodes[0]).find('.tag').each((index, elem) => {
-						if ($(elem).text() === oldTag) {
-							$(elem).remove();
-						}
-					});
-				}
-				// remove the tag DOM
-				$(e.target).parent().remove();
-			} else {
-				// update the tag
-				if (newTag.match(/^\s*$/)) {
-					// cancel tag edit
-					newTag = oldTag;
-				} else {
-					replaceTagName(oldTag, newTag);
-
-					// replace all the tags in the textstack
-					$('.tag').each((index, elem) => {
-						if ($(elem).text() === oldTag) {
-							$(elem).text(newTag);
-						}
-					});
-
-					// update tagstack
-					if (tagStack.findIndex((t) => t.name === newTag) === -1) {
-						tagStack.find((t) => t.name === oldTag).name = newTag;
-					} else {
-						tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1);
-					}
-					chrome.storage.local.set({ tagStack: tagStack });
-
-					e.target.defaultValue = newTag;
-
-					// turn off tageditInput
-					$(e.target).parent().find('span').text(newTag);
-					$(e.target).parent().find('span').show();
-					$(e.target).parent().find('.tagedit').show();
-					$(e.target).hide();
-
-					// replace tags of shadow nodes for search optimization
-					if (shadowNodes[0]) {
-						$(shadowNodes[0]).find('.tag').each((index, elem) => {
-							if ($(elem).text() === oldTag) {
-								$(elem).text(newTag);
-							}
-						});
-					}
-
-					// update search query as well
-					if ($('.searchbox').val() !== '') {
-						$('.searchbox').val('#' + newTag);
-						windowState.searchQuery = '#' + newTag;
-					}
-				}
-			}
-			setDropdownListItems();
-		}
-	});
-
-	$('.tageditInput').blur((e) => {
-		// cancel tag edit
-		const oldTag = e.target.defaultValue;
-		e.target.value = oldTag;
-		// turn off tageditInput
-		$(e.target).parent().find('span').text(oldTag);
-		$(e.target).parent().find('span').show();
-		$(e.target).parent().find('.tagedit').show();
-		$(e.target).hide();
 	});
 };
 
@@ -795,12 +666,9 @@ const attachTagInputEvents = (stackWrapper) => {
 			// change the tag to emoji
 			if (tagName.match(/pinned|📌/i)) {
 				tagName = tagName.replace(/pinned/i, '📌');
-				// $(stackWrapper).addClass('pinned');
 				$(stackWrapper).addClass('priority');
 			}
 
-			//
-			console.log(tagName);
 			let tagsHTML = generateTagsHTML(tagName);
 			chrome.storage.local.set({ tagStack: tagStack });
 			setDropdownListItems();
@@ -844,7 +712,6 @@ const attachTagInputEvents = (stackWrapper) => {
 				// change the tag to emoji
 				if (tagName.match(/pinned|📌/i)) {
 					tagName = tagName.replace(/pinned/i, '📌');
-					// $(stackWrapper).addClass('pinned');
 					$(stackWrapper).addClass('priority');
 				}
 
@@ -1061,14 +928,11 @@ const attachNoteContentEvents = (wrapper) => {
 			stackStorage.set(JSON.stringify(stack));
 
 			// for search optimization
-			/////
 			if (shadowNodes[0]) {
 				$(shadowNodes[0]).find('.stackwrapper').each((index, item) => {
 					if ($(item).attr('id') === id) {
 						item.innerHTML = wrapper.innerHTML;
-
 						$(item).unhighlight({ element: 'span', className: 'highlighted' });
-
 						return false;
 					}
 				});
@@ -1226,6 +1090,7 @@ const attachEventsToTextStack = () => {
 		}
 	});
 };
+
 const attachSeparatorEvents = (stackwrapper) => {
 	$(stackwrapper).find('.separatorInput').blur((ev) => {
 		ev.preventDefault();
@@ -1298,6 +1163,134 @@ const attachSeparatorEvents = (stackwrapper) => {
 				$(ev.target).trigger('blur');
 			}
 		}
+	});
+};
+
+const attachListItemEvents = (liItem) => {
+	// mouse events
+	liItem.on({
+		mouseover: (e) => {
+			$(e.target).addClass('selected');
+		},
+		mouseleave: (e) => {
+			$(e.target).removeClass('selected');
+		},
+		click: (e) => {
+			if (e.target.classList.contains('tagedit')) {
+				e.preventDefault();
+
+				const liSelected = $('#tagsearch-result .selected');
+				const tagName = $(liSelected).find('.tageditInput').val();
+
+				// turn on tageditInput
+				$(e.target).hide();
+				$(liSelected).find('span').hide();
+				$(liSelected).find('.tageditInput').show();
+				$(liSelected).find('.tageditInput').focus();
+				$(liSelected).find('.tageditInput').val(tagName);
+
+				return false;
+			} else if (!e.target.classList.contains('tageditInput')) {
+				fireSearch('#' + $(e.target).text().replace(/edit$/, ''));
+				hideDropdownList();
+			}
+		}
+	});
+
+	// keyboard events
+	$('.tageditInput').keyup((e) => {
+		if (e.keyCode === Keys.ENTER) {
+			let newTag = e.target.value;
+			let oldTag = e.target.defaultValue;
+
+			if (newTag === '') {
+				// remove the tag from tagstack
+				$('.tag').each((index, elem) => {
+					if ($(elem).text() === oldTag) {
+						$(elem).remove();
+					}
+				});
+				tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1);
+				chrome.storage.local.set({ tagStack: tagStack });
+
+				// remove the tag from stack
+				stack.forEach((item) => {
+					if (item.footnote.tags.includes(oldTag)) {
+						item.footnote.tags.splice(item.footnote.tags.findIndex((t) => t.name === oldTag), 1);
+					}
+				});
+				stackStorage.set(JSON.stringify(stack));
+
+				// remove the tag from shadow nodes for search optimization
+				if (shadowNodes[0]) {
+					$(shadowNodes[0]).find('.tag').each((index, elem) => {
+						if ($(elem).text() === oldTag) {
+							$(elem).remove();
+						}
+					});
+				}
+				// remove the tag DOM
+				$(e.target).parent().remove();
+			} else {
+				// update the tag
+				if (newTag.match(/^\s*$/)) {
+					// cancel tag edit
+					newTag = oldTag;
+				} else {
+					replaceTagName(oldTag, newTag);
+
+					// replace all the tags in the textstack
+					$('.tag').each((index, elem) => {
+						if ($(elem).text() === oldTag) {
+							$(elem).text(newTag);
+						}
+					});
+
+					// update tagstack
+					if (tagStack.findIndex((t) => t.name === newTag) === -1) {
+						tagStack.find((t) => t.name === oldTag).name = newTag;
+					} else {
+						tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1);
+					}
+					chrome.storage.local.set({ tagStack: tagStack });
+
+					e.target.defaultValue = newTag;
+
+					// turn off tageditInput
+					$(e.target).parent().find('span').text(newTag);
+					$(e.target).parent().find('span').show();
+					$(e.target).parent().find('.tagedit').show();
+					$(e.target).hide();
+
+					// replace tags of shadow nodes for search optimization
+					if (shadowNodes[0]) {
+						$(shadowNodes[0]).find('.tag').each((index, elem) => {
+							if ($(elem).text() === oldTag) {
+								$(elem).text(newTag);
+							}
+						});
+					}
+
+					// update search query as well
+					if ($('.searchbox').val() !== '') {
+						$('.searchbox').val('#' + newTag);
+						windowState.searchQuery = '#' + newTag;
+					}
+				}
+			}
+			setDropdownListItems();
+		}
+	});
+
+	$('.tageditInput').blur((e) => {
+		// cancel tag edit
+		const oldTag = e.target.defaultValue;
+		e.target.value = oldTag;
+		// turn off tageditInput
+		$(e.target).parent().find('span').text(oldTag);
+		$(e.target).parent().find('span').show();
+		$(e.target).parent().find('.tagedit').show();
+		$(e.target).hide();
 	});
 };
 
@@ -1793,8 +1786,6 @@ const restorePreviousState = () => {
 			if (typeof state.searchQuery !== 'undefined') {
 				if (state.searchQuery !== '') {
 					fireSearch(state.searchQuery);
-				} else {
-					$('.search-cancel-button').hide();
 				}
 			}
 			// restore sort order
