@@ -8,14 +8,14 @@ const background = chrome.extension.getBackgroundPage();
 // state variables
 let stack = [];
 let tagStack = [];
+let sortable; // SortableJS instance
+let tagSortable; // SortableJS instance
 let windowState = {
 	searchQuery: '',
 	scrollY: 0,
 	sortedByNew: true
 };
-
-// seach optimization
-let shadowNodes = [];
+let shadowNodes = []; // clonde nodes for seach optimization
 
 const doTaskOnceInputIsDone = (task, time) => {
 	// clear timeout of undone task
@@ -36,65 +36,140 @@ const doTaskOnceInputIsDone = (task, time) => {
 
 doTaskOnceInputIsDone.TID = {};
 
-/**
- * Function Declaration
- */
+// ========== DISPLAY ==========
+const showDropdownList = () => {
+	filterDropdownListItems($('.searchbox').val());
+	$('#tagsearch-result').animate({ scrollTop: 0 }, 20);
+	// show and select the first item
+	$('#tagsearch-result').show();
+	$('li').first().addClass('selected');
+};
+
+const hideDropdownList = () => {
+	$('#tagsearch-result').hide();
+	$('li.selected').removeClass('selected');
+};
+
+const displayMessage = (message) => {
+	if ($('#statusboard').hasClass('entering')) {
+		$('#statusboard').removeClass('entering');
+	}
+	$('#statusboard').text(message);
+	$('#toolbox').hide();
+};
+
+const updateStatusBoard = (text) => {
+	const info = extractTextInfo(text.replace(String.fromCharCode(8203), ''));
+	$('#toolbox').hide();
+	$('#statusboard').html(`${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`);
+	if (!$('#statusboard').hasClass('entering')) {
+		$('#statusboard').addClass('entering');
+	}
+};
+
+// ========== TOGGLE ==========
+const toggleClearStackModal = (display = $('#clearstack-window.modal').hasClass('hidden') ? true : false) => {
+	if (display) {
+		$('#clearstack-window.modal').removeClass('hidden');
+	} else {
+		$('#clearstack-window.modal').addClass('hidden');
+	}
+};
+
+const toggleFileExportModal = (display = $('#fileexport-window.modal').hasClass('hidden') ? true : false) => {
+	if (display) {
+		$('#fileexport-window.modal').removeClass('hidden');
+	} else {
+		$('#fileexport-window.modal').addClass('hidden');
+	}
+};
+
+const toggleSortOrder = (sortingByNew) => {
+	if (sortingByNew) {
+		$('#sort').html('New <i class="material-icons">arrow_upward</i>');
+	} else {
+		$('#sort').html('Old <i class="material-icons">arrow_downward</i>');
+	}
+	// sort and save by sortable
+	sortable.sort(sortable.toArray().reverse());
+	sortable.save();
+	// save state
+	windowState.sortedByNew = sortingByNew;
+};
+
+const toggleEditorMode = (div, display = !$(div).attr('contentEditable') ? true : false) => {
+	if (display) {
+		$(div).attr('contentEditable', true);
+		$(div).focus();
+		// change visual styles
+		$(div).parent().addClass('editing');
+		$(div).next().hide(); // edit icon
+	} else {
+		$(div).attr('contentEditable', false);
+		// replace new lines with br tag
+		div.innerHTML = enableURLEmbededInText(div.innerText);
+		div.innerHTML = div.innerHTML.replace(/\n+$/i, '');
+		div.innerHTML = div.innerHTML.replace(/\n/gi, '<br>');
+		div.innerHTML = div.innerHTML.replace(String.fromCharCode(8203), '');
+		// change visual styles
+		$(div).parent().removeClass('editing');
+		$(div).next().show(); // edit icon
+	}
+};
+
 const updateSearchResult = () => {
-	let query = $('.searchbox').val().trim().toLowerCase();
+	const query = $('.searchbox').val().trim().toLowerCase();
 	let hits;
 
-	// save when the search result updated
-	windowState.searchQuery = query;
-
-	// if the query is a tag
 	if (query[0] === '#') {
+		// if the query is a tag
 		hits = filterNoteItemsByTag(query);
 		$('.separator').each((index, item) => {
 			if ($(item).find('.tag').text() === query) {
+				// display separators associated to the tag
 				if (item.classList.contains('filtered')) {
-					console.log('?????');
 					item.classList.remove('filtered');
 				}
 			}
 		});
-		//
 		$('.opener').show();
 	} else if (query === ':d') {
+		// search items with date tag
 		hits = filterNoteItemsWithDateTag(query);
 		$('.opener').hide();
 	} else {
+		// search note items
 		hits = filterNoteItems(query);
 		$('.opener').hide();
 	}
 	filterDropdownListItems(query);
 
+	// save sort order
 	sortable.save();
 
 	// change styles on search
 	if (query) {
-		// set text
-		$('#statusboard').text(hits === 0 ? 'No Results' : `${hits} of ${stack.length}`);
-		// show/hide
+		// hide toolbox and footer
 		$('#toolbox').hide();
-		$('.search-cancel-button').show();
 		$('footer').hide();
-
-		//
+		// show search result
+		$('#statusboard').text(hits === 0 ? 'No Results' : `${hits} of ${stack.length}`);
+		$('.search-cancel-button').show();
+		// show toolbox after a while
 		setTimeout(() => {
-			// reset
 			$('#statusboard').text('');
-			// show/hide
 			$('#toolbox').show();
 		}, 5000);
 	} else {
-		// reset
-		$('#statusboard').text('');
-		// show/hide
+		// set to the defalt
 		$('#toolbox').show();
-		$('.search-cancel-button').hide();
 		$('footer').show();
+		$('#statusboard').text('');
+		$('.search-cancel-button').hide();
 		hideDropdownList();
 	}
+	// save when the search result updated
+	windowState.searchQuery = query;
 };
 
 /**
@@ -296,12 +371,6 @@ const filterDropdownListItems = (query) => {
 const setDropdownListItems = () => {
 	// empty selections
 	$('#tagsearch-result').empty();
-	// $('#tagsearch-result').append(
-	// 	$('<li>', {
-	// 		addClass: 'placeholder',
-	// 		text: 'タグを選択してください'
-	// 	})
-	// );
 
 	// create list from tagStack
 	tagStack
@@ -393,12 +462,6 @@ const setDropdownListItems = () => {
 											$(elem).text(newTag);
 										}
 									});
-
-									// if (tagStack.findIndex((t) => t === newTag) === -1) {
-									// 	tagStack.splice(tagStack.findIndex((t) => t === oldTag), 1, newTag);
-									// } else {
-									// 	tagStack.splice(tagStack.findIndex((t) => t === oldTag), 1);
-									// }
 
 									if (tagStack.findIndex((t) => t.name === newTag) === -1) {
 										tagStack.find((t) => t.name === oldTag).name = newTag;
@@ -523,7 +586,6 @@ const setDropdownListItems = () => {
 	});
 };
 
-let tagSortable;
 /**
  * generate note item HTML
  */
@@ -614,10 +676,6 @@ const generateTagsHTML = (tagName) => {
 	} else {
 		tagsHTML = `<span class="tag">${tagName}</span>`;
 	}
-	// save tags for tag search
-	// if (!tagStack.includes(tagName)) {
-	// 	tagStack.push(tagName);
-	// }
 
 	if (!tagStack.find((t) => t.name === tagName)) {
 		tagStack.push({ id: uuidv4(), name: tagName });
@@ -766,7 +824,6 @@ const attachTagInputEvents = (stackWrapper) => {
 				}
 
 				// remove the tag from tagStack if there is no item with the tag
-				// tagStack.splice(tagStack.findIndex((t) => t === prevTagName), 1);
 				tagStack.splice(tagStack.findIndex((tag) => tag.name === prevTagName), 1);
 				$('.tag').each((index, item) => {
 					let tagRegex = new RegExp(`${escapeRegExp(prevTagName)}$`, 'i');
@@ -988,10 +1045,6 @@ const initializeEventListeners = () => {
 			}
 		});
 
-		// $('#textstack .tagadd').autocomplete({
-		// 	source: tagStack.map((item) => item.name)
-		// });
-
 		let tagSet = tagStack.map((item) => item.name).filter((tag) => isNaN(new Date(tag))).sort();
 
 		jQuery('#textstack .tagadd')
@@ -1046,9 +1099,6 @@ const initializeEventListeners = () => {
 		}
 	});
 
-	/**
-   * header events
-   */
 	/* dropdown list */
 	$('#tagsearch-result, header').on('mouseleave', hideDropdownList);
 
@@ -1155,7 +1205,7 @@ const initializeEventListeners = () => {
 					});
 
 				if (!windowState.sortedByNew) {
-					switchSortOrder(false);
+					toggleSortOrder(false);
 				}
 
 				stackDOM = document.querySelector('#textstack');
@@ -1231,7 +1281,7 @@ const initializeEventListeners = () => {
 	});
 
 	$('#sort').click(() => {
-		switchSortOrder(!windowState.sortedByNew);
+		toggleSortOrder(!windowState.sortedByNew);
 	});
 
 	$('.opener').hide();
@@ -1413,141 +1463,22 @@ const attachEventsToTextStack = () => {
 	});
 };
 
-/* search */
+// ==========  ==========
 const fireNoteSearch = (query) => {
 	$('.searchbox').val(query);
 	$('.searchbox').trigger('input');
 };
 
-// ========== DISPLAY ==========
-/**
- * 
- */
-const showDropdownList = () => {
-	// setDropdownListItems();
-
-	filterDropdownListItems($('.searchbox').val());
-	$('#tagsearch-result').animate({ scrollTop: 0 }, 20);
-
-	// show and select the first item
-	$('#tagsearch-result').show();
-	$('li').first().addClass('selected');
-};
-
-/**
- * 
- */
-const hideDropdownList = () => {
-	$('#tagsearch-result').hide();
-	$('li.selected').removeClass('selected');
-};
-
-/* clear stack window modal*/
-/**
- * 
- */
-const toggleClearStackModal = (display = $('#clearstack-window.modal').hasClass('hidden') ? true : false) => {
-	if (display) {
-		$('#clearstack-window.modal').removeClass('hidden');
-	} else {
-		$('#clearstack-window.modal').addClass('hidden');
-	}
-};
-
-const toggleFileExportModal = (display = $('#fileexport-window.modal').hasClass('hidden') ? true : false) => {
-	if (display) {
-		$('#fileexport-window.modal').removeClass('hidden');
-	} else {
-		$('#fileexport-window.modal').addClass('hidden');
-	}
-};
-
-/**
- * 
- */
-const toggleEditorMode = (div, display = !$(div).attr('contentEditable') ? true : false) => {
-	if (display) {
-		$(div).attr('contentEditable', true);
-		$(div).focus();
-
-		// change visual styles
-		$(div).parent().addClass('editing');
-		$(div).next().hide(); // edit icon
-	} else {
-		$(div).attr('contentEditable', false);
-
-		// replace new lines with br tag
-		div.innerHTML = enableURLEmbededInText(div.innerText);
-		div.innerHTML = div.innerHTML.replace(/\n+$/i, '');
-		div.innerHTML = div.innerHTML.replace(/\n/gi, '<br>');
-		div.innerHTML = div.innerHTML.replace(String.fromCharCode(8203), '');
-
-		// change visual styles
-		$(div).parent().removeClass('editing');
-		$(div).next().show(); // edit icon
-	}
-};
-
-/**
- * 
- */
-const displayMessage = (message) => {
-	if ($('#statusboard').hasClass('entering')) {
-		$('#statusboard').removeClass('entering');
-	}
-	$('#statusboard').text(message);
-	$('#toolbox').hide();
-};
-
-/**
- * 
- */
-const updateStatusBoard = (text) => {
-	$('#toolbox').hide();
-
-	let info = extractTextInfo(text.replace(String.fromCharCode(8203), ''));
-	$('#statusboard').html(`${info.wordCount} words<span class="inlineblock">${info.charCount} chars</span>`);
-
-	if (!$('#statusboard').hasClass('entering')) {
-		$('#statusboard').addClass('entering');
-	}
-};
-
-/**
- * 
- */
-const sortNotes = (sortingByNew) => {
-	// NEW
-	if (sortingByNew) {
-		$('#sort').html('New <i class="material-icons">arrow_upward</i>');
-		// OLD
-	} else {
-		$('#sort').html('Old <i class="material-icons">arrow_downward</i>');
-		$('#textstack').css('flexDirection', 'column');
-	}
-	let textStack = $('#textstack'); // your parent ul element
-	textStack.children().each(function(i, wrapper) {
-		textStack.prepend(wrapper);
+const replaceTagName = (prevTag, newTag) => {
+	// add item to stack
+	stack.forEach((item) => {
+		if (item.footnote.tags.includes(prevTag)) {
+			item.footnote.tags.splice(item.footnote.tags.findIndex((tag) => tag.name == prevTag), 1, newTag);
+		}
 	});
-
-	windowState.sortedByNew = sortingByNew;
+	stackStorage.set(JSON.stringify(stack));
 };
 
-const switchSortOrder = (sortingByNew) => {
-	// NEW
-	if (sortingByNew) {
-		$('#sort').html('New <i class="material-icons">arrow_upward</i>');
-		// OLD
-	} else {
-		$('#sort').html('Old <i class="material-icons">arrow_downward</i>');
-	}
-	sortable.sort(sortable.toArray().reverse());
-	sortable.save();
-
-	windowState.sortedByNew = sortingByNew;
-};
-
-// ========== EXPORT ==========
 /**
  * export the note items visible in the stack
  */
@@ -1749,7 +1680,6 @@ const createNoteItem = () => {
 		let wrapper = $(generateNoteItemHTML(note)).get(0);
 		attachTagInputEvents(wrapper);
 		attachNoteContentEvents(wrapper);
-		// $(dupNodes[0]).append(wrapper);
 		if (windowState.sortedByNew) {
 			$(shadowNodes[0]).prepend(wrapper);
 		} else {
@@ -1785,11 +1715,6 @@ const removeNoteItem = (noteItem) => {
 				if ($(item).text().match(tagRegex)) {
 					noTag = false;
 					return;
-					// 	// tagStack.push(tagName);
-
-					// 	tagStack.push({ id: uuidv4(), name: tagName });
-
-					// 	return false;
 				}
 			});
 			if (noTag) {
@@ -1855,19 +1780,6 @@ const clearAllItems = () => {
 		scrollY: 0,
 		sortedByNew: true
 	};
-};
-
-/**
- * 
- */
-const replaceTagName = (prevTag, newTag) => {
-	// add item to stack
-	stack.forEach((item) => {
-		if (item.footnote.tags.includes(prevTag)) {
-			item.footnote.tags.splice(item.footnote.tags.findIndex((tag) => tag.name == prevTag), 1, newTag);
-		}
-	});
-	stackStorage.set(JSON.stringify(stack));
 };
 
 /**
@@ -2023,8 +1935,6 @@ const importFromJsonFile = async (path) => {
 	});
 };
 
-let sortable;
-
 // ========== INITIALIZATION ==========
 document.addEventListener('DOMContentLoaded', () => {
 	sortable = Sortable.create(document.querySelector('#textstack'), {
@@ -2057,14 +1967,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	});
 
-	// 	importFromJsonFile("/importData.json").then(() => {
-	//   // convertDateToDateTimeFormat();
-	//   initializeEventListeners();
-	//   renderStack();
-	//   restorePreviousState();
-	//   setDropdownListItems();
-	// })
-
 	initializeEventListeners();
 	renderStack();
 
@@ -2073,31 +1975,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	setDropdownListItems();
 });
 
-/**
- * 
- */
-// const generateSeparatorHTML = ({ id, type, content, footnote, date }) => {
-// 	// add the most outer opening tag
-// 	let separatorHTML = `<div class="${type}" id="${id}">`;
-
-// 	// add content body
-// 	separatorHTML += `<input class="separatorInput disabled" placeholder="新規セパレータを作成" spellcheck="false" type="text" style="text-align:left;" value="${enableURLEmbededInText(
-// 		content
-// 	)}">`;
-// 	separatorHTML += `<div class="footnote hidden">`;
-
-// 	// add tags to footnote
-// 	if (typeof footnote.tags !== 'undefined') {
-// 		footnote.tags.forEach((tagName) => {
-// 			separatorHTML += `<span class="tag">${tagName}</span>`;
-// 		});
-// 	}
-
-// 	// add closing tags
-// 	separatorHTML += '</div></div>';
-
-// 	return separatorHTML;
-// };
 const generateSeparatorHTML = ({ id, type, content, footnote, date }) => {
 	// add the most outer opening tag
 	let separatorHTML = `<div class="${type}" id="${id}">`;
