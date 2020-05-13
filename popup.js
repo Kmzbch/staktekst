@@ -222,7 +222,7 @@ const updateSearchResult = () => {
 		});
 	} else if (query === ':d') {
 		// search items with date tag
-		hits = filterNoteItemsWithDateTag(query);
+		hits = filterNoteItemsByTag(query);
 	} else {
 		// search note items
 		hits = filterNoteItems(query);
@@ -259,16 +259,18 @@ const updateSearchResult = () => {
 	windowState.searchQuery = query;
 };
 
-/**
- * 
- */
-const filterNoteItemsByTag = (tagName) => {
-	if (tagName[0] === '#') {
-		tagName = tagName.substring(1);
-	}
-
+const filterNoteItemsByTag = (query) => {
 	let hits = 0;
-	const tagRegex = new RegExp(`^${escapeRegExp(tagName)}`, 'i');
+	let predicate;
+
+	if (query[0] === '#') {
+		// filter by tag
+		query = query.substring(1);
+		predicate = (q) => $(q).text().match(new RegExp(`^${escapeRegExp(query)}`, 'i'));
+	} else {
+		// filter by date
+		predicate = (q) => !isNaN(Date.parse($(q).text()));
+	}
 
 	$('#textstack').children().each((index, textItem) => {
 		// filter date item
@@ -276,7 +278,7 @@ const filterNoteItemsByTag = (tagName) => {
 			textItem.classList.add('filtered');
 		} else {
 			$(textItem).find('.tag').each((index, tag) => {
-				if ($(tag).text().match(tagRegex)) {
+				if (predicate(tag)) {
 					// filter date item
 					textItem.classList.remove('filtered');
 					hits++;
@@ -287,36 +289,13 @@ const filterNoteItemsByTag = (tagName) => {
 			});
 		}
 	});
+
 	$('#textstack').addClass('infilter');
 	$('.sepGenerator.hidden').removeClass('hidden');
 
 	return hits;
 };
 
-const filterNoteItemsWithDateTag = (dateTag) => {
-	let hits = 0;
-
-	$('#textstack').children().each((index, textItem) => {
-		if ($(textItem).hasClass('date')) {
-			textItem.classList.add('filtered');
-		} else {
-			$(textItem).find('.tag').each((index, tag) => {
-				if (!isNaN(Date.parse($(tag).text()))) {
-					textItem.classList.remove('filtered');
-					hits++;
-					return false;
-				} else {
-					textItem.classList.add('filtered');
-				}
-			});
-		}
-	});
-	return hits;
-};
-
-/**
- * 
- */
 const filterNoteItems = (term) => {
 	const stackDOM = document.querySelector('#textstack');
 	let termRegex;
@@ -1461,8 +1440,9 @@ const attachEventsToTextStack = () => {
 			} else {
 				// when hashtag clicked
 				if (!isNaN(Date.parse($(targetElem).html()))) {
-					filterNoteItemsWithDateTag('::d');
-					$('.searchbox').val('::d');
+					filterNoteItemsByTag(':d');
+
+					$('.searchbox').val(':d');
 
 					$('#statusboard').removeClass('entering');
 				} else {
