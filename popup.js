@@ -475,7 +475,7 @@ const setDropdownListItems = () => {
 
 					// events
 					editTagInput.keyup((e) => {
-						if (e.keyCode === 13) {
+						if (e.keyCode === Keys.ENTER) {
 							// ENTER
 							let newTag = e.target.value;
 							let oldTag = e.target.defaultValue;
@@ -787,7 +787,7 @@ const attachTagInputEvents = (stackWrapper) => {
 
 		let tagName = ev.target.value;
 
-		if (tagName[tagName.length - 1] === ' ' || ev.keyCode === 13) {
+		if (tagName[tagName.length - 1] === ' ' || ev.keyCode === Keys.ENTER) {
 			tagName = ev.target.value.trim();
 
 			if (tagName !== '') {
@@ -813,7 +813,6 @@ const attachTagInputEvents = (stackWrapper) => {
 				setDropdownListItems();
 
 				// insert before tag input
-				// TODO: rename divWrap class
 				let divWrap = $(stackWrapper).find('.divWrap');
 				divWrap.get(0).insertAdjacentHTML('beforebegin', tagsHTML);
 
@@ -822,7 +821,6 @@ const attachTagInputEvents = (stackWrapper) => {
 
 				// toggle divWrap visibility
 				if ($(stackWrapper).hasClass('clip')) {
-					// TODO: consider the use of jQuery toggle
 					if ($(stackWrapper).find('.tag').length >= 4) {
 						divWrap.addClass('hidden');
 					} else {
@@ -836,9 +834,7 @@ const attachTagInputEvents = (stackWrapper) => {
 					}
 				}
 			}
-		} else if (ev.keyCode === 8 && tagName === '') {
-			// TODO: refactor BACKSPACE event of tag input
-			// BACKSPACE
+		} else if (ev.keyCode === Keys.BACKSPACE && tagName === '') {
 			let tagInput = ev.target;
 			let prevTag = $(tagInput).parent().prev();
 
