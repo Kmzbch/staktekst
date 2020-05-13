@@ -946,6 +946,42 @@ input.disabled {
 	margin-left: 8px;
 }
 
+.removed {
+	color: black !important;
+	opacity: 0.5 !important;
+	text-decoration: line-through !important;
+}
+
+.removed input {
+	text-decoration: line-through !important;
+}
+
+#textstack .separator:hover .separatorCheckbox {
+	right: 5px !important;
+}
+
+.separator .separatorCheckbox:hover {
+	color: rgba(255, 255, 255, 0.3) !important;
+	padding: 0px;
+	margin-left: 8px;
+	cursor: pointer;
+	background-color: #3297fd;
+}
+
+.separator .separatorCheckbox {
+	color: rgba(0, 0, 0, 0);
+	/* position: absolute;
+	top: 37px;
+	right: 23px; */
+	float: right;
+	font-size: 16px !important;
+	border: 1px dotted lightgray;
+	border-radius: 10%;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	margin-left: 8px;
+}
+
 /* button styles*/
 #clearstack {
 	width: 350px;

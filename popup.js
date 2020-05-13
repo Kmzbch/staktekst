@@ -8,7 +8,6 @@ const background = chrome.extension.getBackgroundPage();
 // state variables
 let stack = [];
 let tagStack = [];
-
 let windowState = {
 	searchQuery: '',
 	scrollY: 0,
@@ -48,7 +47,6 @@ const updateSearchResult = () => {
 	windowState.searchQuery = query;
 
 	// if the query is a tag
-	// TODO: consider what special search tags to use
 	if (query[0] === '#') {
 		hits = filterNoteItemsByTag(query);
 		$('.separator').each((index, item) => {
@@ -2075,6 +2073,31 @@ document.addEventListener('DOMContentLoaded', () => {
 	setDropdownListItems();
 });
 
+/**
+ * 
+ */
+// const generateSeparatorHTML = ({ id, type, content, footnote, date }) => {
+// 	// add the most outer opening tag
+// 	let separatorHTML = `<div class="${type}" id="${id}">`;
+
+// 	// add content body
+// 	separatorHTML += `<input class="separatorInput disabled" placeholder="新規セパレータを作成" spellcheck="false" type="text" style="text-align:left;" value="${enableURLEmbededInText(
+// 		content
+// 	)}">`;
+// 	separatorHTML += `<div class="footnote hidden">`;
+
+// 	// add tags to footnote
+// 	if (typeof footnote.tags !== 'undefined') {
+// 		footnote.tags.forEach((tagName) => {
+// 			separatorHTML += `<span class="tag">${tagName}</span>`;
+// 		});
+// 	}
+
+// 	// add closing tags
+// 	separatorHTML += '</div></div>';
+
+// 	return separatorHTML;
+// };
 const generateSeparatorHTML = ({ id, type, content, footnote, date }) => {
 	// add the most outer opening tag
 	let separatorHTML = `<div class="${type}" id="${id}">`;
@@ -2082,7 +2105,7 @@ const generateSeparatorHTML = ({ id, type, content, footnote, date }) => {
 	// add content body
 	separatorHTML += `<input class="separatorInput disabled" placeholder="新規セパレータを作成" spellcheck="false" type="text" style="text-align:left;" value="${enableURLEmbededInText(
 		content
-	)}">`;
+	)}"><i class="material-icons separatorCheckbox">check</i>`;
 	separatorHTML += `<div class="footnote hidden">`;
 
 	// add tags to footnote
@@ -2092,16 +2115,13 @@ const generateSeparatorHTML = ({ id, type, content, footnote, date }) => {
 		});
 	}
 
-	separatorHTML += '</div>';
-
-	// add the most outer closing tag
-	separatorHTML += '</div>';
+	// add closing tags
+	separatorHTML += '</div></div>';
 
 	return separatorHTML;
 };
 
 const createSeparator = (targetWrapper = null) => {
-	console.log('asdf');
 	let query = $('.searchbox').val();
 
 	if (query[0] === '#' && query.substring(1) !== '') {
@@ -2142,17 +2162,6 @@ const createSeparator = (targetWrapper = null) => {
 };
 
 const attachSeparatorEvents = (stackwrapper) => {
-	$(stackwrapper).find('.separatorInput').on({
-		mouseover: (e) => {
-			if (e.ctrlKey && !$(e.target).hasClass('removing')) {
-				$(e.target).addClass('removing');
-			}
-		},
-		mouseout: (e) => {
-			$(e.target).removeClass('removing');
-		}
-	});
-
 	$(stackwrapper).find('.separatorInput').blur((ev) => {
 		ev.preventDefault();
 
@@ -2180,18 +2189,21 @@ const attachSeparatorEvents = (stackwrapper) => {
 		ev.target.classList.remove('disabled');
 	});
 
-	$(stackwrapper).find('.separatorInput').on('click', (ev) => {
+	$(stackwrapper).find('.separatorCheckbox').on('click', (ev) => {
 		let targetElem = ev.target;
-		if (ev.ctrlKey && $(targetElem).hasClass('removing')) {
+
+		// when checkbox clicked
+		$(targetElem).css('color', 'white !important');
+		$(targetElem).parent().addClass('removed');
+
+		setTimeout(() => {
 			// remove tag from footnote
 			let id = $(targetElem).parent().attr('id');
 			stack = stack.filter((item) => item.id !== id);
 			stackStorage.set(JSON.stringify(stack));
 			// remove item in the UI
 			$(targetElem).parent().remove();
-		} else {
-			$(ev.target).focus();
-		}
+		}, 450);
 	});
 
 	$(stackwrapper).find('.separatorInput').on('focus', (ev) => {
@@ -2204,7 +2216,7 @@ const attachSeparatorEvents = (stackwrapper) => {
 
 		let separatorName = ev.target.value;
 
-		if (ev.keyCode === 13) {
+		if (ev.keyCode === Keys.ENTER) {
 			separatorName = ev.target.value.trim();
 
 			if (separatorName !== '') {
@@ -2217,6 +2229,8 @@ const attachSeparatorEvents = (stackwrapper) => {
 
 				stack[index].content = separatorName;
 				stackStorage.set(JSON.stringify(stack));
+				console.log('asdf');
+				$(ev.target).trigger('blur');
 			}
 		}
 	});
