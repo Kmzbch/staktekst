@@ -1,7 +1,3 @@
-const config = {
-	CACHE_DURATION: 30000
-};
-
 // background.js instance
 const background = chrome.extension.getBackgroundPage();
 
@@ -150,6 +146,7 @@ const displayMessage = (message) => {
 const clearMessage = () => {
 	$('#statusboard').text('');
 	$('#toolbox').show();
+	$('#statusboard').removeClass('entering');
 };
 
 const updateStatusBoard = (text) => {
@@ -745,7 +742,32 @@ const generateTagsHTML = (tagName) => {
 	return tagsHTML;
 };
 
+const generateCurrentDateHTML = () => {
+	// insert current time
+	let now = new Date();
+	let hours = ('0' + now.getHours()).slice(-2);
+	let minutes = ('0' + now.getMinutes()).slice(-2);
+
+	return `<div class="date current">${formatDate() + ' ' + hours + ':' + minutes}</div>`;
+};
+
 // ========== Event attacher functions ==========
+const attachEventsAndClassesToNotes = () => {
+	// process DOMs after loaded
+	$('.separator').each((index, item) => {
+		item.classList.add('filtered');
+		attachSeparatorEvents(item);
+	});
+
+	// attach events
+	$('.stackwrapper').each((index, item) => {
+		attachTagInputEvents(item);
+		attachNoteContentEvents(item);
+	});
+
+	$('.sepGenerator').addClass('hidden');
+};
+
 const attachTagInputEvents = (stackWrapper) => {
 	// BLUR event
 	$(stackWrapper).find('.tagadd').blur((ev) => {
@@ -1003,12 +1025,7 @@ const attachNoteContentEvents = (wrapper) => {
 		return false;
 	});
 
-	contentDIV.addEventListener('focusout', (e) => {
-		$('#toolbox').show();
-		$('#statusboard').text('');
-		// TODO: rename entering class
-		$('#statusboard').removeClass('entering');
-	});
+	contentDIV.addEventListener('focusout', clearMessage);
 
 	// detect changes on content editable
 	wrapper.addEventListener('blur', fireChange);
@@ -1332,11 +1349,7 @@ const initializeEventListeners = () => {
 	});
 
 	window.addEventListener('keyup', (e) => {
-		if (e.keyCode === Keys.F5) {
-			renderStack();
-		} else if (e.ctrlKey && e.keyCode === Keys.FORWARD_SLASH) {
-			createSeparator();
-		} else if (e.ctrlKey && e.keyCode === Keys.ENTER) {
+		if (e.ctrlKey && e.keyCode === Keys.ENTER) {
 			// when another tag is on focus
 			if ($('.tagadd, .separatorInput').is(':focus')) {
 				return false;
@@ -1486,8 +1499,7 @@ const initializeEventListeners = () => {
 
 				$('.textstack').removeClass('infilter');
 				// show toolbox
-				$('#statusboard').text('');
-				$('#toolbox').show();
+				clearMessage();
 				$('.search-cancel-button').hide();
 				$('footer').show();
 				hideDropdownList();
@@ -1529,15 +1541,11 @@ const initializeEventListeners = () => {
 	});
 
 	/* file export */
-	// $('.export').click(exportNoteItemsAsTextFile);
 	$('.export').click(() => {
 		toggleFileExportModal(true);
 	});
 
-	$('#statusboard').click(() => {
-		$('#toolbox').show();
-		$('#statusboard').text('');
-	});
+	$('#statusboard').click(clearMessage);
 
 	$('#sort').click(() => {
 		toggleSortOrder(!windowState.sortedByNew);
@@ -1545,35 +1553,34 @@ const initializeEventListeners = () => {
 
 	attachEventsToTextStack();
 
-	/**
-   * footer
-   */
-
+	// footer
 	$('#clearstack').click(() => {
 		toggleClearStackModal(true);
 	});
+
 	$('#clearstack-window .overlay').click(() => {
 		toggleClearStackModal(false);
 	});
+
 	$('#clearstack-window .ok').click(() => {
 		clearAllItems();
 		toggleClearStackModal(false);
 	});
+
 	$('#clearstack-window .cancel').click(() => {
 		toggleClearStackModal(false);
 	});
 
-	/**
-   * modal windows
-   */
-
+	// modal window
 	$('#fileexport-window .overlay').click(() => {
 		toggleFileExportModal(false);
 	});
+
 	$('#fileexport-window .ok').click((e) => {
 		exportStack($(':checked').val());
 		toggleFileExportModal(false);
 	});
+
 	$('#fileexport-window .cancel').click(() => {
 		toggleFileExportModal(false);
 	});
@@ -1693,8 +1700,7 @@ const removeNoteItem = (noteItem) => {
 		let noTag = true;
 		tagsToRemove.forEach((tagName) => {
 			$('.tag').each((index, item) => {
-				let tagRegex = new RegExp(`${escapeRegExp(tagName)}`, 'i');
-
+				const tagRegex = new RegExp(`${escapeRegExp(tagName)}`, 'i');
 				if ($(item).text().match(tagRegex)) {
 					noTag = false;
 					return;
@@ -1705,15 +1711,15 @@ const removeNoteItem = (noteItem) => {
 				noTag = true;
 			}
 		});
+
+		// show toolbox
+		clearMessage();
+
+		// reset dropdownlist
 		chrome.storage.local.set({ tagStack: tagStack });
 		setDropdownListItems();
 
-		if (typeof sortable !== 'undefined') {
-			sortable.save();
-		}
-		// show toolbox
-		$('#toolbox').show();
-		$('#statusboard').text('');
+		sortable.save();
 
 		// for search optimization
 		if (shadowNodes[0]) {
@@ -1728,10 +1734,11 @@ const removeNoteItem = (noteItem) => {
 	}, 450);
 };
 
-const createSeparator = (targetWrapper = null) => {
-	let query = $('.searchbox').val();
+const createSeparator = (wrapper) => {
+	const query = $('.searchbox').val();
 
 	if (query[0] === '#' && query.substring(1) !== '') {
+		// add separator to stack
 		const separator = {
 			id: uuidv4(),
 			type: 'separator',
@@ -1741,30 +1748,18 @@ const createSeparator = (targetWrapper = null) => {
 				pageTitle: '',
 				pageURL: ''
 			},
-			// date: formatDate()
 			date: new Date().toISOString()
 		};
-		// add item to stack
 		stack.push(separator);
 		stackStorage.set(JSON.stringify(stack));
 
-		let wrapper = $(generateSeparatorHTML(separator)).get(0);
-		attachSeparatorEvents(wrapper);
+		// render the separator
+		const separatorDOM = $(generateSeparatorHTML(separator)).get(0);
+		$(separatorDOM).insertAfter(wrapper);
+		$(separatorDOM).find('input').focus();
 
-		// render
-		if (targetWrapper) {
-			$(wrapper).insertAfter(targetWrapper);
-		} else {
-			if (windowState.sortedByNew) {
-				$('#textstack').prepend(wrapper);
-			} else {
-				$('#textstack').append(wrapper);
-			}
-		}
-
+		attachSeparatorEvents(separatorDOM);
 		sortable.save();
-
-		$(wrapper).find('input').focus();
 	}
 };
 
@@ -1778,7 +1773,6 @@ const clearAllItems = () => {
 
 	// reset state variables
 	stack = [];
-	// tagStack = [ 'bookmark', 'clip', 'note' ];
 	tagStack = [
 		{
 			id: uuidv4(),
@@ -1802,17 +1796,20 @@ const clearAllItems = () => {
 	};
 };
 
+/**
+ * render text stack
+ */
 const renderStack = () => {
 	// remove all text items
 	$('#textstack').empty();
 
 	// read from storage
-	stackStorage.get((rawData) => {
-		if (typeof rawData === 'undefined') {
+	stackStorage.get((raw) => {
+		if (typeof raw === 'undefined') {
 			stackStorage.reset();
 		} else {
-			// read and sort stack
-			stack = JSON.parse(rawData);
+			// read and sort stack by date
+			stack = JSON.parse(raw);
 			stack.sort((a, b) => {
 				a = new Date(a.date);
 				b = new Date(b.date);
@@ -1820,20 +1817,20 @@ const renderStack = () => {
 				return a > b ? 1 : a < b ? -1 : 0;
 			});
 
-			// NORMAL MODE
+			const dateStack = [];
 			let notesHTML = '';
-			let dateStack = [];
-			stack.forEach((res, index) => {
-				let date = new Date(res.date);
-				let id = res.id;
 
+			// generate HTML and insert
+			stack.forEach((res, index) => {
+				const date = new Date(res.date);
+				const id = res.id;
 				// insert date between items
 				if (index === 0) {
 					notesHTML = `<div class="date">${formatDate(date)}</div>` + notesHTML;
 					dateStack.push({ id: id, date: date });
 				} else {
-					if (!isNaN(new Date(date))) {
-						if (formatDate(new Date(dateStack[dateStack.length - 1].date)) !== formatDate(new Date(date))) {
+					if (!isNaN(date)) {
+						if (formatDate(new Date(dateStack[dateStack.length - 1].date)) !== formatDate(date)) {
 							notesHTML = `<div class="date">${formatDate(date)}</div>` + notesHTML;
 							dateStack.push({ id: id, date: date });
 						}
@@ -1846,54 +1843,33 @@ const renderStack = () => {
 					notesHTML = generateNoteItemHTML(res) + notesHTML;
 				}
 			});
+			notesHTML = generateCurrentDateHTML() + notesHTML;
 
-			chrome.storage.local.set({ tagStack: tagStack });
-			setDropdownListItems();
-
-			// insert current time
-			let now = new Date();
-			let hours = ('0' + now.getHours()).slice(-2);
-			let minutes = ('0' + now.getMinutes()).slice(-2);
-
-			let currentDate = `<div class="date current">${formatDate() + ' ' + hours + ':' + minutes}</div>`;
-			notesHTML = currentDate + notesHTML;
-
-			// insert note items to stack
 			document.querySelector('#textstack').insertAdjacentHTML('afterbegin', notesHTML);
-
-			// process DOMs after loaded
-			$('.separator').each((index, item) => {
-				item.classList.add('filtered');
-				attachSeparatorEvents(item);
-			});
-
-			// attach events
-			$('.stackwrapper').each((index, item) => {
-				// console.log(item);
-				attachTagInputEvents(item);
-				// if ($(item).hasClass('note')) {
-				attachNoteContentEvents(item);
-				// }
-			});
-
-			$('.sepGenerator').addClass('hidden');
 
 			// clone the current stack for search optimization
 			shadowNodes.push(document.querySelector('#textstack').cloneNode(true));
+
+			//
+			attachEventsAndClassesToNotes();
+			setDropdownListItems();
 		}
 	});
 };
 
+/**
+ * restore the window state of last time popup.html was opened
+ */
 const restorePreviousState = () => {
+	const CACHE_DURATION = 30000;
+
 	chrome.storage.local.get([ 'searchQuery', 'scrollY', 'closedDateTime', 'sortedByNew' ], (state) => {
 		windowState = state;
 
 		const timeElapsed =
-			typeof state.closedDateTime !== 'undefined'
-				? new Date() - new Date(state.closedDateTime)
-				: config.CACHE_DURATION;
+			typeof state.closedDateTime !== 'undefined' ? new Date() - new Date(state.closedDateTime) : CACHE_DURATION;
 
-		if (timeElapsed < config.CACHE_DURATION) {
+		if (timeElapsed < CACHE_DURATION) {
 			// restore searchbox
 			if (typeof state.searchQuery !== 'undefined') {
 				if (state.searchQuery !== '') {
@@ -1922,6 +1898,7 @@ const restorePreviousState = () => {
 
 // ========== INITIALIZATION ==========
 document.addEventListener('DOMContentLoaded', () => {
+	// instanciate SortableJS
 	sortable = Sortable.create(document.querySelector('#textstack'), {
 		sort: false,
 		disabled: true,
@@ -1953,9 +1930,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 
 	initializeEventListeners();
+
 	renderStack();
 
 	restorePreviousState();
-
-	setDropdownListItems();
 });
