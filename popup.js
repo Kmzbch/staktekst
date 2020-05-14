@@ -1331,9 +1331,18 @@ const initializeEventListeners = () => {
 
 	window.onload = function() {
 		document.body.addEventListener('drag', (e) => {
-			if (e.clientY > 550) {
+			// if (e.clientY > 550) {
+			// 	window.scrollBy(0, 75);
+			// } else if (e.clientY < 100) {
+			// 	window.scrollBy(0, -75);
+			// }
+			if (e.clientY > 650) {
 				window.scrollBy(0, 75);
+			} else if (e.clientY > 550) {
+				window.scrollBy(0, 35);
 			} else if (e.clientY < 100) {
+				window.scrollBy(0, -35);
+			} else if (e.clientY < 50) {
 				window.scrollBy(0, -75);
 			}
 		});
