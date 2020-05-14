@@ -4,7 +4,7 @@ const background = chrome.extension.getBackgroundPage();
 // state variables
 let stack = [];
 let tagStack = [];
-let sortable; // SortableJS instance
+let sortable = null; // SortableJS instance
 let tagSortable; // SortableJS instance
 let windowState = {
 	searchQuery: '',
@@ -181,11 +181,19 @@ const toggleSortOrder = (sortingByNew) => {
 	} else {
 		$('#sort').html('Old <i class="material-icons">arrow_downward</i>');
 	}
-	// sort and save by sortable
-	sortable.sort(sortable.toArray().reverse());
-	sortable.save();
-	// save state
-	windowState.sortedByNew = sortingByNew;
+
+	if (sortable !== null) {
+		$(shadowNodes[0]).children().each(function(i, wrapper) {
+			$(shadowNodes[0]).prepend(wrapper);
+		});
+		windowState.sortedByNew = sortingByNew;
+		// reverse by SortableJS
+		sortable.sort(sortable.toArray().reverse());
+		sortable.save();
+	} else {
+		reverseStack();
+		windowState.sortedByNew = sortingByNew;
+	}
 };
 
 const toggleEditorMode = (div, display = !$(div).attr('contentEditable') ? true : false) => {
@@ -236,7 +244,9 @@ const updateSearchResult = () => {
 	filterDropdownListItems(query);
 
 	// save sort order
-	sortable.save();
+	if (sortable !== null) {
+		sortable.save();
+	}
 
 	// change styles on search
 	if (query) {
@@ -846,7 +856,9 @@ const attachNoteContentEvents = (wrapper) => {
 		if (e.target.classList.contains('sepGenerator')) {
 			if (!e.target.classList.contains('hidden')) {
 				createSeparator(wrapper);
-				sortable.save();
+				if (sortable !== null) {
+					sortable.save();
+				}
 			}
 			return false;
 		}
@@ -1057,7 +1069,9 @@ const attachEventsToTextStack = () => {
 			let textItem = $(targetElem).parent().parent().get(0);
 			removeNoteItem(textItem);
 			// save sort order
-			sortable.save();
+			if (sortable !== null) {
+				sortable.save();
+			}
 			// PSEUDOLINK
 		} else if ($(targetElem).hasClass('pseudolink')) {
 			// use span tag as a link
@@ -1348,7 +1362,9 @@ const initializeEventListeners = () => {
 				createNoteItem();
 
 				// save sort order
-				sortable.save();
+				if (sortable !== null) {
+					sortable.save();
+				}
 
 				const newNote = windowState.sortedByNew ? $('.content').first() : $('.content').last();
 				toggleEditorMode(newNote, true);
@@ -1380,12 +1396,25 @@ const initializeEventListeners = () => {
 					group: query.substring(1),
 					store: {
 						get: (sortable) => {
-							const order = localStorage.getItem(sortable.options.group.name);
-							return order ? order.split('|') : [];
+							let str = localStorage.getItem(sortable.options.group.name);
+							if (str) {
+								sortableState = JSON.parse(str);
+								let order = sortableState.order ? sortableState.order.split('|') : [];
+								if (windowState.sortedByNew !== sortableState.sortedByNew) {
+									order.reverse();
+								}
+								return order;
+							} else {
+								return [];
+							}
 						},
 						set: (sortable) => {
-							const order = sortable.toArray();
-							localStorage.setItem(sortable.options.group.name, order.join('|'));
+							let order = sortable.toArray();
+							let sortableState = {
+								sortedByNew: windowState.sortedByNew,
+								order: order.join('|')
+							};
+							localStorage.setItem(sortable.options.group.name, JSON.stringify(sortableState));
 						}
 					}
 				});
@@ -1428,17 +1457,8 @@ const initializeEventListeners = () => {
 				setTagAddAutoComplete($('#textstack .tagadd'));
 
 				// reset SortableJS instance
-				sortable = Sortable.create(document.querySelector('#textstack'), {
-					sort: false,
-					disabled: true,
-					delay: 150,
-					animation: 150,
-					dataIdAttr: 'id',
-					filter: '.date'
-				});
-
-				if (!windowState.sortedByNew) {
-					toggleSortOrder(false);
+				if (sortable) {
+					sortable = null;
 				}
 
 				stackDOM = document.querySelector('#textstack');
@@ -1477,7 +1497,9 @@ const initializeEventListeners = () => {
 		createNoteItem();
 
 		// save sort order
-		sortable.save();
+		if (sortable !== null) {
+			sortable.save();
+		}
 
 		const newNote = windowState.sortedByNew ? $('.content').first() : $('.content').last();
 		toggleEditorMode(newNote, true);
@@ -1795,7 +1817,16 @@ const restorePreviousState = () => {
 				windowState.sortedByNew = state.sortedByNew;
 				if (!windowState.sortedByNew) {
 					$('#sort').html('Old <i class="material-icons">arrow_downward</i>');
-					sortable.sort(sortable.toArray().reverse());
+					if (sortable !== null) {
+						$(shadowNodes[0]).children().each(function(i, wrapper) {
+							$(shadowNodes[0]).prepend(wrapper);
+						});
+
+						sortable.sort(sortable.toArray());
+						sortable.save();
+					} else {
+						reverseStack();
+					}
 				}
 			}
 			// restore scrollY
@@ -1806,16 +1837,19 @@ const restorePreviousState = () => {
 	});
 };
 
-// ========== INITIALIZATION ==========
-document.addEventListener('DOMContentLoaded', () => {
-	// instanciate SortableJS
-	sortable = Sortable.create(document.querySelector('#textstack'), {
-		sort: false,
-		disabled: true,
-		dataIdAttr: 'id',
-		filter: '.date'
+const reverseStack = () => {
+	let textStack = $('#textstack'); // your parent ul element
+	textStack.children().each(function(i, wrapper) {
+		textStack.prepend(wrapper);
 	});
 
+	$(shadowNodes[0]).children().each(function(i, wrapper) {
+		$(shadowNodes[0]).prepend(wrapper);
+	});
+};
+
+// ========== INITIALIZATION ==========
+document.addEventListener('DOMContentLoaded', () => {
 	chrome.storage.local.get('tagStack', (res) => {
 		if (typeof res.tagStack === 'undefined' || res.tagStack.length === 0) {
 			tagStack = [
