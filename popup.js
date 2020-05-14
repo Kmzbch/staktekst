@@ -1198,16 +1198,17 @@ const attachListItemEvents = (liItem) => {
 		click: (e) => {
 			if (e.target.classList.contains('tagedit')) {
 				e.preventDefault();
+				const liSelected = $(e.target).parent();
 
-				const liSelected = $('#tagsearch-result .selected');
 				const tagName = $(liSelected).find('.tageditInput').val();
 
 				// turn on tageditInput
 				$(e.target).hide();
 				$(liSelected).find('span').hide();
 				$(liSelected).find('.tageditInput').show();
-				$(liSelected).find('.tageditInput').focus();
+				$(liSelected).find('.tageditInput').val(''); // to set caret at the end of text
 				$(liSelected).find('.tageditInput').val(tagName);
+				$(liSelected).find('.tageditInput').focus();
 
 				return false;
 			} else if (!e.target.classList.contains('tageditInput')) {
@@ -1295,10 +1296,11 @@ const attachListItemEvents = (liItem) => {
 					if ($('.searchbox').val() !== '') {
 						$('.searchbox').val('#' + newTag);
 						windowState.searchQuery = '#' + newTag;
+						fireSearch('#' + newTag);
 					}
 				}
 			}
-			setDropdownListItems();
+			// setDropdownListItems();
 		}
 	});
 
