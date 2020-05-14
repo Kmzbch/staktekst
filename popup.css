@@ -446,6 +446,10 @@ footer {
 }
 
 /* sort styles */
+/* #sort span {
+	visibility: none;
+} */
+
 #sort:hover {
 	opacity: 0.8;
 	cursor: pointer;

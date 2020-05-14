@@ -177,9 +177,15 @@ const toggleFileExportModal = (display = $('#fileexport-window.modal').hasClass(
 
 const toggleSortOrder = (sortingByNew) => {
 	if (sortingByNew) {
-		$('#sort').html('New <i class="material-icons">arrow_upward</i>');
+		$('#sort').html('<span class="sortText">New </span><i class="material-icons">arrow_upward</i>');
 	} else {
-		$('#sort').html('Old <i class="material-icons">arrow_downward</i>');
+		$('#sort').html('<span class="sortText">Old </span><i class="material-icons">arrow_downward</i>');
+	}
+
+	if ($('.searchbox').val() !== '' && $('.searchbox').val()[0] === '#') {
+		$('#sort .sortText').hide();
+	} else {
+		$('#sort .sortText').show();
 	}
 
 	if (sortable !== null) {
@@ -1454,8 +1460,11 @@ const initializeEventListeners = () => {
 
 			// optimization for reset search
 			if (queryLength > 0 || $('#textstack').hasClass('viewmode')) {
+				$('#sort .sortText').hide();
 				doAfterInputIsDone(updateSearchResult, waittime);
 			} else {
+				$('#sort .sortText').show();
+
 				// reset task
 				doAfterInputIsDone.TID = {};
 
@@ -1825,7 +1834,7 @@ const restorePreviousState = () => {
 			} else {
 				windowState.sortedByNew = state.sortedByNew;
 				if (!windowState.sortedByNew) {
-					$('#sort').html('Old <i class="material-icons">arrow_downward</i>');
+					$('#sort').html('<span class="sortText">Old </span><i class="material-icons">arrow_downward</i>');
 					if (sortable !== null) {
 						$(shadowNodes[0]).children().each(function(i, wrapper) {
 							$(shadowNodes[0]).prepend(wrapper);
