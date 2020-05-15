@@ -1079,6 +1079,86 @@ input.disabled {
 }
 
 /* ----- Customized Third-party library styles ----- */
+/**/
+/* @font-face {
+	font-family: "Material Design Icons";
+	src: url("chrome-extension://__MSG_@@extension_id__/webfonts/materialdesignicons-webfont.eot");
+	src: url("chrome-extension://__MSG_@@extension_id__/webfonts/materialdesignicons-webfont.eot#iefix")
+			format("embedded-opentype"),
+		url("chrome-extension://__MSG_@@extension_id__/webfonts/materialdesignicons-webfont.woff2") format("woff2"),
+		url("chrome-extension://__MSG_@@extension_id__/webfonts/materialdesignicons-webfont.woff") format("woff"),
+		url("chrome-extension://__MSG_@@extension_id__/webfonts/materialdesignicons-webfont.ttf") format("truetype");
+	font-weight: normal;
+	font-style: normal;
+} */
+
+.mdi {
+	color: white;
+	font-size: 20px;
+}
+.mdi::before {
+	font-size: 24px;
+	line-height: 14px;
+}
+.btn .mdi::before {
+	position: relative;
+	top: 4px;
+}
+.btn-xs .mdi::before {
+	font-size: 18px;
+	top: 3px;
+}
+.btn-sm .mdi::before {
+	font-size: 18px;
+	top: 3px;
+}
+.dropdown-menu .mdi {
+	width: 18px;
+}
+.dropdown-menu .mdi::before {
+	position: relative;
+	top: 4px;
+	left: -8px;
+}
+.nav .mdi::before {
+	position: relative;
+	top: 4px;
+}
+.navbar .navbar-toggle .mdi::before {
+	position: relative;
+	top: 4px;
+	color: #fff;
+}
+.breadcrumb .mdi::before {
+	position: relative;
+	top: 4px;
+}
+.breadcrumb a:hover {
+	text-decoration: none;
+}
+.breadcrumb a:hover span {
+	text-decoration: underline;
+}
+.alert .mdi::before {
+	position: relative;
+	top: 4px;
+	margin-right: 2px;
+}
+.input-group-addon .mdi::before {
+	position: relative;
+	top: 3px;
+}
+.navbar-brand .mdi::before {
+	position: relative;
+	top: 2px;
+	margin-right: 2px;
+}
+.list-group-item .mdi::before {
+	position: relative;
+	top: 3px;
+	left: -3px;
+}
+
 /* Font Awesome */
 @font-face {
 	font-family: 'Font Awesome 5 Brands';

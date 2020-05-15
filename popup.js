@@ -1853,6 +1853,13 @@ const restorePreviousState = () => {
 			if (typeof state.scrollY !== 'undefined') {
 				window.scrollTo(0, state.scrollY);
 			}
+		} else {
+			windowState = {
+				searchQuery: '',
+				scrollY: 0,
+				sortedByNew: true,
+				closedDateTime: new Date().toISOString()
+			};
 		}
 	});
 };
