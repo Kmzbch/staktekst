@@ -192,6 +192,7 @@ html {
 	height: 700px;
 	box-sizing: border-box;
 	background: rgba(0, 0, 0, 0.25);
+	scroll-behavior: smooth;
 }
 
 /* container element styles */
@@ -495,11 +496,21 @@ footer {
 	font-size: 16px !important;
 }
 
+.date a:hover {
+	color: blue;
+	text-decoration: underline;
+}
+.date a {
+	color: rgba(0, 0, 0, 0.7);
+	text-decoration: none;
+}
 .date {
 	color: rgba(0, 0, 0, 0.7);
 	text-align: center;
 	font-size: 16px;
 	margin: 8px;
+	-moz-user-select: none;
+	user-select: none;
 }
 
 .sepGenerator:hover {
@@ -955,6 +966,11 @@ input.disabled {
 	-webkit-user-select: none;
 	-moz-user-select: none;
 	margin-left: 8px;
+}
+
+.removed .checkbox {
+	color: white !important;
+	opacity: 1 !important;
 }
 
 .removed {

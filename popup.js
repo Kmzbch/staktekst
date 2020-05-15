@@ -4,6 +4,7 @@ const background = chrome.extension.getBackgroundPage();
 // state variables
 let stack = [];
 let tagStack = [];
+let dateStack = [];
 let sortable = null; // SortableJS instance
 let tagSortable; // SortableJS instance
 let windowState = {
@@ -489,6 +490,9 @@ const setTagAddAutoComplete = (jqueryDOM) => {
 			},
 			select: function(event, ui) {
 				jqueryDOM.val(ui.item.name);
+			},
+			close: function() {
+				$(this).blur();
 			}
 		})
 		.dblclick(function() {
@@ -503,8 +507,8 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 
 	// add content body
 	noteItemHTML += `<div class='content'>${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div>`;
-	noteItemHTML += `<i class="material-icons edit">edit</i>`;
-	noteItemHTML += `<div><i class="material-icons checkbox">check</i></div>`;
+	noteItemHTML += `<i title="ノートを編集" class="material-icons edit">edit</i>`;
+	noteItemHTML += `<div><i title="ノートを削除" class="material-icons checkbox">check</i></div>`;
 	noteItemHTML += `<input type="hidden" value="${id}">`;
 	noteItemHTML += `<input class='itemDate' type='hidden' value="${date}">`;
 	noteItemHTML += `<div class="spacer"></div>`;
@@ -514,7 +518,7 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 		noteItemHTML += `<div class="footnote"><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span>`;
 		noteItemHTML += `<span class="tag type clip">clip</span>`;
 	} else {
-		noteItemHTML += `<div class="footnote"><span class="tag type">${type}</span>`;
+		noteItemHTML += `<div class="footnote"><span title="タグを検索" class="tag type">${type}</span>`;
 	}
 
 	// add tags to footnote
@@ -532,7 +536,7 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 
 	// hide tag input if the note has more than 4 tags;
 	const classes = footnote.tags.length < 3 ? 'divWrap' : 'divWrap hidden';
-	noteItemHTML += `<div class="${classes}"><input type="text" class="tagadd"></div>`;
+	noteItemHTML += `<div class="${classes}"><input title="タグを追加" type="text" class="tagadd"></div>`;
 
 	// add the closing tag of footnote
 	noteItemHTML += '</div>';
@@ -583,25 +587,25 @@ const generateTagsHTML = (tagName) => {
 
 	if (tagName.match(/pinned|📌/i)) {
 		// pinned
-		tagsHTML = `<span class="tag pinned emoji">${tagName}</span>`;
+		tagsHTML = `<span title="タグを検索" class="tag pinned emoji">${tagName}</span>`;
 	} else if (tagName.match(/fav|★|☆|✭|⭐/i)) {
 		// favourite
 		// tagsHTML = `<span class="tag fav">${tagName}</span>`
-		tagsHTML = `<span class="tag fav">⭐</span>`;
+		tagsHTML = `<span title="タグを検索"  class="tag fav">⭐</span>`;
 	} else if (tagName.match(/like|♡|💛|♥|❤/i)) {
 		// likes
 		// tagsHTML = `<span class="tag like">${tagName}</span>`
-		tagsHTML = `<span class="tag like">❤</span>`;
+		tagsHTML = `<span title="タグを検索"  class="tag like">❤</span>`;
 	} else if (tagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu)) {
 		// emoji
-		tagsHTML = `<span class="tag emoji">${tagName}</span>`;
+		tagsHTML = `<span title="タグを検索"  class="tag emoji">${tagName}</span>`;
 	} else if (tagName === 'today') {
-		tagsHTML = `<span class="tag tagDate">${formatDate()}</span>`;
+		tagsHTML = `<span title="タグを検索"  class="tag tagDate">${formatDate()}</span>`;
 	} else if (!isNaN(new Date(tagName))) {
 		// datetag
-		tagsHTML = `<span class="tag tagDate">${tagName}</span>`;
+		tagsHTML = `<span title="タグを検索"  class="tag tagDate">${tagName}</span>`;
 	} else {
-		tagsHTML = `<span class="tag">${tagName}</span>`;
+		tagsHTML = `<span title="タグを検索"  class="tag">${tagName}</span>`;
 	}
 
 	// push the tag to stack if it has not yet
@@ -618,7 +622,7 @@ const generateCurrentDateHTML = () => {
 	const hours = ('0' + now.getHours()).slice(-2);
 	const minutes = ('0' + now.getMinutes()).slice(-2);
 
-	return `<div class="date current">${formatDate() + ' ' + hours + ':' + minutes}</div>`;
+	return `<div id="current" class="date current">${formatDate() + ' ' + hours + ':' + minutes}</div>`;
 };
 
 const generateListItemHTML = (tag) => {
@@ -665,6 +669,27 @@ const attachEventsAndClassesToNotes = () => {
 	});
 
 	$('.sepGenerator').addClass('hidden');
+
+	$('.date a').click((e) => {
+		e.preventDefault();
+		let index = dateStack.findIndex((date) => formatDate(date) === $(e.target).parent().attr('id'));
+		let nextDate = windowState.sortedByNew ? dateStack[index - 1] : dateStack[index + 1];
+
+		if (windowState.sortedByNew) {
+			if (index === 0) {
+				location.href = '#' + 'current';
+			} else {
+				location.href = '#' + formatDate(new Date(nextDate));
+				// window.scrollBy(0, -530);
+			}
+		} else {
+			if (index === dateStack.length - 1) {
+				location.href = '#' + formatDate(new Date(dateStack[0]));
+			} else {
+				location.href = '#' + formatDate(new Date(nextDate));
+			}
+		}
+	});
 };
 
 const attachTagInputEvents = (stackWrapper) => {
@@ -1535,17 +1560,19 @@ const initializeEventListeners = () => {
 	});
 
 	/* view mode */
-	$('.view').click(() => {
+	$('.view').click((e) => {
 		if ($('#textstack').hasClass('viewmode')) {
 			$('#textstack').removeClass('viewmode');
 			$('#toolbox').removeClass('viewmode');
 			$('.view').removeClass('viewmode');
+			$(e.target).attr('title', '重要なノートを表示');
 			fireSearch('');
 		} else {
 			fireSearch('');
 			$('.view').addClass('viewmode');
 			$('#textstack').addClass('viewmode');
 			$('#toolbox').addClass('viewmode');
+			$(e.target).attr('title', '重要なノート表示を解除');
 		}
 	});
 
@@ -1779,7 +1806,6 @@ const renderStack = () => {
 				return a > b ? 1 : a < b ? -1 : 0;
 			});
 
-			const dateStack = [];
 			let notesHTML = '';
 
 			// generate HTML and insert
@@ -1788,13 +1814,20 @@ const renderStack = () => {
 				const id = res.id;
 				// insert date between items
 				if (index === 0) {
-					notesHTML = `<div class="date">${formatDate(date)}</div>` + notesHTML;
-					dateStack.push({ id: id, date: date });
+					notesHTML =
+						`<div id="${formatDate(date)}" class="date"><a href="#current">${formatDate(date)}</a></div>` +
+						notesHTML;
+					dateStack.push(date);
 				} else {
 					if (!isNaN(date)) {
-						if (formatDate(new Date(dateStack[dateStack.length - 1].date)) !== formatDate(date)) {
-							notesHTML = `<div class="date">${formatDate(date)}</div>` + notesHTML;
-							dateStack.push({ id: id, date: date });
+						let dateStr = formatDate(new Date(dateStack[dateStack.length - 1]));
+						if (dateStr !== formatDate(date)) {
+							// notesHTML = `<div class="date">${formatDate(date)}</div>` + notesHTML;
+							notesHTML =
+								`<div id="${formatDate(date)}" class="date"><a title="日付を移動" href="#">${formatDate(
+									date
+								)}</a></div>` + notesHTML;
+							dateStack.push(date);
 						}
 					}
 				}
