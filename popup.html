@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Staktekst</title>
+  <title>__MSG_ext_name__</title>
   <!-- custom styles -->
   <link rel="stylesheet" href="currentTab.css" type='text/css' />
   <link rel="stylesheet" href="popup.css" type='text/css' />
@@ -19,26 +19,26 @@
   <div id="clearstack-window" class="modal hidden">
     <div class='overlay'></div>
     <div id='clearstack-messagebox'>
-      <h4>スタックのクリア</h4>
-      過去の保存データがすべて削除されます。<br>クリアしますか？
+      <h4>__MSG_label_clear_title__</h4>
+      __MSG_label_clear_msg__
       <div class='button-container'>
-        <button class='ok'>OK</button>
-        <button class='cancel'>キャンセル</button>
+        <button class='ok'>__MSG_button_label_ok__</button>
+        <button class='cancel'>__MSG_button_label_cancel__</button>
       </div>
     </div>
   </div>
   <div id="fileexport-window" class="modal hidden">
     <div class='overlay'></div>
     <div id='fileexport-messagebox'>
-      <h4>ファイルのエクスポート</h4>
-      表示中のノートをファイルに保存します。<br>フォーマットを選択してください。
+      <h4>__MSG_label_fileexport_title__</h4>
+      __MSG_label_fileexport_msg__
       <div class="radio-container">
-        <input type="radio" id="txt" name="format" value="txt" checked><label for="txt">テキストファイル(*.txt)</label><br>
-        <input type="radio" id="json" name="format" value="json"><label for="json">JSONフォーマット(*.json)</label><br>
+        <input type="radio" id="txt" name="format" value="txt" checked><label for="txt">__MSG_label_filetype_txt__</label><br>
+        <input type="radio" id="json" name="format" value="json"><label for="json">__MSG_label_filetype_json__</label><br>
       </div>
       <div class='button-container'>
-        <button class='ok'>OK</button>
-        <button class='cancel'>キャンセル</button>
+        <button class='ok'>__MSG_button_label_ok__</button>
+        <button class='cancel'>__MSG_button_label_cancel__</button>
       </div>
     </div>
   </div>
@@ -49,27 +49,25 @@
     <header class="sticky">
       <div id="search">
         <label class="searchlabel material-icons">search</label>
-        <input class="searchbox" type="search" autofocus="true" spellcheck="false" placeholder="キーワード検索" />
-        <i title="消去" class="search-cancel-button material-icons" style="display: none;">cancel</i>
+        <input class="searchbox" type="search" autofocus="true" spellcheck="false" placeholder="__MSG_searchbox_placeholder__" />
+        <i title="__MSG_searchbox_cancel__" class="search-cancel-button material-icons" style="display: none;">cancel</i>
         <ul id="tagsearch-result">
         </ul>
       </div>
       <div id="toolbox">
-        <i title="新規ノートを作成" class="create material-icons">post_add</i>
-        <i title="重要なノートを表示"" class="view material-icons">priority_high</i>
-        <!-- <i class="mdi mdi-alpha-v-box" ></i>         -->
-        <!-- <i class="view emoji-icons">📌</i> -->
-        <i title="ファイルにエクスポート" class="export material-icons">get_app</i>
+        <i title="__MSG_hint_createnew__" class="create material-icons">post_add</i>
+        <i title="__MSG_hint_showimportant__" class="view material-icons">priority_high</i>
+        <i title="__MSG_hint_fileexport__" class="export material-icons">get_app</i>
       </div>
       <div id="statusboard"></div>
     </header>
     <div id="main">
-      <div id="sort"><span class="sortText">New </span><i title="ノートを並び替え" class="material-icons">arrow_upward</i></div>
+      <div id="sort"><span class="sortText">New </span><i title="__MSG_hint_toggleorder__" class="material-icons">arrow_upward</i></div>
       <div id="textstack">
       </div>
     </div>
     <footer class="sticky">
-      <button id="clearstack">スタックを空にする</button>
+      <button id="clearstack">__MSG_button_label_clear__</button>
     </footer>
   </div>
   <!-- third-party libraries -->

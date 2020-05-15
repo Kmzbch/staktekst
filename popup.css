@@ -329,6 +329,8 @@ footer {
 
 #tagsearch-result li.selected {
 	background: rgba(0, 0, 0, 0.15) !important;
+	/* background: lemonchiffon; */
+
 	font-weight: bold;
 }
 
@@ -792,8 +794,15 @@ input.disabled {
 	/* border-bottom: 1px solid lightgray; */
 }
 
+input.tageditInput[type="text"]:focus {
+	padding: 4px;
+	background: lemonchiffon;
+	/* background: none; */
+}
 .tageditInput:focus {
-	color: rgba(0, 0, 0, 0.6);
+	color: blue;
+	/* color: rgba(0, 0, 0, 0.6); */
+	/* color: blue; */
 	overflow: visible;
 	width: 90%;
 	background: none;
@@ -804,7 +813,7 @@ input.disabled {
 .tageditInput::placeholder {
 	color: tomato;
 	text-decoration: underline;
-	font-weight: normal;
+	font-weight: bold;
 }
 
 .footnote {
@@ -1113,10 +1122,26 @@ input.disabled {
 } */
 
 .mdi {
-	color: white;
-	font-size: 20px;
+	/* color: white;
+	font-size: 20px; */
+
+	top: -6px !important;
+	left: 6px !important;
+	font-weight: normal !important;
+	font-style: normal !important;
+	font-size: 22px !important;
+	line-height: 1 !important;
+	letter-spacing: normal !important;
+	text-transform: none !important;
+	display: inline-block !important;
+	white-space: nowrap !important;
+	word-wrap: normal !important;
+	direction: ltr !important;
+	-webkit-font-feature-settings: 'liga' !important;
+	-webkit-font-smoothing: antialiased !important;
 }
-.mdi::before {
+
+/* .mdi::before {
 	font-size: 24px;
 	line-height: 14px;
 }
@@ -1177,7 +1202,7 @@ input.disabled {
 	position: relative;
 	top: 3px;
 	left: -3px;
-}
+} */
 
 /* Font Awesome */
 @font-face {

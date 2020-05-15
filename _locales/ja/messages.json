@@ -1,0 +1,36 @@
+{
+	"ext_name": { "message": "積んテク" },
+	"ext_desc": { "message": "Web上のテキストをかんたんに検索・保存・閲覧できる読み書き支援ツール" },
+
+	"html_lang": { "message": "en" },
+	"button_label_ok": { "message": "OK" },
+	"button_label_cancel": { "message": "キャンセル" },
+
+	"button_label_clear": { "message": "スタックを空にする" },
+	"label_clear_title": { "message": "スタックのクリア" },
+	"label_clear_msg": { "message": "過去の保存データがすべて削除されます。<br>クリアしますか？" },
+
+	"hint_fileexport": { "message": "ファイルにエクスポート" },
+	"label_fileexport_title": { "message": "ノートのエクスポート" },
+	"label_fileexport_msg": { "message": "表示中のノートをファイルに保存します。<br>フォーマットを選択してください。" },
+	"label_filetype_txt": { "message": "テキストファイル(*.txt)" },
+	"label_filetype_json": { "message": "JSONフォーマット(*.json)" },
+
+	"searchbox_placeholder": { "message": "キーワード検索" },
+	"searchbox_cancel": { "message": "消去" },
+
+	"hint_createnew": { "message": "新規ノートを作成" },
+	"hint_showimportant": { "message": "重要なノートを表示" },
+	"hint_toggleorder": { "message": "ノートを並び替え" },
+
+	"hint_editnote": { "message": "ノートを編集" },
+	"hint_removenote": { "message": "ノートを削除" },
+	"hint_addtag": { "message": "タグを追加" },
+
+	"hint_searchtag": { "message": "タグを検索" },
+	"hint_createseparator": { "message": "セパレータを新規作成" },
+	"hint_edittag": { "message": "タグを編集" },
+
+	"hint_removetag": { "message": "Enterキーでタグを削除" },
+	"label_noresult_msg": { "message": "見つかりませんでした。" }
+}

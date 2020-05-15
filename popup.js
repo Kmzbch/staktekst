@@ -15,6 +15,24 @@ let windowState = {
 let shadowNodes = []; // clonde nodes for seach optimization
 
 // ========== UTILITIES ==========
+// https://stackoverflow.com/questions/25467009/internationalization-of-html-pages-for-my-google-chrome-extension/39810769
+const localizeHtmlPage = () => {
+	//Localize by replacing __MSG_***__ meta tags
+	var objects = document.getElementsByTagName('html');
+	for (var j = 0; j < objects.length; j++) {
+		var obj = objects[j];
+
+		var valStrH = obj.innerHTML.toString();
+		var valNewH = valStrH.replace(/__MSG_(\w+)__/g, function(match, v1) {
+			return v1 ? chrome.i18n.getMessage(v1) : '';
+		});
+
+		if (valNewH != valStrH) {
+			obj.innerHTML = valNewH;
+		}
+	}
+};
+
 const importNotesFromJSON = async (path) => {
 	const URL = chrome.runtime.getURL(path);
 	$.getJSON(URL, (data) => {
@@ -134,6 +152,7 @@ const showDropdownList = () => {
 const hideDropdownList = () => {
 	$('#tagsearch-result').hide();
 	$('li.selected').removeClass('selected');
+	tagSortable.save();
 };
 
 const displayMessage = (message) => {
@@ -507,8 +526,10 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 
 	// add content body
 	noteItemHTML += `<div class='content'>${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div>`;
-	noteItemHTML += `<i title="ノートを編集" class="material-icons edit">edit</i>`;
-	noteItemHTML += `<div><i title="ノートを削除" class="material-icons checkbox">check</i></div>`;
+	noteItemHTML += `<i title="${chrome.i18n.getMessage('hint_editnote')}" class="material-icons edit">edit</i>`;
+	noteItemHTML += `<div><i title="${chrome.i18n.getMessage(
+		'hint_removenote'
+	)}" class="material-icons checkbox">check</i></div>`;
 	noteItemHTML += `<input type="hidden" value="${id}">`;
 	noteItemHTML += `<input class='itemDate' type='hidden' value="${date}">`;
 	noteItemHTML += `<div class="spacer"></div>`;
@@ -518,7 +539,9 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 		noteItemHTML += `<div class="footnote"><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span>`;
 		noteItemHTML += `<span class="tag type clip">clip</span>`;
 	} else {
-		noteItemHTML += `<div class="footnote"><span title="タグを検索" class="tag type">${type}</span>`;
+		noteItemHTML += `<div class="footnote"><span title="${chrome.i18n.getMessage(
+			'hint_searchtag'
+		)}" class="tag type">${type}</span>`;
 	}
 
 	// add tags to footnote
@@ -536,7 +559,9 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 
 	// hide tag input if the note has more than 4 tags;
 	const classes = footnote.tags.length < 3 ? 'divWrap' : 'divWrap hidden';
-	noteItemHTML += `<div class="${classes}"><input title="タグを追加" type="text" class="tagadd"></div>`;
+	noteItemHTML += `<div class="${classes}"><input title="${chrome.i18n.getMessage(
+		'hint_addtag'
+	)}" type="text" class="tagadd"></div>`;
 
 	// add the closing tag of footnote
 	noteItemHTML += '</div>';
@@ -560,7 +585,9 @@ const generateSeparatorHTML = ({ id, type, content, footnote, date }) => {
 	let separatorHTML = `<div class="${type}" id="${id}">`;
 
 	// add body HTML
-	separatorHTML += `<input class="separatorInput" type="text" value="${content}" placeholder="セパレータを新規作成" spellcheck="false">`;
+	separatorHTML += `<input class="separatorInput" type="text" value="${content}" placeholder="${chrome.i18n.getMessage(
+		'hint_createseparator'
+	)}" spellcheck="false">`;
 	separatorHTML += `<i class="material-icons separatorCheckbox">check</i>`;
 
 	// add tags to footnote
@@ -587,25 +614,29 @@ const generateTagsHTML = (tagName) => {
 
 	if (tagName.match(/pinned|📌/i)) {
 		// pinned
-		tagsHTML = `<span title="タグを検索" class="tag pinned emoji">${tagName}</span>`;
+		tagsHTML = `<span title="${chrome.i18n.getMessage(
+			'hint_searchtag'
+		)}" class="tag pinned emoji">${tagName}</span>`;
 	} else if (tagName.match(/fav|★|☆|✭|⭐/i)) {
 		// favourite
 		// tagsHTML = `<span class="tag fav">${tagName}</span>`
-		tagsHTML = `<span title="タグを検索"  class="tag fav">⭐</span>`;
+		tagsHTML = `<span title="${chrome.i18n.getMessage('hint_searchtag')}"  class="tag fav">⭐</span>`;
 	} else if (tagName.match(/like|♡|💛|♥|❤/i)) {
 		// likes
 		// tagsHTML = `<span class="tag like">${tagName}</span>`
-		tagsHTML = `<span title="タグを検索"  class="tag like">❤</span>`;
+		tagsHTML = `<span title="${chrome.i18n.getMessage('hint_searchtag')}"  class="tag like">❤</span>`;
 	} else if (tagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu)) {
 		// emoji
-		tagsHTML = `<span title="タグを検索"  class="tag emoji">${tagName}</span>`;
+		tagsHTML = `<span title="${chrome.i18n.getMessage('hint_searchtag')}"  class="tag emoji">${tagName}</span>`;
 	} else if (tagName === 'today') {
-		tagsHTML = `<span title="タグを検索"  class="tag tagDate">${formatDate()}</span>`;
+		tagsHTML = `<span title="${chrome.i18n.getMessage(
+			'hint_searchtag'
+		)}"  class="tag tagDate">${formatDate()}</span>`;
 	} else if (!isNaN(new Date(tagName))) {
 		// datetag
-		tagsHTML = `<span title="タグを検索"  class="tag tagDate">${tagName}</span>`;
+		tagsHTML = `<span title="${chrome.i18n.getMessage('hint_searchtag')}"  class="tag tagDate">${tagName}</span>`;
 	} else {
-		tagsHTML = `<span title="タグを検索"  class="tag">${tagName}</span>`;
+		tagsHTML = `<span title="${chrome.i18n.getMessage('hint_searchtag')}"  class="tag">${tagName}</span>`;
 	}
 
 	// push the tag to stack if it has not yet
@@ -640,7 +671,7 @@ const generateListItemHTML = (tag) => {
 			addClass: 'tageditInput tagadd',
 			// value: tag,
 			value: tag.name,
-			placeholder: 'Enterキーでタグを削除します',
+			placeholder: chrome.i18n.getMessage('hint_removetag'),
 
 			spellCheck: 'false',
 			css: {
@@ -648,7 +679,7 @@ const generateListItemHTML = (tag) => {
 			}
 		});
 		liItem.append(editTagInput);
-		liItem.append('<i title="タグを編集" class="material-icons tagedit">edit</i>');
+		liItem.append(`<i title="${chrome.i18n.getMessage('hint_edittag')}" class="material-icons tagedit">edit</i>`);
 	}
 
 	return liItem;
@@ -1316,6 +1347,8 @@ const attachListItemEvents = (liItem) => {
 					$(e.target).parent().find('span').show();
 					$(e.target).parent().find('.tagedit').show();
 					$(e.target).hide();
+					//
+					tagSortable.save();
 
 					// replace tags of shadow nodes for search optimization
 					if (shadowNodes[0]) {
@@ -1942,6 +1975,8 @@ document.addEventListener('DOMContentLoaded', () => {
 			tagStack = res.tagStack;
 		}
 	});
+
+	localizeHtmlPage();
 
 	initializeEventListeners();
 
