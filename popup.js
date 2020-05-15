@@ -177,9 +177,13 @@ const toggleFileExportModal = (display = $('#fileexport-window.modal').hasClass(
 
 const toggleSortOrder = (sortingByNew) => {
 	if (sortingByNew) {
-		$('#sort').html('<span class="sortText">New </span><i class="material-icons">arrow_upward</i>');
+		$('#sort').html(
+			'<span class="sortText">New </span><i title="ノートを並び替え" class="material-icons">arrow_upward</i>'
+		);
 	} else {
-		$('#sort').html('<span class="sortText">Old </span><i class="material-icons">arrow_downward</i>');
+		$('#sort').html(
+			'<span class="sortText">Old </span><i title="ノートを並び替え" class="material-icons">arrow_downward</i>'
+		);
 	}
 
 	if ($('.searchbox').val() !== '' && $('.searchbox').val()[0] === '#') {
@@ -526,8 +530,8 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 	}
 	noteItemHTML += tagsHTML;
 
-	// hide tag input if the note has more than 5 tags;
-	const classes = footnote.tags.length < 4 ? 'divWrap' : 'divWrap hidden';
+	// hide tag input if the note has more than 4 tags;
+	const classes = footnote.tags.length < 3 ? 'divWrap' : 'divWrap hidden';
 	noteItemHTML += `<div class="${classes}"><input type="text" class="tagadd"></div>`;
 
 	// add the closing tag of footnote
@@ -640,7 +644,7 @@ const generateListItemHTML = (tag) => {
 			}
 		});
 		liItem.append(editTagInput);
-		liItem.append('<i class="material-icons tagedit">edit</i>');
+		liItem.append('<i title="タグを編集" class="material-icons tagedit">edit</i>');
 	}
 
 	return liItem;
@@ -697,7 +701,7 @@ const attachTagInputEvents = (stackWrapper) => {
 			ev.target.value = '';
 
 			// toggle divWrap visibility
-			if ($(stackWrapper).find('.tag').length >= 6) {
+			if ($(stackWrapper).find('.tag').length >= 4) {
 				divWrap.addClass('hidden');
 			} else {
 				divWrap.removeClass('hidden');
@@ -710,6 +714,11 @@ const attachTagInputEvents = (stackWrapper) => {
 		ev.preventDefault();
 
 		let tagName = ev.target.value;
+
+		// if ($.mb_strlen(tagName) > 5 || tagName.length > 10) {
+		// 	displayMessage('タグは最大5文字まで');
+		// 	return false;
+		// }
 
 		if (tagName[tagName.length - 1] === ' ' || ev.keyCode === Keys.ENTER) {
 			tagName = ev.target.value.trim();
@@ -744,13 +753,13 @@ const attachTagInputEvents = (stackWrapper) => {
 
 				// toggle divWrap visibility
 				if ($(stackWrapper).hasClass('clip')) {
-					if ($(stackWrapper).find('.tag').length >= 4) {
+					if ($(stackWrapper).find('.tag').length >= 3) {
 						divWrap.addClass('hidden');
 					} else {
 						divWrap.removeClass('hidden');
 					}
 				} else {
-					if ($(stackWrapper).find('.tag').length >= 5) {
+					if ($(stackWrapper).find('.tag').length >= 4) {
 						divWrap.addClass('hidden');
 					} else {
 						divWrap.removeClass('hidden');
@@ -1836,7 +1845,9 @@ const restorePreviousState = () => {
 			} else {
 				windowState.sortedByNew = state.sortedByNew;
 				if (!windowState.sortedByNew) {
-					$('#sort').html('<span class="sortText">Old </span><i class="material-icons">arrow_downward</i>');
+					$('#sort').html(
+						'<span class="sortText">Old </span><i title="ノートを並び替え" class="material-icons">arrow_downward</i>'
+					);
 					if (sortable !== null) {
 						$(shadowNodes[0]).children().each(function(i, wrapper) {
 							$(shadowNodes[0]).prepend(wrapper);
