@@ -192,6 +192,9 @@ html {
 	height: 700px;
 	box-sizing: border-box;
 	background: rgba(0, 0, 0, 0.25);
+}
+
+.smoothscroll {
 	scroll-behavior: smooth;
 }
 
@@ -1035,7 +1038,7 @@ input.tageditInput[type="text"]:focus {
 }
 
 /* bubble styles */
-#floatContainer:hover {
+/* #floatContainer:hover {
 	opacity: 1 !important;
 }
 
@@ -1074,6 +1077,117 @@ input.tageditInput[type="text"]:focus {
 	transform: scale(0.95);
 	color: rgb(141, 223, 253) !important;
 	cursor: default;
+} */
+
+/* bubble styles */
+/* bubble body */
+#bubble {
+	display: flex;
+	flex-wrap: nowrap;
+	position: absolute;
+	width: 200px;
+	height: 70px;
+	top: 0px;
+	left: 0px;
+	z-index: 999999;
+	padding: 0px 0px;
+	border-width: 0px;
+	border-style: solid;
+	border-color: black;
+	border-radius: 4px;
+	opacity: 0.9;
+	color: white;
+	background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* bubble pointer arrow */
+#bubble::after {
+	content: '';
+	position: absolute;
+	width: 0;
+	height: 0;
+	left: 25%;
+	bottom: 0;
+	border: 8px solid transparent;
+	border-top-color: rgba(0, 0, 0, 0.8) !important;
+	border-bottom: 0;
+	border-right: 0;
+	margin-left: -8px;
+	margin-bottom: -8px;
+}
+
+/* container for search engines */
+#leftContainer {
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap;
+	width: 80%;
+	height: 100%;
+}
+
+/* container for system commands */
+#rightContainer {
+	flex-direction: column;
+	flex-wrap: wrap;
+	width: 20%;
+	height: 100%;
+	padding-left: 5px;
+	border-left: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* container for commands on the web page */
+#floatContainer {
+	display: none !important;
+	flex-direction: column;
+	cursor: pointer !important;
+	color: rgba(0, 0, 0, 0.2);
+	/* opacity: 0.2; */
+	position: absolute;
+	right: -30px;
+	display: flex;
+	justify-content: center;
+	align-self: center;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+}
+
+/* icon button styles */
+.stackButton:active {
+	transform: scale(0.85);
+}
+
+.stackButton:hover {
+	color: rgb(141, 223, 253);
+	cursor: pointer;
+}
+
+.stackButton {
+	transform: scale(0.95);
+	flex: 1;
+	padding: 5px;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+}
+
+/* Font Awesome and Material Icons included */
+/*
+* css/brands.min.css,
+* css/solid.min.css,
+* css/font-awesome.min.css,
+*css/material-icons.css
+*/
+
+/* modification on font awesome */
+.fab {
+	margin-top: 5px !important;
+	margin-left: auto !important;
+	margin-right: auto !important;
+	font-size: 18px !important;
+}
+
+.fas {
+	margin-top: 4px !important;
+	font-size: 18px !important;
 }
 
 .pseudolink {
@@ -1125,8 +1239,8 @@ input.tageditInput[type="text"]:focus {
 	/* color: white;
 	font-size: 20px; */
 
-	top: -6px !important;
-	left: 6px !important;
+	/* top: -6px !important;
+	left: 6px !important; */
 	font-weight: normal !important;
 	font-style: normal !important;
 	font-size: 22px !important;

@@ -12,42 +12,34 @@ const SEARCH_ENGINE_ICONS = [
 		title: 'Vocabulary.comで単語を検索',
 		innerText: 'check',
 		command: 'vocabulary'
-		// className: 'mdi mdi-alpha-v-box stackButton',
-		// title: 'Vocabulary.comで単語を検索',
-		// innerText: '',
-		// command: 'vocabulary'
 	},
 
 	{
-		// className: "fas fa-user-friends stackButton",
 		className: 'material-icons stackButton',
 		title: 'Do People Say Itでフレーズを検索',
 		innerText: 'people',
 		command: 'dopeoplesayit'
 	},
 	{
-		// className: "fas fa-book fa-lg stackButton",
-		// title: "Urban Dictionaryで単語を検索",
-		// command: "urban",
-		className: 'fas fa-book fa-lg stackButton',
+		className: 'mdi mdi-alpha-s-box stackButton',
 		title: 'SKELLで例文を検索',
+		innerText: '',
 		command: 'skell'
 	},
 	{
-		// className: "fab fa-twitter fa-lg stackButton",
-		// title: "Twitterでツイート検索",
-		// command: "twitter",
-
-		// className: "material-icons stackButton",
-		className: 'fab fa-twitter fa-lg stackButton',
-		title: 'Netspeakでフレーズを検索',
-		command: 'netspeak'
-	},
-	{
-		className: 'fab fa-youtube fa-lg stackButton',
+		className: 'mdi mdi-youtube stackButton',
 		title: 'Youglishで発音を検索',
+		innerText: '',
 		command: 'youglish'
 	},
+	{
+		// className: 'mdi mdi-twitter stackButton',
+		className: 'mdi mdi-alpha-n-box stackButton',
+		title: 'Netspeakでフレーズを検索',
+		innerText: '',
+		command: 'netspeak'
+	},
+
 	{
 		className: 'material-icons stackButton',
 		title: 'みらい翻訳で英→日翻訳',
@@ -55,9 +47,9 @@ const SEARCH_ENGINE_ICONS = [
 		command: 'mirai'
 	},
 	{
-		className: 'material-icons stackButton',
+		className: 'mdi mdi-text-to-speech stackButton',
 		title: 'Oddcastでテキストを読み上げ',
-		innerText: 'play_arrow',
+		innerText: '',
 		command: 'oddcast'
 	}
 ];

@@ -33,14 +33,15 @@
 				"css/brands.min.css",
 				"css/solid.min.css",
 				"css/font-awesome.min.css",
-				"css/material-icons.css"
+				"css/material-icons.css",
+				"css/materialdesignicons.min.css"
 			],
 			"matches": [ "\u003Call_urls>" ],
 			"run_at": "document_end"
 		}
 	],
 	"web_accessible_resources": [ "images/*", "webfonts/*", "icons/*", "*.json" ],
-	"content_security_policy": "script-src 'self' 'unsafe-eval' chrome-extension-resource: ; object-src 'self' ; child-src 'self' ; style-src 'unsafe-inline' ; frame-src 'self' ; default-src 'self' ; img-src 'self' ; connect-src 'self' ",
+	"content_security_policy": "script-src 'self' 'unsafe-eval' chrome-extension-resource: ; object-src 'self' ; child-src 'self' ; style-src 'unsafe-inline' ; frame-src 'self' ; default-src 'self' ; img-src 'self' data: *; connect-src 'self' ",
 	"icons": {
 		"16": "icons/icon_16.png",
 		"19": "icons/icon_19.png",

@@ -19,6 +19,7 @@
 	"searchbox_placeholder": { "message": "Search.." },
 	"searchbox_cancel": { "message": "Clear" },
 
+	"hint_jumpdate": { "message": "Jump to date" },
 	"hint_createnew": { "message": "Create a new note" },
 	"hint_showimportant": { "message": "Show important notes" },
 	"hint_toggleorder": { "message": "Switch sort orders" },

@@ -152,7 +152,9 @@ const showDropdownList = () => {
 const hideDropdownList = () => {
 	$('#tagsearch-result').hide();
 	$('li.selected').removeClass('selected');
-	tagSortable.save();
+	if (tagSortable != null) {
+		tagSortable.save();
+	}
 };
 
 const displayMessage = (message) => {
@@ -509,10 +511,10 @@ const setTagAddAutoComplete = (jqueryDOM) => {
 			},
 			select: function(event, ui) {
 				jqueryDOM.val(ui.item.name);
-			},
-			close: function() {
-				$(this).blur();
 			}
+			// close: function() {
+			// 	$(this).blur();
+			// }
 		})
 		.dblclick(function() {
 			jQuery(this).autocomplete('search', '');
@@ -653,7 +655,9 @@ const generateCurrentDateHTML = () => {
 	const hours = ('0' + now.getHours()).slice(-2);
 	const minutes = ('0' + now.getMinutes()).slice(-2);
 
-	return `<div id="current" class="date current">${formatDate() + ' ' + hours + ':' + minutes}</div>`;
+	return `<div id="current" class="date current"><a title="${chrome.i18n.getMessage(
+		'hint_jumpdate'
+	)}" href="#">${formatDate() + ' ' + hours + ':' + minutes}</a></div>`;
 };
 
 const generateListItemHTML = (tag) => {
@@ -701,6 +705,14 @@ const attachEventsAndClassesToNotes = () => {
 
 	$('.sepGenerator').addClass('hidden');
 
+	$('.current a').click((e) => {
+		e.preventDefault();
+
+		if (windowState.sortedByNew) {
+			location.href = '#' + formatDate(new Date(dateStack[dateStack.length - 1]));
+		}
+	});
+
 	$('.date a').click((e) => {
 		e.preventDefault();
 		let index = dateStack.findIndex((date) => formatDate(date) === $(e.target).parent().attr('id'));
@@ -708,16 +720,22 @@ const attachEventsAndClassesToNotes = () => {
 
 		if (windowState.sortedByNew) {
 			if (index === 0) {
-				location.href = '#' + 'current';
+				// location.href = '#' + 'current';
+				window.scrollTo(0, 0);
 			} else {
 				location.href = '#' + formatDate(new Date(nextDate));
 				// window.scrollBy(0, -530);
 			}
 		} else {
-			if (index === dateStack.length - 1) {
-				location.href = '#' + formatDate(new Date(dateStack[0]));
+			if ($(e.target).parent().hasClass('current')) {
+				window.scrollTo(0, 0);
 			} else {
-				location.href = '#' + formatDate(new Date(nextDate));
+				if (index === dateStack.length - 1) {
+					// location.href = '#' + formatDate(new Date(dateStack[0]));
+					location.href = '#' + 'current';
+				} else {
+					location.href = '#' + formatDate(new Date(nextDate));
+				}
 			}
 		}
 	});
@@ -1405,24 +1423,26 @@ const initializeEventListeners = () => {
 	};
 
 	window.onload = function() {
-		document.body.addEventListener('drag', (e) => {
-			// if (e.clientY > 550) {
-			// 	window.scrollBy(0, 75);
-			// } else if (e.clientY < 100) {
-			// 	window.scrollBy(0, -75);
-			// }
-			if (e.clientY > 650) {
-				window.scrollBy(0, 75);
-			} else if (e.clientY > 550) {
-				window.scrollBy(0, 35);
-			} else if (e.clientY < 100) {
-				window.scrollBy(0, -35);
-			} else if (e.clientY < 50) {
-				window.scrollBy(0, -75);
-			}
-		});
+		setTimeout(() => {
+			document.body.addEventListener('drag', (e) => {
+				// if (e.clientY > 550) {
+				// 	window.scrollBy(0, 75);
+				// } else if (e.clientY < 100) {
+				// 	window.scrollBy(0, -75);
+				// }
+				if (e.clientY > 650) {
+					window.scrollBy(0, 75);
+				} else if (e.clientY > 550) {
+					window.scrollBy(0, 35);
+				} else if (e.clientY < 100) {
+					window.scrollBy(0, -35);
+				} else if (e.clientY < 50) {
+					window.scrollBy(0, -75);
+				}
+			});
 
-		setTagAddAutoComplete($('#textstack .tagadd'));
+			setTagAddAutoComplete($('#textstack .tagadd'));
+		}, 100);
 	};
 
 	// save window state when the popup window is closed
@@ -1530,8 +1550,11 @@ const initializeEventListeners = () => {
 			// optimization for reset search
 			if (queryLength > 0 || $('#textstack').hasClass('viewmode')) {
 				$('#sort .sortText').hide();
+				$('html').removeClass('smoothscroll');
 				doAfterInputIsDone(updateSearchResult, waittime);
 			} else {
+				$('html').addClass('smoothscroll');
+
 				$('#sort .sortText').show();
 
 				// reset task
@@ -1848,8 +1871,9 @@ const renderStack = () => {
 				// insert date between items
 				if (index === 0) {
 					notesHTML =
-						`<div id="${formatDate(date)}" class="date"><a href="#current">${formatDate(date)}</a></div>` +
-						notesHTML;
+						`<div id="${formatDate(date)}" class="date"><a title="${chrome.i18n.getMessage(
+							'hint_jumpdate'
+						)}" href="#current">${formatDate(date)}</a></div>` + notesHTML;
 					dateStack.push(date);
 				} else {
 					if (!isNaN(date)) {
@@ -1857,9 +1881,9 @@ const renderStack = () => {
 						if (dateStr !== formatDate(date)) {
 							// notesHTML = `<div class="date">${formatDate(date)}</div>` + notesHTML;
 							notesHTML =
-								`<div id="${formatDate(date)}" class="date"><a title="日付を移動" href="#">${formatDate(
-									date
-								)}</a></div>` + notesHTML;
+								`<div id="${formatDate(date)}" class="date"><a title="${chrome.i18n.getMessage(
+									'hint_jumpdate'
+								)}" href="#">${formatDate(date)}</a></div>` + notesHTML;
 							dateStack.push(date);
 						}
 					}
@@ -1926,10 +1950,18 @@ const restorePreviousState = () => {
 					}
 				}
 			}
-			// restore scrollY
-			if (typeof state.scrollY !== 'undefined') {
-				window.scrollTo(0, state.scrollY);
-			}
+
+			setTimeout(() => {
+				// restore scrollY
+				if (typeof state.scrollY !== 'undefined') {
+					if (state.searchQuery !== '') {
+						$('html').removeClass('smoothscroll');
+					} else {
+						$('html').addClass('smoothscroll');
+					}
+					window.scrollTo(0, state.scrollY);
+				}
+			}, 50);
 		} else {
 			windowState = {
 				searchQuery: '',
@@ -1954,6 +1986,8 @@ const reverseStack = () => {
 
 // ========== INITIALIZATION ==========
 document.addEventListener('DOMContentLoaded', () => {
+	localizeHtmlPage();
+
 	chrome.storage.local.get('tagStack', (res) => {
 		if (typeof res.tagStack === 'undefined' || res.tagStack.length === 0) {
 			tagStack = [
@@ -1975,8 +2009,6 @@ document.addEventListener('DOMContentLoaded', () => {
 			tagStack = res.tagStack;
 		}
 	});
-
-	localizeHtmlPage();
 
 	initializeEventListeners();
 
