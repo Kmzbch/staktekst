@@ -103,6 +103,19 @@ const createIconDOM = ({ className, title, innerText = '', command }) => {
 	});
 };
 
+// let USER_DEFINED_ICONS = [];
+
+// chrome.storage.sync.get([ 'options' ], (res) => {
+// 	if(typeof res.searchEngines !== '') {
+// 		USER_DEFINED_ICONS.push({
+// 			className: res.searchEngines,
+// 			title: "",
+// 			innerText: "",
+// 			command: ""
+// 		});
+// 	}
+// });
+
 const createBubbleDOM = () => {
 	let bubble = $('<div id="bubble"></div>')
 		.append($('<div id="leftContainer"></div>'))
@@ -201,8 +214,13 @@ const sendCommandMessage = (command) => {
 	});
 };
 
-// attach bubble
-$('body').append(createBubbleDOM());
+chrome.storage.sync.get([ 'options' ], (res) => {
+	// load config
+	if (res.options.balloonMenuEnabled || typeof res.options === 'undefined') {
+		// attach bubble
+		$('body').append(createBubbleDOM());
 
-// attach bubble to the loaded page
-document.addEventListener('mouseup', renderBubble);
+		// attach bubble to the loaded page
+		document.addEventListener('mouseup', renderBubble);
+	}
+});

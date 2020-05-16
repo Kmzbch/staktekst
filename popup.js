@@ -14,6 +14,65 @@ let windowState = {
 };
 let shadowNodes = []; // clonde nodes for seach optimization
 
+const preset = {
+	restoreEnabled: true,
+	duration: 30,
+	balloonMenuEnabled: true,
+	contextMenuEnabled: false,
+	searchEngines: [
+		{
+			name: 'Google検索',
+			url: 'https://encrypted.google.com/search?hl=en&gl=en&q=%s',
+			icon: {
+				class: 'material-icons iconButton',
+				text: 'search'
+			}
+		},
+		{
+			name: 'Vocabulary.comで単語を検索',
+			url: 'https://www.vocabulary.com/dictionary/%s',
+			icon: {
+				class: 'material-icons iconButton',
+				text: 'check'
+			}
+		},
+		{
+			name: 'Do People Say Itで例文を検索',
+			url: 'https://dopeoplesay.com/q/%s',
+			icon: {
+				class: 'material-icons iconButton',
+				text: 'people'
+			}
+		},
+		{
+			name: 'SKELLで例文を検索',
+			url: 'https://skell.sketchengine.co.uk/run.cgi/concordance?lpos=&query=%s',
+			icon: {
+				class: 'mdi mdi-alpha-s-box iconButton iconButton',
+				text: ''
+			}
+		},
+		{
+			name: 'Netspeakで例文を検索',
+			url: 'https://netspeak.org/#q=%s&corpus=web-en',
+			icon: {
+				class: 'mdi mdi-alpha-n-box iconButton iconButton',
+				text: ''
+			}
+		},
+
+		{
+			name: 'Youglishで発音を検索',
+			url: 'https://youglish.com/search/%s',
+			icon: {
+				class: 'mdi mdi-youtube iconButton iconButton',
+				text: ''
+			}
+		}
+	]
+};
+let options = {};
+
 // ========== UTILITIES ==========
 // https://stackoverflow.com/questions/25467009/internationalization-of-html-pages-for-my-google-chrome-extension/39810769
 const localizeHtmlPage = () => {
@@ -1937,7 +1996,9 @@ const renderStack = () => {
  * restore the window state of last time popup.html was opened
  */
 const restorePreviousState = () => {
-	const CACHE_DURATION = 30000;
+	const CACHE_DURATION = options.duration * 1000;
+	console.log(CACHE_DURATION);
+	// const CACHE_DURATION = 30000;
 
 	chrome.storage.local.get([ 'searchQuery', 'scrollY', 'closedDateTime', 'sortedByNew' ], (state) => {
 		windowState = state;
@@ -2037,5 +2098,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	renderStack();
 
-	restorePreviousState();
+	chrome.storage.sync.get([ 'options' ], (res) => {
+		if (typeof res.options === 'undefined') {
+			options = preset;
+		} else {
+			options = res.options;
+		}
+		if (options.restoreEnabled) {
+			restorePreviousState();
+		}
+	});
 });
