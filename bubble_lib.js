@@ -27,17 +27,17 @@ const SEARCH_ENGINE_ICONS = [
 		command: 'skell'
 	},
 	{
-		className: 'mdi mdi-youtube stackButton',
-		title: 'Youglishで発音を検索',
-		innerText: '',
-		command: 'youglish'
-	},
-	{
 		// className: 'mdi mdi-twitter stackButton',
 		className: 'mdi mdi-alpha-n-box stackButton',
 		title: 'Netspeakでフレーズを検索',
 		innerText: '',
 		command: 'netspeak'
+	},
+	{
+		className: 'mdi mdi-youtube stackButton',
+		title: 'Youglishで発音を検索',
+		innerText: '',
+		command: 'youglish'
 	},
 
 	{

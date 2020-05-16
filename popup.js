@@ -780,6 +780,17 @@ const attachTagInputEvents = (stackWrapper) => {
 			} else {
 				divWrap.removeClass('hidden');
 			}
+
+			// for search optimization
+			if (shadowNodes[0]) {
+				// remove the item from duplicated textstack as well
+				$(shadowNodes[0]).find('.stackwrapper').each((index, item) => {
+					if ($(item).attr('id') === $(stackWrapper).attr('id')) {
+						let divWrap = $(item).find('.divWrap');
+						divWrap.get(0).insertAdjacentHTML('beforebegin', tagsHTML);
+					}
+				});
+			}
 		}
 	});
 
@@ -838,6 +849,17 @@ const attachTagInputEvents = (stackWrapper) => {
 					} else {
 						divWrap.removeClass('hidden');
 					}
+				}
+
+				// for search optimization
+				if (shadowNodes[0]) {
+					// remove the item from duplicated textstack as well
+					$(shadowNodes[0]).find('.stackwrapper').each((index, item) => {
+						if ($(item).attr('id') === $(stackWrapper).attr('id')) {
+							let divWrap = $(item).find('.divWrap');
+							divWrap.get(0).insertAdjacentHTML('beforebegin', tagsHTML);
+						}
+					});
 				}
 			}
 		} else if (ev.keyCode === Keys.BACKSPACE && tagName === '') {
