@@ -1,36 +1,37 @@
 {
 	"ext_name": { "message": "Staktekst" },
+
 	"ext_desc": { "message": "Paragraph-based learning aid for ESL learners" },
+	"button_label_clear": { "message": "Empty Stack" },
+	"label_clear_title": { "message": "Empty Stack" },
 
 	"html_lang": { "message": "en" },
 	"button_label_ok": { "message": "OK" },
 	"button_label_cancel": { "message": "Cancel" },
 
-	"button_label_clear": { "message": "Empty stack" },
-	"label_clear_title": { "message": "Clear stack" },
-	"label_clear_msg": { "message": "Are you sure to remove all the notes in display?" },
+	"label_clear_msg": { "message": "Are you sure you want to delete all notes?" },
 
-	"hint_fileexport": { "message": "Export notes" },
-	"label_fileexport_title": { "message": "Export notes" },
-	"label_fileexport_msg": { "message": "All the notes in display will be exported to a file. Select a file format." },
-	"label_filetype_txt": { "message": "Plane text file(*.txt)" },
-	"label_filetype_json": { "message": "JSON format file(*.json)" },
+	"searchbox_placeholder": { "message": "Search by Keywords or a Tag" },
+	"searchbox_cancel": { "message": "Cancel" },
 
-	"searchbox_placeholder": { "message": "Search.." },
-	"searchbox_cancel": { "message": "Clear" },
-
+	"hint_createnew": { "message": "New Note" },
+	"hint_editnote": { "message": "Edit" },
+	"hint_removenote": { "message": "Delete" },
+	"hint_addtag": { "message": "Add Tag" },
+	"hint_edittag": { "message": "Edit" },
+	"hint_searchtag": { "message": "Filter by Tag" },
+	"hint_removetag": { "message": "Press Enter to Delete" },
+	"hint_createseparator": { "message": "New Separator" },
 	"hint_jumpdate": { "message": "Jump to date" },
-	"hint_createnew": { "message": "Create a new note" },
-	"hint_showimportant": { "message": "Show important notes" },
-	"hint_toggleorder": { "message": "Switch sort orders" },
-	"hint_editnote": { "message": "Edit note" },
 
-	"hint_removenote": { "message": "Remove note" },
+	"hint_fileexport": { "message": "Export File" },
+	"label_fileexport_title": { "message": "Export File" },
+	"label_fileexport_msg": { "message": "Select a file format to export notes: " },
+	"label_filetype_txt": { "message": "Plain text (*.txt)" },
+	"label_filetype_json": { "message": "Structured text (*.json)" },
+	"hint_showimportant": { "message": "Important Notes" },
+	"hint_showallnotes": { "message": "All Notes" },
 
-	"hint_addtag": { "message": "Add tag" },
-	"hint_createseparator": { "message": "Create a separator" },
-	"hint_searchtag": { "message": "Search by tag" },
-	"hint_edittag": { "message": "Edit tag" },
-	"hint_removetag": { "message": "Press Enter to remove tag" },
-	"label_noresult_msg": { "message": "No Results" }
+	"hint_toggleorder": { "message": "Change Sort Order" },
+	"label_noresult_msg": { "message": "No results found" }
 }

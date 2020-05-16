@@ -22,6 +22,8 @@
 	"hint_jumpdate": { "message": "日付を移動" },
 	"hint_createnew": { "message": "新規ノートを作成" },
 	"hint_showimportant": { "message": "重要なノートを表示" },
+	"hint_showallnotes": { "message": "重要なノート表示を解除" },
+
 	"hint_toggleorder": { "message": "ノートを並び替え" },
 
 	"hint_editnote": { "message": "ノートを編集" },
@@ -33,5 +35,5 @@
 	"hint_edittag": { "message": "タグを編集" },
 
 	"hint_removetag": { "message": "Enterキーでタグを削除" },
-	"label_noresult_msg": { "message": "見つかりませんでした。" }
+	"label_noresult_msg": { "message": "検索結果: 0件" }
 }

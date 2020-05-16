@@ -282,7 +282,7 @@ const updateSearchResult = () => {
 
 	// change styles on search
 	if (query) {
-		displayMessage(hits === 0 ? 'No Results' : `${hits} of ${stack.length}`);
+		displayMessage(hits === 0 ? chrome.i18n.getMessage('label_noresult_msg') : `${hits} of ${stack.length}`);
 		$('.search-cancel-button').show();
 		setTimeout(clearMessage, 5000);
 	} else {
@@ -1643,14 +1643,15 @@ const initializeEventListeners = () => {
 			$('#textstack').removeClass('viewmode');
 			$('#toolbox').removeClass('viewmode');
 			$('.view').removeClass('viewmode');
-			$(e.target).attr('title', '重要なノートを表示');
+			$(e.target).attr('title', chrome.i18n.getMessage('hint_showimportant'));
 			fireSearch('');
 		} else {
 			fireSearch('');
 			$('.view').addClass('viewmode');
 			$('#textstack').addClass('viewmode');
 			$('#toolbox').addClass('viewmode');
-			$(e.target).attr('title', '重要なノート表示を解除');
+			$(e.target).attr('title', chrome.i18n.getMessage('hint_showimportant'));
+			$(e.target).attr('title', chrome.i18n.getMessage('hint_showallnotes'));
 		}
 	});
 
