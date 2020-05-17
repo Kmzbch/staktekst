@@ -570,6 +570,10 @@ const setTagAddAutoComplete = (jqueryDOM) => {
 			},
 			select: function(event, ui) {
 				jqueryDOM.val(ui.item.name);
+				setTimeout(() => {
+					event.target.focus();
+					event.target.blur();
+				}, 100);
 			}
 		})
 		.dblclick(function() {
@@ -844,6 +848,10 @@ const attachTagInputEvents = (stackWrapper) => {
 					if ($(item).attr('id') === $(stackWrapper).attr('id')) {
 						let divWrap = $(item).find('.divWrap');
 						divWrap.get(0).insertAdjacentHTML('beforebegin', tagsHTML);
+						//
+						if (tagName.match(/pinned|📌/i) || isNaN(tagName)) {
+							$(item).addClass('priority');
+						}
 					}
 				});
 			}
@@ -914,6 +922,9 @@ const attachTagInputEvents = (stackWrapper) => {
 						if ($(item).attr('id') === $(stackWrapper).attr('id')) {
 							let divWrap = $(item).find('.divWrap');
 							divWrap.get(0).insertAdjacentHTML('beforebegin', tagsHTML);
+							if (tagName.match(/pinned|📌/i) || isNaN(tagName)) {
+								$(item).addClass('priority');
+							}
 						}
 					});
 				}
@@ -944,6 +955,10 @@ const attachTagInputEvents = (stackWrapper) => {
 							$(item).find('.tag').each((index, tag) => {
 								if ($(tag).text() === prevTagName) {
 									$(tag).remove();
+									if (prevTagName.match(/pinned|📌/i) || isNaN(prevTagName)) {
+										$(item).removeClass('priority');
+									}
+
 									return false;
 								}
 							});
@@ -1176,6 +1191,12 @@ const attachEventsToTextStack = () => {
 								$(item).find('.tag').each((index, tag) => {
 									if ($(tag).text() === tagName) {
 										$(tag).remove();
+
+										//
+										if (tagName.match(/pinned|📌/i) || isNaN(tagName)) {
+											$(item).removeClass('priority');
+										}
+
 										return false;
 									}
 								});
