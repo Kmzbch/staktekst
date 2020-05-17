@@ -26,49 +26,49 @@ const MENU_ITEMS = [
 	// },
 	{
 		id: 'google',
-		title: 'Google検索',
+		title: chrome.i18n.getMessage('se_google'),
 		contexts: [ 'selection' ],
 		url: 'https://encrypted.google.com/search?hl=en&gl=en&q=%s'
 	},
 	{
 		id: 'vocabulary',
-		title: 'Vocabulary.com',
+		title: chrome.i18n.getMessage('se_vocabulary'),
 		contexts: [ 'selection' ],
 		url: 'https://www.vocabulary.com/dictionary/%s'
 	},
 	{
 		id: 'dopeoplesayit',
-		title: 'Do People Say It',
+		title: chrome.i18n.getMessage('se_doppl'),
 		contexts: [ 'selection' ],
 		url: 'https://dopeoplesay.com/q/%s'
 	},
 	{
 		id: 'skell',
-		title: 'SKELL',
+		title: chrome.i18n.getMessage('se_skell'),
 		contexts: [ 'selection' ],
 		url: 'https://skell.sketchengine.co.uk/run.cgi/concordance?lpos=&query=%s'
 	},
 	{
 		id: 'netspeak',
-		title: 'NetSpeak',
+		title: chrome.i18n.getMessage('se_netspeak'),
 		contexts: [ 'selection' ],
 		url: 'https://netspeak.org/#q=%s&corpus=web-en'
 	},
 	{
 		id: 'youglish',
-		title: 'Youglish',
+		title: chrome.i18n.getMessage('se_youglish'),
 		contexts: [ 'selection' ],
 		url: 'https://youglish.com/search/%s'
 	},
 	{
 		id: 'mirai',
 		url: 'https://miraitranslate.com/en/trial/',
-		title: 'みらい翻訳（英→日）',
+		title: chrome.i18n.getMessage('se_mirai'),
 		contexts: [ 'selection' ]
 	},
 	{
 		id: 'oddcast',
-		title: 'Oddcastでテキスト読み上げ（英）',
+		title: chrome.i18n.getMessage('se_oddcast'),
 		contexts: [ 'selection' ],
 		url: 'http://www.oddcast.com/ttsdemo/index.php'
 	}

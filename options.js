@@ -25,7 +25,7 @@ const preset = {
 	searchEngines: [
 		{
 			id: 'search1',
-			name: 'Google検索',
+			name: chrome.i18n.getMessage('se_google'),
 			url: 'https://encrypted.google.com/search?hl=en&gl=en&q=%s',
 			icon: {
 				class: 'material-icons iconButton',
@@ -34,7 +34,7 @@ const preset = {
 		},
 		{
 			id: 'search2',
-			name: 'Vocabulary.comで単語を検索',
+			name: chrome.i18n.getMessage('se_vocabulary'),
 			url: 'https://www.vocabulary.com/dictionary/%s',
 			icon: {
 				class: 'material-icons iconButton',
@@ -44,7 +44,7 @@ const preset = {
 		{
 			id: 'search3',
 
-			name: 'Do People Say Itで例文を検索',
+			name: chrome.i18n.getMessage('se_doppl'),
 			url: 'https://dopeoplesay.com/q/%s',
 			icon: {
 				class: 'material-icons iconButton',
@@ -53,7 +53,7 @@ const preset = {
 		},
 		{
 			id: 'search4',
-			name: 'SKELLで例文を検索',
+			name: chrome.i18n.getMessage('se_skell'),
 			url: 'https://skell.sketchengine.co.uk/run.cgi/concordance?lpos=&query=%s',
 			icon: {
 				class: 'mdi mdi-alpha-s-box iconButton iconButton',
@@ -63,7 +63,7 @@ const preset = {
 		{
 			id: 'search5',
 
-			name: 'Netspeakで例文を検索',
+			name: chrome.i18n.getMessage('se_netspeak'),
 			url: 'https://netspeak.org/#q=%s&corpus=web-en',
 			icon: {
 				class: 'mdi mdi-alpha-n-box iconButton iconButton',
@@ -73,7 +73,7 @@ const preset = {
 
 		{
 			id: 'search6',
-			name: 'Youglishで発音を検索',
+			name: chrome.i18n.getMessage('se_youglish'),
 			url: 'https://youglish.com/search/%s',
 			icon: {
 				class: 'mdi mdi-youtube iconButton iconButton',

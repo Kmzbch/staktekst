@@ -48,5 +48,20 @@
 	"label_name": { "message": "Name" },
 	"label_url": { "message": "URL" },
 	"button_save": { "message": "Save" },
-	"button_reset": { "message": "Restore Defaults" }
+	"button_reset": { "message": "Restore Defaults" },
+
+	"se_google": { "message": "Google Search" },
+	"se_vocabulary": { "message": "Vocabulary.com" },
+	"se_doppl": { "message": "Do People Say It" },
+	"se_skell": { "message": "SKELL" },
+	"se_netspeak": { "message": "Netspeak" },
+	"se_youglish": { "message": "Youglish" },
+	"se_mirai": { "message": "Mirai Translate" },
+	"se_oddcast": { "message": "Oddcast Text-to-Speech" },
+
+	"com_push": { "message": "Push text to stack" },
+	"com_copy": { "message": "Copy with Title and URL" },
+	"com_bookmark": { "message": "Bookmark" },
+	"com_zoomin": { "message": "Zoom in" },
+	"com_zoomout": { "message": "Zoom out" }
 }

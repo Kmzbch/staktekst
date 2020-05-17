@@ -3,52 +3,52 @@
 const SEARCH_ENGINE_ICONS = [
 	{
 		className: 'material-icons stackButton',
-		title: 'Google検索',
+		title: chrome.i18n.getMessage('se_google'),
 		innerText: 'search',
 		command: 'google'
 	},
 	{
 		className: 'material-icons stackButton',
-		title: 'Vocabulary.comで単語を検索',
+		title: chrome.i18n.getMessage('se_vocabulary'),
 		innerText: 'check',
 		command: 'vocabulary'
 	},
 
 	{
 		className: 'material-icons stackButton',
-		title: 'Do People Say Itでフレーズを検索',
+		title: chrome.i18n.getMessage('se_doppl'),
 		innerText: 'people',
 		command: 'dopeoplesayit'
 	},
 	{
 		className: 'mdi mdi-alpha-s-box stackButton',
-		title: 'SKELLで例文を検索',
+		title: chrome.i18n.getMessage('se_skell'),
 		innerText: '',
 		command: 'skell'
 	},
 	{
 		// className: 'mdi mdi-twitter stackButton',
 		className: 'mdi mdi-alpha-n-box stackButton',
-		title: 'Netspeakでフレーズを検索',
+		title: chrome.i18n.getMessage('se_netspeak'),
 		innerText: '',
 		command: 'netspeak'
 	},
 	{
 		className: 'mdi mdi-youtube stackButton',
-		title: 'Youglishで発音を検索',
+		title: chrome.i18n.getMessage('se_youglish'),
 		innerText: '',
 		command: 'youglish'
 	},
 
 	{
 		className: 'material-icons stackButton',
-		title: 'みらい翻訳で英→日翻訳',
+		title: chrome.i18n.getMessage('se_mirai'),
 		innerText: 'translate',
 		command: 'mirai'
 	},
 	{
 		className: 'mdi mdi-text-to-speech stackButton',
-		title: 'Oddcastでテキストを読み上げ',
+		title: chrome.i18n.getMessage('se_oddcast'),
 		innerText: '',
 		command: 'oddcast'
 	}
@@ -57,13 +57,13 @@ const SEARCH_ENGINE_ICONS = [
 const SYSTEM_COMMAND_ICONS = [
 	{
 		className: 'material-icons stackButton',
-		title: 'テキストをスタックにプッシュ',
+		title: chrome.i18n.getMessage('com_push'),
 		innerText: 'input',
 		command: 'pushtext'
 	},
 	{
 		className: 'material-icons stackButton',
-		title: 'URLとタイトル付きでコピー',
+		title: chrome.i18n.getMessage('com_copy'),
 		innerText: 'assignment',
 		command: 'extendedcopy'
 	}
@@ -72,13 +72,13 @@ const SYSTEM_COMMAND_ICONS = [
 const FLOAT_COMMAND_ICONS = [
 	{
 		className: 'material-icons bookmark-icon',
-		title: 'ページをスタックにブックマーク',
+		title: chrome.i18n.getMessage('com_bookmark'),
 		innerText: 'bookmarks',
 		command: 'bookmark'
 	},
 	{
 		className: 'material-icons zoom-icon',
-		title: 'ページを拡大',
+		title: chrome.i18n.getMessage('com_zoomin'),
 		innerText: 'switchzoom',
 		command: 'switchzoom'
 	}
@@ -172,10 +172,10 @@ const renderBubble = () => {
 			(response) => {
 				if (response.zoomFactor === 1) {
 					$('.zoom-icon').text('zoom_in');
-					$('.zoom-icon').title = 'ページを拡大';
+					$('.zoom-icon').title = chrome.i18n.getMessage('com_zoomin');
 				} else {
 					$('.zoom-icon').text('zoom_out');
-					$('.zoom-icon').title = 'ページ倍率をリセット';
+					$('.zoom-icon').title = chrome.i18n.getMessage('com_zoomout');
 				}
 			}
 		);

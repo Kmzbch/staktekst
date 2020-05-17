@@ -52,5 +52,20 @@
 	"label_url": { "message": "URL" },
 
 	"button_save": { "message": "保存" },
-	"button_reset": { "message": "初期状態に戻す" }
+	"button_reset": { "message": "初期状態に戻す" },
+
+	"se_google": { "message": "Google検索" },
+	"se_vocabulary": { "message": "Vocabulary.comで単語を検索" },
+	"se_doppl": { "message": "Do People Say Itでフレーズを検索" },
+	"se_skell": { "message": "SKELLで例文を検索" },
+	"se_netspeak": { "message": "Netspeakでフレーズを検索" },
+	"se_youglish": { "message": "Youglishで発音を検索" },
+	"se_mirai": { "message": "みらい翻訳で英→日翻訳" },
+	"se_oddcast": { "message": "Oddcastでテキストを読み上げ" },
+
+	"com_push": { "message": "テキストをスタックにプッシュ" },
+	"com_copy": { "message": "URLとタイトル付きでコピー" },
+	"com_bookmark": { "message": "ページをスタックにブックマーク" },
+	"com_zoomin": { "message": "ページを拡大" },
+	"com_zoomout": { "message": "ページ倍率をリセット" }
 }
