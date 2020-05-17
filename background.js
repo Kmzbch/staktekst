@@ -74,8 +74,11 @@ const MENU_ITEMS = [
 	}
 ];
 
+let USER_ITEMS = [];
+let command = '';
+
 const executeUserCommand = (commandId, text, tabTitle, tabUrl, tabId) => {
-	console.log(commandId);
+	console.log(USER_ITEMS);
 
 	switch (commandId) {
 		// system features
@@ -99,7 +102,13 @@ const executeUserCommand = (commandId, text, tabTitle, tabUrl, tabId) => {
 			break;
 		// web features
 		default:
-			let command = MENU_ITEMS.find((item) => item.id === commandId);
+			if (USER_ITEMS.length > 0) {
+				command = USER_ITEMS.find((item) => item.id === commandId);
+			} else {
+				command = MENU_ITEMS.find((item) => item.id === commandId);
+			}
+
+			// let command = MENU_ITEMS.find((item) => item.id === commandId);
 			let urlWithQuery = command.url.replace('%s', text);
 			// open the URL
 			chrome.tabs.create({
@@ -133,7 +142,7 @@ const getMessage = (request, sender, sendResponse) => {
 					break;
 				case 'OPTIONS':
 					setContextMenus();
-
+					setSearchEngines();
 				default:
 					if (request.selection) {
 						executeUserCommand(request.command, request.selection, tabs[0].title, tabs[0].url, tabs[0].id);
@@ -199,4 +208,22 @@ function setContextMenus() {
 	});
 }
 
+function setSearchEngines() {
+	chrome.storage.sync.get([ 'options' ], (res) => {
+		if (typeof res.options.searchEngines !== '') {
+			USER_ITEMS.length = 0;
+			res.options.searchEngines.forEach((s) => {
+				console.log(s.url);
+				USER_ITEMS.push({
+					id: s.id,
+					title: s.name,
+					contexts: [ 'selection' ],
+					url: s.url
+				});
+			});
+		}
+	});
+}
+
 setContextMenus();
+setSearchEngines();

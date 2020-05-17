@@ -5,6 +5,7 @@ const preset = {
 	contextMenuEnabled: false,
 	searchEngines: [
 		{
+			id: 'search1',
 			name: 'Google検索',
 			url: 'https://encrypted.google.com/search?hl=en&gl=en&q=%s',
 			icon: {
@@ -13,6 +14,7 @@ const preset = {
 			}
 		},
 		{
+			id: 'search2',
 			name: 'Vocabulary.comで単語を検索',
 			url: 'https://www.vocabulary.com/dictionary/%s',
 			icon: {
@@ -21,6 +23,8 @@ const preset = {
 			}
 		},
 		{
+			id: 'search3',
+
 			name: 'Do People Say Itで例文を検索',
 			url: 'https://dopeoplesay.com/q/%s',
 			icon: {
@@ -29,6 +33,7 @@ const preset = {
 			}
 		},
 		{
+			id: 'search4',
 			name: 'SKELLで例文を検索',
 			url: 'https://skell.sketchengine.co.uk/run.cgi/concordance?lpos=&query=%s',
 			icon: {
@@ -37,6 +42,8 @@ const preset = {
 			}
 		},
 		{
+			id: 'search5',
+
 			name: 'Netspeakで例文を検索',
 			url: 'https://netspeak.org/#q=%s&corpus=web-en',
 			icon: {
@@ -46,6 +53,7 @@ const preset = {
 		},
 
 		{
+			id: 'search6',
 			name: 'Youglishで発音を検索',
 			url: 'https://youglish.com/search/%s',
 			icon: {
@@ -168,6 +176,7 @@ $('#save').click((e) => {
 		contextMenuEnabled: $('#context').prop('checked'),
 		searchEngines: [
 			{
+				id: 'search1',
 				icon: {
 					class: $('#engine1_icon').attr('class'),
 					text: $('#engine1_icon').text()
@@ -176,6 +185,8 @@ $('#save').click((e) => {
 				url: $('#engine1_url').val()
 			},
 			{
+				id: 'search2',
+
 				icon: {
 					class: $('#engine2_icon').attr('class'),
 					text: $('#engine2_icon').text()
@@ -185,6 +196,8 @@ $('#save').click((e) => {
 				url: $('#engine2_url').val()
 			},
 			{
+				id: 'search3',
+
 				icon: {
 					class: $('#engine3_icon').attr('class'),
 					text: $('#engine3_icon').text()
@@ -194,6 +207,8 @@ $('#save').click((e) => {
 				url: $('#engine3_url').val()
 			},
 			{
+				id: 'search4',
+
 				icon: {
 					class: $('#engine4_icon').attr('class'),
 					text: $('#engine4_icon').text()
@@ -203,6 +218,8 @@ $('#save').click((e) => {
 				url: $('#engine4_url').val()
 			},
 			{
+				id: 'search5',
+
 				icon: {
 					class: $('#engine5_icon').attr('class'),
 					text: $('#engine5_icon').text()
@@ -212,6 +229,8 @@ $('#save').click((e) => {
 				url: $('#engine5_url').val()
 			},
 			{
+				id: 'search6',
+
 				icon: {
 					class: $('#engine6_icon').attr('class'),
 					text: $('#engine6_icon').text()
