@@ -571,9 +571,6 @@ const setTagAddAutoComplete = (jqueryDOM) => {
 			select: function(event, ui) {
 				jqueryDOM.val(ui.item.name);
 			}
-			// close: function() {
-			// 	$(this).blur();
-			// }
 		})
 		.dblclick(function() {
 			jQuery(this).autocomplete('search', '');
@@ -1343,7 +1340,6 @@ const attachSeparatorEvents = (stackwrapper) => {
 
 				stack[index].content = separatorName;
 				stackStorage.set(JSON.stringify(stack));
-				console.log('asdf');
 				$(ev.target).trigger('blur');
 			}
 		}
@@ -1997,8 +1993,6 @@ const renderStack = () => {
  */
 const restorePreviousState = () => {
 	const CACHE_DURATION = options.duration * 1000;
-	console.log(CACHE_DURATION);
-	// const CACHE_DURATION = 30000;
 
 	chrome.storage.local.get([ 'searchQuery', 'scrollY', 'closedDateTime', 'sortedByNew' ], (state) => {
 		windowState = state;
