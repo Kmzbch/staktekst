@@ -598,7 +598,7 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 
 	// add footnote
 	if (type === 'clip') {
-		noteItemHTML += `<div class="footnote"><span class="pseudolink" href="${footnote.pageURL}" target="_blank">${footnote.pageTitle}</span>`;
+		noteItemHTML += `<div class="footnote"><span class="pseudolink" href="${footnote.pageURL}" target="_blank" title="${footnote.pageTitle}">${footnote.pageTitle}</span>`;
 		noteItemHTML += `<span class="tag type clip">clip</span>`;
 	} else {
 		noteItemHTML += `<div class="footnote"><span title="${chrome.i18n.getMessage(

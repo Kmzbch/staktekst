@@ -46,7 +46,8 @@
 	"label_websearch_context": { "message": "右クリックメニューを設定" },
 
 	"options_searchengine_title": { "message": "検索エンジン" },
-	"options_searchengine_msg": { "message": "アドレス内のキーワード部分を%sに置き換えて下さい。6個まで登録可能です。" },
+	"options_searchengine_msg": { "message": "アドレス内のキーワード部分を%sに置き換えて下さい" },
+	"options_iconselect_title": { "message": "アイコンを選択してください" },
 
 	"label_name": { "message": "名前" },
 	"label_url": { "message": "URL" },

@@ -45,6 +45,8 @@
 
 	"options_searchengine_title": { "message": "Search Engines" },
 	"options_searchengine_msg": { "message": "Substitute keywords in the address with %s" },
+	"options_iconselect_title": { "message": "Select an icon:" },
+
 	"label_name": { "message": "Name" },
 	"label_url": { "message": "URL" },
 	"button_save": { "message": "Save" },
