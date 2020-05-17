@@ -620,7 +620,18 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 	noteItemHTML += tagsHTML;
 
 	// hide tag input if the note has more than 4 tags;
-	const classes = footnote.tags.length < 3 ? 'divWrap' : 'divWrap hidden';
+	// const classes = footnote.tags.length < 3 ? 'divWrap' : 'divWrap hidden';
+	// noteItemHTML += `<div class="${classes}"><input title="${chrome.i18n.getMessage(
+	// 	'hint_addtag'
+	// )}" type="text" class="tagadd"></div>`;
+
+	let classes;
+	if (type === 'clip') {
+		classes = footnote.tags.length < 2 ? 'divWrap' : 'divWrap hidden';
+	} else {
+		classes = footnote.tags.length < 3 ? 'divWrap' : 'divWrap hidden';
+	}
+
 	noteItemHTML += `<div class="${classes}"><input title="${chrome.i18n.getMessage(
 		'hint_addtag'
 	)}" type="text" class="tagadd"></div>`;
@@ -915,7 +926,6 @@ const attachTagInputEvents = (stackWrapper) => {
 						divWrap.removeClass('hidden');
 					}
 				}
-
 				// for search optimization
 				if (shadowNodes[0]) {
 					// remove the item from duplicated textstack as well

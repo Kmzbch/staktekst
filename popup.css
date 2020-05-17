@@ -760,7 +760,7 @@ input.disabled {
 	margin-right: 25px;
 	float: right;
 	text-align: right;
-	width: 45%;
+	width: 40%;
 }
 
 .clip .pseudolink:hover {
@@ -830,7 +830,8 @@ input.tageditInput[type="text"]:focus {
 	-moz-user-select: none;
 	user-select: none;
 
-	width: 70%;
+	/* width: 70%; */
+	width: 100%;
 	overflow: hidden;
 	white-space: nowrap;
 	/* text-overflow: ellipsis;  */
@@ -853,7 +854,13 @@ input.tageditInput[type="text"]:focus {
 .tag {
 	cursor: pointer;
 	display: inline-block;
-	margin-right: 6px;
+	margin-right: 5px;
+
+	max-height: 19px;
+	max-width: 100px;
+	overflow: hidden;
+	/* white-space: nowrap; */
+	text-overflow: ellipsis;
 }
 
 .fav:before {
