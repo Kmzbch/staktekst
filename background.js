@@ -78,8 +78,6 @@ let USER_ITEMS = [];
 let command = '';
 
 const executeUserCommand = (commandId, text, tabTitle, tabUrl, tabId) => {
-	console.log(USER_ITEMS);
-
 	switch (commandId) {
 		// system features
 		case 'extendedcopy':
@@ -221,6 +219,7 @@ function setSearchEngines() {
 					url: s.url
 				});
 			});
+			USER_ITEMS = USER_ITEMS.concat(MENU_ITEMS.slice(-2));
 		}
 	});
 }
