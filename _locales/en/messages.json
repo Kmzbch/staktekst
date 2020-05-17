@@ -33,5 +33,20 @@
 	"hint_showallnotes": { "message": "All Notes" },
 
 	"hint_toggleorder": { "message": "Change Sort Order" },
-	"label_noresult_msg": { "message": "No results found" }
+	"label_noresult_msg": { "message": "No results found" },
+
+	"options_restore_title": { "message": "Restore Previous Session" },
+	"options_restore_msg": { "message": "Restore the previous session" },
+	"label_options_duration": { "message": "Duration（seconds）" },
+
+	"options_websearch_title": { "message": "Search" },
+	"label_websearch_balloon": { "message": "Enable Balloon Launcher" },
+	"label_websearch_context": { "message": "Enable right-click context menus" },
+
+	"options_searchengine_title": { "message": "Search Engines" },
+	"options_searchengine_msg": { "message": "Substitute keywords in the address with %s" },
+	"label_name": { "message": "Name" },
+	"label_url": { "message": "URL" },
+	"button_save": { "message": "Save" },
+	"button_reset": { "message": "Restore Defaults" }
 }

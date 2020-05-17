@@ -2,6 +2,13 @@
 	display: none !important;
 }
 
+body {
+	width: 70%;
+}
+
+hr {
+	background: lightgray;
+}
 #iconselection::after {
 	content: "";
 	position: absolute;

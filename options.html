@@ -99,65 +99,72 @@
         </div>
     </div>
     
-    <h1>Stacktekst</h1>
+    <h1>__MSG_ext_name__</h1>
 
 <form>
-    <h2>ウィンドウ状態の復元</h2>
+    <h2>__MSG_options_restore_title__</h2>
+    <hr>
     <div class="form-group">
         <input type="checkbox" aria-label="Checkbox" id="restore" name="restore" value="restore">
-        <label for="restore">前回起動時のウィンドウ状態を復元する</label><br>
-        <label for="duration">保存期間（秒）</label> <input class="form-control" type="number" min='1' id="duration" name="duration" value="3" disabled>
+        <label for="restore">__MSG_options_restore_msg__</label><br>
+        <label for="duration">__MSG_label_options_duration__</label> <input class="form-control" type="number" min='1' id="duration" name="duration" value="3" disabled>
     </div>
+    <br>
 
-    <h2>Web検索方法</h2>
+    <h2>__MSG_options_websearch_title__</h2>
+    <hr>
     <div class="form-group">
-        <input type="checkbox" aria-label="Checkbox" id="balloon" name="balloon" value="balloon"><label for="json">フキダシ型ランチャーを設定</label><br>
+        <input type="checkbox" aria-label="Checkbox" id="balloon" name="balloon" value="balloon"><label for="json">__MSG_label_websearch_balloon__</label><br>
     </div>
     <div class="form-group">
-        <input type="checkbox" aria-label="Checkbox" id="context" name="context" value="context"><label for="txt">右クリックメニューを設定</label><br>
+        <input type="checkbox" aria-label="Checkbox" id="context" name="context" value="context"><label for="txt">__MSG_label_websearch_context__</label><br>
     </div>
+    <br>
 
-    <h2>検索エンジン</h2>
-    <p>6個まで登録可能です。アドレス内のキーワード部分を%sに置き換えて下さい。</p>
+
+    <h2>__MSG_options_searchengine_title__</h2>
+    <hr>
+    <p>__MSG_options_searchengine_msg__</p>
     <div class="form-group">
         <i id="engine1_icon" class="material-icons iconButton">search</i>
-        <label for="engine1_name">名前</label> <input class="form-control" style='width:17em' type="text" id="engine1_name" name="engine1_name" value="" required>
-        <label for="url">URL</label> <input class="form-control" style='width:35em'  type="text" id="engine1_url" name="engine1_url" value="" required>
+        <label for="engine1_name">__MSG_label_name__</label> <input class="form-control" style='width:17em' type="text" id="engine1_name" name="engine1_name" value="" required>
+        <label for="url">__MSG_label_url__</label> <input class="form-control" style='width:35em'  type="text" id="engine1_url" name="engine1_url" value="" required>
     </div>
     <br>
     <div class="form-group">
         <i id="engine2_icon" class="material-icons iconButton">check</i>
-        <label for="engine2_name">名前</label> <input class="form-control" style='width:17em' type="text" id="engine2_name" name="engine2_name" value="" required>
-        <label for="url">URL</label> <input class="form-control" style='width:35em'  type="text" id="engine2_url" name="engine2_url" value="" required>
+        <label for="engine2_name">__MSG_label_name__</label> <input class="form-control" style='width:17em' type="text" id="engine2_name" name="engine2_name" value="" required>
+        <label for="url">__MSG_label_url__</label> <input class="form-control" style='width:35em'  type="text" id="engine2_url" name="engine2_url" value="" required>
     </div>
     <br>
     <div class="form-group">
         <i id="engine3_icon" class="material-icons iconButton">people</i>
-        <label for="engine3_name">名前</label> <input class="form-control" style='width:17em' type="text" id="engine3_name" name="engine3_name" value="" required>
-        <label for="url">URL</label> <input class="form-control" style='width:35em'  type="text" id="engine3_url" name="engine3_url" value="" required>
+        <label for="engine3_name">__MSG_label_name__</label> <input class="form-control" style='width:17em' type="text" id="engine3_name" name="engine3_name" value="" required>
+        <label for="url">__MSG_label_url__</label> <input class="form-control" style='width:35em'  type="text" id="engine3_url" name="engine3_url" value="" required>
     </div>
     <br>
     <div class="form-group">
         <i id="engine4_icon" class="mdi mdi-alpha-s-box iconButton" style="font-size: 23px;"></i>
-        <label for="engine4_name">名前</label> <input class="form-control" style='width:17em' type="text" id="engine4_name" name="engine4_name" value="" required>
-        <label for="url">URL</label> <input class="form-control" style='width:35em'  type="text" id="engine4_url" name="engine4_url" value="" required>
+        <label for="engine4_name">__MSG_label_name__</label> <input class="form-control" style='width:17em' type="text" id="engine4_name" name="engine4_name" value="" required>
+        <label for="url">__MSG_label_url__</label> <input class="form-control" style='width:35em'  type="text" id="engine4_url" name="engine4_url" value="" required>
     </div>
     <br>
     <div class="form-group">
         <i id="engine5_icon" class="mdi mdi-alpha-n-box iconButton" style="font-size: 23px;"></i>
-        <label for="engine5_name">名前</label> <input class="form-control" style='width:17em' type="text" id="engine5_name" name="engine5_name" value="" required>
-        <label for="url">URL</label> <input class="form-control" style='width:35em'  type="text" id="engine5_url" name="engine5_url" value="" required>
+        <label for="engine5_name">__MSG_label_name__</label> <input class="form-control" style='width:17em' type="text" id="engine5_name" name="engine5_name" value="" required>
+        <label for="url">__MSG_label_url__</label> <input class="form-control" style='width:35em'  type="text" id="engine5_url" name="engine5_url" value="" required>
     </div>
     <br>
     <div class="form-group">
         <i id="engine6_icon" class="mdi mdi-youtube iconButton" style="font-size: 23px;"></i>
-        <label for="engine6_name">名前</label> <input class="form-control" style='width:17em' type="text" id="engine6_name" name="engine6_name" value="" required>
-        <label for="url">URL</label> <input class="form-control" style='width:35em'  type="text" id="engine6_url" name="engine6_url" value="" required>
+        <label for="engine6_name">__MSG_label_name__</label> <input class="form-control" style='width:17em' type="text" id="engine6_name" name="engine6_name" value="" required>
+        <label for="url">__MSG_label_url__</label> <input class="form-control" style='width:35em'  type="text" id="engine6_url" name="engine6_url" value="" required>
     </div>
     <br>
+    <br>
 
-    <input type="submit" id="save" name="save" value="設定"></input>
-    <input type="submit" id="reset" name="reset" value="初期状態に戻す"></button>
+    <input type="submit" id="save" name="save" value="__MSG_button_save__"></input>
+    <input type="submit" id="reset" name="reset" value="__MSG_button_reset__"></button>
 
 </form>
 
