@@ -860,6 +860,7 @@ const attachTagInputEvents = (stackWrapper) => {
 
 	// KEYUP
 	$(stackWrapper).find('.tagadd').keyup((ev) => {
+		ev.stopPropagation();
 		ev.preventDefault();
 
 		let tagName = ev.target.value;

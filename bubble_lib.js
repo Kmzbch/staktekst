@@ -118,13 +118,11 @@ const createBubbleDOM = () => {
 	// });
 
 	if (USER_DEFINED_ICONS.length !== 0) {
-		console.log('sdfsdf');
 		// append icons on the bubble left
 		USER_DEFINED_ICONS.forEach((icon) => {
 			createIconDOM(icon).appendTo(bubble.find('#leftContainer'));
 		});
 	} else {
-		console.log('AAAA');
 		// append icons on the bubble left
 		SEARCH_ENGINE_ICONS.forEach((icon) => {
 			createIconDOM(icon).appendTo(bubble.find('#leftContainer'));
@@ -220,7 +218,6 @@ const sendCommandMessage = (command) => {
 chrome.storage.sync.get([ 'options' ], (res) => {
 	// load config
 	if (res.options.balloonMenuEnabled || typeof res.options === 'undefined') {
-		console.log('QQ:Q:Q:');
 		if (typeof res.options.searchEngines !== 'undefined') {
 			res.options.searchEngines.forEach((s) => {
 				USER_DEFINED_ICONS.push({
