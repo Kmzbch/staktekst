@@ -2,22 +2,22 @@
 
 const SEARCH_ENGINE_ICONS = [
 	{
-		className: 'material-icons stackButton',
+		className: 'mdi mdi-magnify stackButton',
 		title: chrome.i18n.getMessage('se_google'),
-		innerText: 'search',
+		innerText: '',
 		command: 'google'
 	},
 	{
-		className: 'material-icons stackButton',
+		className: 'mdi mdi-check stackButton',
 		title: chrome.i18n.getMessage('se_vocabulary'),
-		innerText: 'check',
+		innerText: '',
 		command: 'vocabulary'
 	},
 
 	{
-		className: 'material-icons stackButton',
+		className: 'mdi mdi-account-multiple stackButton',
 		title: chrome.i18n.getMessage('se_doppl'),
-		innerText: 'people',
+		innerText: '',
 		command: 'dopeoplesayit'
 	},
 	{
@@ -27,7 +27,6 @@ const SEARCH_ENGINE_ICONS = [
 		command: 'skell'
 	},
 	{
-		// className: 'mdi mdi-twitter stackButton',
 		className: 'mdi mdi-alpha-n-box stackButton',
 		title: chrome.i18n.getMessage('se_netspeak'),
 		innerText: '',
@@ -41,9 +40,9 @@ const SEARCH_ENGINE_ICONS = [
 	},
 
 	{
-		className: 'material-icons stackButton',
+		className: 'mdi mdi-translate stackButton',
 		title: chrome.i18n.getMessage('se_mirai'),
-		innerText: 'translate',
+		innerText: '',
 		command: 'mirai'
 	},
 	{
@@ -56,30 +55,30 @@ const SEARCH_ENGINE_ICONS = [
 
 const SYSTEM_COMMAND_ICONS = [
 	{
-		className: 'material-icons stackButton',
+		className: 'mdi mdi-import stackButton',
 		title: chrome.i18n.getMessage('com_push'),
-		innerText: 'input',
+		innerText: '',
 		command: 'pushtext'
 	},
 	{
-		className: 'material-icons stackButton',
+		className: 'mdi mdi-clipboard-text stackButton',
 		title: chrome.i18n.getMessage('com_copy'),
-		innerText: 'assignment',
+		innerText: '',
 		command: 'extendedcopy'
 	}
 ];
 
 const FLOAT_COMMAND_ICONS = [
 	{
-		className: 'material-icons bookmark-icon',
+		className: 'mdi mdi-bookmark-multiple bookmark-icon',
 		title: chrome.i18n.getMessage('com_bookmark'),
-		innerText: 'bookmarks',
+		innerText: '',
 		command: 'bookmark'
 	},
 	{
-		className: 'material-icons zoom-icon',
+		className: 'mdi mdi-magnify-plus-outline zoom-icon',
 		title: chrome.i18n.getMessage('com_zoomin'),
-		innerText: 'switchzoom',
+		innerText: '',
 		command: 'switchzoom'
 	}
 ];
@@ -169,10 +168,12 @@ const renderBubble = () => {
 			},
 			(response) => {
 				if (response.zoomFactor === 1) {
-					$('.zoom-icon').text('zoom_in');
+					$('.zoom-icon').removeClass('mdi-magnify-minus-outline');
+					$('.zoom-icon').addClass('mdi-magnify-plus-outline');
 					$('.zoom-icon').title = chrome.i18n.getMessage('com_zoomin');
 				} else {
-					$('.zoom-icon').text('zoom_out');
+					$('.zoom-icon').removeClass('mdi-magnify-plus-outline');
+					$('.zoom-icon').addClass('mdi-magnify-minus-outline');
 					$('.zoom-icon').title = chrome.i18n.getMessage('com_zoomout');
 				}
 			}

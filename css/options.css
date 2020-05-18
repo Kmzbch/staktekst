@@ -1,11 +1,25 @@
+/* utility classes */
 .hidden {
 	display: none !important;
 }
 
+/* body */
 body {
 	width: 70%;
 }
 
+/* icon buttons */
+i:hover {
+	background: rgba(0, 0, 0, 0.1);
+}
+
+i {
+	padding: 2px 5px 2px 5px;
+	cursor: pointer;
+	font-size: 23px !important;
+}
+
+/* icon selection balloon tip */
 #iconselection::after {
 	content: "";
 	position: absolute;
@@ -14,66 +28,22 @@ body {
 	margin-left: -5px;
 	border-width: 10px;
 	border-style: solid;
-	/* border-top-color: transparent transparent black transparent; */
-
 	border: 10px solid transparent;
 	border-bottom-color: rgba(0, 0, 0, 0.8) !important;
-	/* border-bottom: 0; */
 	border-left: 0;
 }
 
+/* icon selection balloon */
 #iconselection {
-	background: white;
 	position: absolute;
 	z-index: 99999999;
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+	background: white;
 	border-radius: 5px;
 	padding: 13px;
 	width: 420px;
 	height: 300px;
-	display: flex;
-	/* flex-direction: row; */
-	flex-wrap: wrap;
 	border: 1px solid black;
-	align-content: flex-start;
-}
-#iconselection .iconButton {
-	width: 30px !important;
-	height: 30px !important;
-	font-size: 25px !important;
-	margin: 3px !important;
-}
-
-.iconButton:hover {
-	background: rgba(0, 0, 0, 0.1);
-}
-
-.iconButton {
-	cursor: pointer;
-}
-
-.mdi {
-	font-size: 23px !important;
-}
-
-/* ----- Material Icons ----- */
-@font-face {
-	font-family: 'Material Icons';
-	font-style: normal;
-	font-weight: 400;
-	src: url('chrome-extension://__MSG_@@extension_id__/webfonts/Material Icons.woff2') format('woff2');
-}
-
-.material-icons {
-	font-family: 'Material Icons';
-	font-weight: normal;
-	font-style: normal;
-	font-size: 24px;
-	line-height: 1;
-	letter-spacing: normal;
-	text-transform: none;
-	display: inline-block;
-	white-space: nowrap;
-	word-wrap: normal;
-	direction: ltr;
-	-webkit-font-smoothing: antialiased;
 }
