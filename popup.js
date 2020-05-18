@@ -670,7 +670,9 @@ const generateSeparatorHTML = ({ id, type, content, footnote, date }) => {
 	separatorHTML += `<input class="separatorInput" type="text" value="${content}" placeholder="${chrome.i18n.getMessage(
 		'hint_createseparator'
 	)}" spellcheck="false">`;
-	separatorHTML += `<i class="material-icons separatorCheckbox">check</i>`;
+	separatorHTML += `<i class="material-icons separatorCheckbox" title="${chrome.i18n.getMessage(
+		'hint_removeseparator'
+	)}">check</i>`;
 
 	// add tags to footnote
 	separatorHTML += `<div class="footnote hidden">`;

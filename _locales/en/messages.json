@@ -24,6 +24,8 @@
 	"hint_createseparator": { "message": "New Separator" },
 	"hint_jumpdate": { "message": "Jump to date" },
 
+	"hint_removeseparator": { "message": "Delete" },
+
 	"hint_fileexport": { "message": "Export File" },
 	"label_fileexport_title": { "message": "Export File" },
 	"label_fileexport_msg": { "message": "Select a file format to export notes: " },

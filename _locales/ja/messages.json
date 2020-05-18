@@ -33,6 +33,7 @@
 	"hint_searchtag": { "message": "タグを検索" },
 	"hint_createseparator": { "message": "セパレータを新規作成" },
 	"hint_edittag": { "message": "タグを編集" },
+	"hint_removeseparator": { "message": "セパレータを削除" },
 
 	"hint_removetag": { "message": "Enterキーでタグを削除" },
 	"label_noresult_msg": { "message": "検索結果: 0件" },
