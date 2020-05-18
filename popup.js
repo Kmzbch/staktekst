@@ -1127,7 +1127,15 @@ const attachNoteContentEvents = (wrapper) => {
 	// detect changes on content editable
 	wrapper.addEventListener('blur', fireChange);
 	wrapper.addEventListener('keyup', fireChange);
-	wrapper.addEventListener('paste', fireChange);
+	wrapper.addEventListener('paste', (e) => {
+		e.preventDefault();
+
+		// remove copied text styles
+		let text = e.clipboardData.getData('text/plain');
+		document.execCommand('insertHTML', false, text);
+
+		fireChange(e);
+	});
 	wrapper.addEventListener('copy', fireChange);
 	wrapper.addEventListener('cut', fireChange);
 	// wrapper.addEventListener('mouseup', fireChange);
