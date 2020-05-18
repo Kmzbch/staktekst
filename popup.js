@@ -352,7 +352,7 @@ const updateSearchResult = () => {
 			displayMessage(hits === 0 ? chrome.i18n.getMessage('label_noresult_msg') : `全${stack.length}中${hits}件`);
 		}
 		$('.search-cancel-button').show();
-		setTimeout(clearMessage, 5000);
+		setTimeout(clearMessage, 3000);
 	} else {
 		clearMessage();
 		$('.search-cancel-button').hide();
@@ -1959,6 +1959,7 @@ const clearAllItems = () => {
 	$('.search-cancel-button').hide();
 	shadowNodes.length = 0;
 	shadowNodes.push(document.querySelector('#textstack').cloneNode(true));
+	toggleSortOrder(true);
 };
 
 /**
