@@ -526,6 +526,7 @@ footer {
 .sepGenerator:hover {
 	transition: 0.2s;
 	/* background: lemonchiffon; */
+	background-color: rgba(0, 0, 0, 0.3);
 }
 .sepGenerator {
 	position: relative;

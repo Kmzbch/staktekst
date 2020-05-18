@@ -654,7 +654,7 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 	}
 
 	// add separator generator
-	noteItemHTML += '<div class="sepGenerator hidden"></div>';
+	noteItemHTML += `<div class="sepGenerator hidden" title="${chrome.i18n.getMessage('hint_createseparator')}"></div>`;
 
 	// add the most outer closing tag
 	noteItemHTML += '</div>';
@@ -1045,11 +1045,7 @@ const attachNoteContentEvents = (wrapper) => {
 	let contentDIV = wrapper.querySelector('.content');
 	let prevHTML = wrapper.innerHTML;
 
-	// add to wrapper
-	wrapper.addEventListener('dblclick', (e) => {
-		if (e.target.classList.contains('tagadd')) {
-			return false;
-		}
+	wrapper.addEventListener('click', (e) => {
 		if (e.target.classList.contains('sepGenerator')) {
 			if (!e.target.classList.contains('hidden')) {
 				createSeparator(wrapper);
@@ -1059,6 +1055,22 @@ const attachNoteContentEvents = (wrapper) => {
 			}
 			return false;
 		}
+	});
+
+	// add to wrapper
+	wrapper.addEventListener('dblclick', (e) => {
+		if (e.target.classList.contains('tagadd')) {
+			return false;
+		}
+		// if (e.target.classList.contains('sepGenerator')) {
+		// 	if (!e.target.classList.contains('hidden')) {
+		// 		createSeparator(wrapper);
+		// 		if (sortable !== null) {
+		// 			sortable.save();
+		// 		}
+		// 	}
+		// 	return false;
+		// }
 		if (wrapper.classList.contains('note')) {
 			// fire only when the area out of text body double clicked
 			if (!e.target.classList.contains('content')) {
