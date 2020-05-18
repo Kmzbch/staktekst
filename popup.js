@@ -345,7 +345,12 @@ const updateSearchResult = () => {
 
 	// change styles on search
 	if (query) {
-		displayMessage(hits === 0 ? chrome.i18n.getMessage('label_noresult_msg') : `${hits} of ${stack.length}`);
+		let locale = chrome.i18n.getUILanguage();
+		if (locale === 'en') {
+			displayMessage(hits === 0 ? chrome.i18n.getMessage('label_noresult_msg') : `${hits} of ${stack.length}`);
+		} else if (locale === 'ja') {
+			displayMessage(hits === 0 ? chrome.i18n.getMessage('label_noresult_msg') : `全${stack.length}中${hits}件`);
+		}
 		$('.search-cancel-button').show();
 		setTimeout(clearMessage, 5000);
 	} else {
@@ -1238,6 +1243,7 @@ const attachEventsToTextStack = () => {
 					stackWrapper.find('.footnote').find('.divWrap').removeClass('hidden');
 				}
 			} else {
+				// TODO: fix lowering search query bug
 				// when hashtag clicked
 				if (!isNaN(Date.parse($(targetElem).html()))) {
 					filterNoteItemsByTag(':d');
@@ -1537,11 +1543,6 @@ const initializeEventListeners = () => {
 	window.onload = function() {
 		setTimeout(() => {
 			document.body.addEventListener('drag', (e) => {
-				// if (e.clientY > 550) {
-				// 	window.scrollBy(0, 75);
-				// } else if (e.clientY < 100) {
-				// 	window.scrollBy(0, -75);
-				// }
 				if (e.clientY > 650) {
 					window.scrollBy(0, 75);
 				} else if (e.clientY > 550) {
@@ -1805,7 +1806,8 @@ const createNoteItem = () => {
 	};
 
 	// add the current tag in the seachbox to the new note
-	const searchQuery = windowState.searchQuery;
+	// const searchQuery = windowState.searchQuery;
+	const searchQuery = $('.searchbox').val();
 	if (searchQuery[0] === '#' && searchQuery.length > 0) {
 		note.footnote.tags.push(searchQuery.substring(1));
 	}
@@ -1928,6 +1930,7 @@ const clearAllItems = () => {
 	// reset the form
 	$('.searchbox').val('');
 	$('#textstack').empty();
+	$('#textstack').append($(generateCurrentDateHTML()));
 
 	// reset state variables
 	stack = [];
@@ -1952,6 +1955,10 @@ const clearAllItems = () => {
 		scrollY: 0,
 		sortedByNew: true
 	};
+
+	$('.search-cancel-button').hide();
+	shadowNodes.length = 0;
+	shadowNodes.push(document.querySelector('#textstack').cloneNode(true));
 };
 
 /**

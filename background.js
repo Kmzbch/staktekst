@@ -187,7 +187,7 @@ chrome.contextMenus.onClicked.addListener((menuInfo, tab) => {
 function setContextMenus() {
 	chrome.storage.sync.get([ 'options' ], (res) => {
 		// load config
-		if (res.options.contextMenuEnabled || typeof res.options === 'undefined') {
+		if (typeof res.options === 'undefined' || res.options.contextMenuEnabled) {
 			// reset and create context menus
 			chrome.contextMenus.removeAll(() => {
 				MENU_ITEMS.forEach((item) => {
@@ -208,7 +208,7 @@ function setContextMenus() {
 
 function setSearchEngines() {
 	chrome.storage.sync.get([ 'options' ], (res) => {
-		if (typeof res.options.searchEngines !== '') {
+		if (typeof res.options !== 'undefined') {
 			USER_ITEMS.length = 0;
 			res.options.searchEngines.forEach((s) => {
 				console.log(s.url);

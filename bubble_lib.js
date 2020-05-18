@@ -217,20 +217,28 @@ const sendCommandMessage = (command) => {
 
 chrome.storage.sync.get([ 'options' ], (res) => {
 	// load config
-	if (res.options.balloonMenuEnabled || typeof res.options === 'undefined') {
-		if (typeof res.options.searchEngines !== 'undefined') {
-			res.options.searchEngines.forEach((s) => {
-				USER_DEFINED_ICONS.push({
-					className: s.icon.class.replace(/iconButton/, 'stackButton'),
-					title: s.name,
-					innerText: s.icon.text,
-					command: s.id
+	if (typeof res.options !== 'undefined') {
+		if (res.options.balloonMenuEnabled) {
+			if (typeof res.options.searchEngines !== 'undefined') {
+				res.options.searchEngines.forEach((s) => {
+					USER_DEFINED_ICONS.push({
+						className: s.icon.class.replace(/iconButton/, 'stackButton'),
+						title: s.name,
+						innerText: s.icon.text,
+						command: s.id
+					});
 				});
-			});
 
-			USER_DEFINED_ICONS = USER_DEFINED_ICONS.concat(SEARCH_ENGINE_ICONS.slice(-2));
+				USER_DEFINED_ICONS = USER_DEFINED_ICONS.concat(SEARCH_ENGINE_ICONS.slice(-2));
+			}
+
+			// attach bubble
+			$('body').append(createBubbleDOM());
+
+			// attach bubble to the loaded page
+			document.addEventListener('mouseup', renderBubble);
 		}
-
+	} else {
 		// attach bubble
 		$('body').append(createBubbleDOM());
 
