@@ -225,9 +225,9 @@ header {
 	margin-bottom: 70px;
 }
 
-footer:hover {
+/* footer:hover {
 	opacity: 1 !important;
-}
+} */
 
 footer {
 	display: block;

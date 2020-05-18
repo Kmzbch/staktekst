@@ -259,11 +259,15 @@ const toggleFileExportModal = (display = $('#fileexport-window.modal').hasClass(
 const toggleSortOrder = (sortingByNew) => {
 	if (sortingByNew) {
 		$('#sort').html(
-			'<span class="sortText">New </span><i title="ノートを並び替え" class="material-icons">arrow_upward</i>'
+			`<span class="sortText">New </span><i title="${chrome.i18n.getMessage(
+				'hint_toggleorder'
+			)}" class="material-icons">arrow_upward</i>`
 		);
 	} else {
 		$('#sort').html(
-			'<span class="sortText">Old </span><i title="ノートを並び替え" class="material-icons">arrow_downward</i>'
+			`<span class="sortText">Old </span><i title="${chrome.i18n.getMessage(
+				'hint_toggleorder'
+			)}" class="material-icons">arrow_downward</i>`
 		);
 	}
 
@@ -1512,18 +1516,20 @@ const initializeEventListeners = () => {
 	/**
    * window events
    */
+
 	window.onscroll = (e) => {
 		// show header and footer when scrolling to the top/bottom
 		if (window.pageYOffset == 0) {
 			$('header').css('opacity', 1);
-			$('footer').css('opacity', 1);
+			$('footer').show();
 		} else if ($('body').offsetHeight + window.scrollY >= $('body').scrollHeight) {
 			$('header').css('opacity', 1);
-			$('footer').css('opacity', 1);
+			$('footer').hide();
 		} else {
 			$('header').css('opacity', 0);
-			$('footer').css('opacity', 0);
+			$('footer').fadeOut(100);
 		}
+
 		// save scrollY position
 		windowState.scrollY = window.scrollY;
 	};
@@ -2043,7 +2049,9 @@ const restorePreviousState = () => {
 				windowState.sortedByNew = state.sortedByNew;
 				if (!windowState.sortedByNew) {
 					$('#sort').html(
-						'<span class="sortText">Old </span><i title="ノートを並び替え" class="material-icons">arrow_downward</i>'
+						`<span class="sortText">Old </span><i title="${chrome.i18n.getMessage(
+							'hint_toggleorder'
+						)}" class="material-icons">arrow_downward</i>`
 					);
 					if (sortable !== null) {
 						$(shadowNodes[0]).children().each(function(i, wrapper) {
