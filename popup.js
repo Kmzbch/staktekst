@@ -297,7 +297,7 @@ const toggleEditorMode = (div, display = !$(div).attr('contentEditable') ? true 
 		$(div).focus();
 		// change visual styles
 		$(div).parent().addClass('editing');
-		$(div).next().children().first().hide(); // edit icon
+		$(div).next().hide(); // edit icon
 
 		updateStatusBoard($(div).html());
 	} else {
@@ -309,7 +309,7 @@ const toggleEditorMode = (div, display = !$(div).attr('contentEditable') ? true 
 		div.innerHTML = div.innerHTML.replace(String.fromCharCode(8203), '');
 		// change visual styles
 		$(div).parent().removeClass('editing');
-		$(div).next().children().first().show(); // edit icon
+		$(div).next().show(); // edit icon
 	}
 };
 
@@ -597,9 +597,7 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 
 	// add content body
 	noteItemHTML += `<div class='content'>${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div>`;
-	noteItemHTML += `<div style="display:inline;"><i title="${chrome.i18n.getMessage(
-		'hint_editnote'
-	)}" class="material-icons edit">edit</i>`;
+	noteItemHTML += `&#8203;<i title="${chrome.i18n.getMessage('hint_editnote')}" class="material-icons edit">edit</i>`;
 	noteItemHTML += `<div><i title="${chrome.i18n.getMessage(
 		'hint_removenote'
 	)}" class="material-icons checkbox">check</i></div>`;
@@ -659,7 +657,7 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 	noteItemHTML += '<div class="sepGenerator hidden"></div>';
 
 	// add the most outer closing tag
-	noteItemHTML += '</div></div>';
+	noteItemHTML += '</div>';
 
 	return noteItemHTML;
 };
@@ -1272,7 +1270,7 @@ const attachEventsToTextStack = () => {
 		} else if ($(targetElem).hasClass('checkbox')) {
 			// when checkbox clicked
 			$(targetElem).css('color', 'white !important');
-			let textItem = $(targetElem).parent().parent().parent().get(0);
+			let textItem = $(targetElem).parent().parent().get(0);
 			removeNoteItem(textItem);
 			// save sort order
 			if (sortable !== null) {
