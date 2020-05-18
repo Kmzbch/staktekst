@@ -68,5 +68,7 @@
 	"com_copy": { "message": "URLとタイトル付きでコピー" },
 	"com_bookmark": { "message": "ページをスタックにブックマーク" },
 	"com_zoomin": { "message": "ページを拡大" },
-	"com_zoomout": { "message": "ページ倍率をリセット" }
+	"com_zoomout": { "message": "ページ倍率をリセット" },
+
+	"msg_itemremoved": { "message": "削除しました" }
 }

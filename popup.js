@@ -293,7 +293,7 @@ const toggleEditorMode = (div, display = !$(div).attr('contentEditable') ? true 
 		$(div).focus();
 		// change visual styles
 		$(div).parent().addClass('editing');
-		$(div).next().hide(); // edit icon
+		$(div).next().children().first().hide(); // edit icon
 
 		updateStatusBoard($(div).html());
 	} else {
@@ -305,7 +305,7 @@ const toggleEditorMode = (div, display = !$(div).attr('contentEditable') ? true 
 		div.innerHTML = div.innerHTML.replace(String.fromCharCode(8203), '');
 		// change visual styles
 		$(div).parent().removeClass('editing');
-		$(div).next().show(); // edit icon
+		$(div).next().children().first().show(); // edit icon
 	}
 };
 
@@ -588,7 +588,9 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 
 	// add content body
 	noteItemHTML += `<div class='content'>${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div>`;
-	noteItemHTML += `<i title="${chrome.i18n.getMessage('hint_editnote')}" class="material-icons edit">edit</i>`;
+	noteItemHTML += `<div style="display:inline;"><i title="${chrome.i18n.getMessage(
+		'hint_editnote'
+	)}" class="material-icons edit">edit</i>`;
 	noteItemHTML += `<div><i title="${chrome.i18n.getMessage(
 		'hint_removenote'
 	)}" class="material-icons checkbox">check</i></div>`;
@@ -648,7 +650,7 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 	noteItemHTML += '<div class="sepGenerator hidden"></div>';
 
 	// add the most outer closing tag
-	noteItemHTML += '</div>';
+	noteItemHTML += '</div></div>';
 
 	return noteItemHTML;
 };
@@ -875,11 +877,6 @@ const attachTagInputEvents = (stackWrapper) => {
 		ev.preventDefault();
 
 		let tagName = ev.target.value;
-
-		// if ($.mb_strlen(tagName) > 5 || tagName.length > 10) {
-		// 	displayMessage('タグは最大5文字まで');
-		// 	return false;
-		// }
 
 		if (tagName[tagName.length - 1] === ' ' || ev.keyCode === Keys.ENTER) {
 			tagName = ev.target.value.trim();
@@ -1265,7 +1262,7 @@ const attachEventsToTextStack = () => {
 		} else if ($(targetElem).hasClass('checkbox')) {
 			// when checkbox clicked
 			$(targetElem).css('color', 'white !important');
-			let textItem = $(targetElem).parent().parent().get(0);
+			let textItem = $(targetElem).parent().parent().parent().get(0);
 			removeNoteItem(textItem);
 			// save sort order
 			if (sortable !== null) {
@@ -1841,7 +1838,7 @@ const createNoteItem = () => {
 const removeNoteItem = (noteItem) => {
 	// apply visual effects and display message
 	noteItem.classList.add('removed');
-	displayMessage('Item Removed!');
+	displayMessage(chrome.i18n.getMessage('msg_itemremoved'));
 
 	// remove from stack and storage after a while
 	setTimeout(() => {

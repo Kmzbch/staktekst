@@ -65,5 +65,7 @@
 	"com_copy": { "message": "Copy with Title and URL" },
 	"com_bookmark": { "message": "Bookmark" },
 	"com_zoomin": { "message": "Zoom in" },
-	"com_zoomout": { "message": "Zoom out" }
+	"com_zoomout": { "message": "Zoom out" },
+
+	"msg_itemremoved": { "message": "Item Removed!" }
 }
