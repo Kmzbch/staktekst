@@ -597,7 +597,7 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 
 	// add content body
 	noteItemHTML += `<div class='content'>${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div>`;
-	noteItemHTML += `&#8203;<i title="${chrome.i18n.getMessage('hint_editnote')}" class="material-icons edit">edit</i>`;
+	noteItemHTML += `<i title="${chrome.i18n.getMessage('hint_editnote')}" class="mdi mdi-pencil edit"></i>`;
 	noteItemHTML += `<div><i title="${chrome.i18n.getMessage(
 		'hint_removenote'
 	)}" class="material-icons checkbox">check</i></div>`;

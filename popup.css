@@ -162,13 +162,18 @@
 
 .edit:hover {
 	color: black;
-	transform: scale(1.1);
+	/* transform: scale(1.1); */
+}
+
+.editing .edit::before {
+	display: none;
 }
 
 .edit {
-	font-size: 15px !important;
+	font-size: 9px !important;
+	transform: scale(0.9);
 	color: rgba(32, 32, 32, 0.1);
-	margin-left: 5px;
+	margin-left: 0px;
 	-webkit-user-select: none;
 	-moz-user-select: none;
 	-ms-user-select: none;
