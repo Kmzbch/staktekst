@@ -1,9 +1,4 @@
 .mdi {
-	/* color: white;
-	font-size: 20px; */
-
-	/* top: -6px !important;
-	left: 6px !important; */
 	font-weight: normal !important;
 	font-style: normal !important;
 	font-size: 22px !important;
@@ -142,25 +137,4 @@
 	font-size: 20px;
 	-webkit-user-select: none;
 	-moz-user-select: none;
-}
-
-/* Font Awesome and Material Icons included */
-/*
-* css/brands.min.css,
-* css/solid.min.css,
-* css/font-awesome.min.css,
-*css/material-icons.css
-*/
-
-/* modification on font awesome */
-.fab {
-	margin-top: 5px !important;
-	margin-left: auto !important;
-	margin-right: auto !important;
-	font-size: 18px !important;
-}
-
-.fas {
-	margin-top: 4px !important;
-	font-size: 18px !important;
 }

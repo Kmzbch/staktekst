@@ -19,6 +19,12 @@
 	},
 	"content_scripts": [
 		{
+			"js": [ "lib/jquery-3.5.0.min.js", "bubble_lib.js", "currentTab.js" ],
+			"css": [ "css/currentTab.css", "css/material-icons.css", "css/materialdesignicons.min.css" ],
+			"matches": [ "\u003Call_urls>" ],
+			"run_at": "document_end"
+		},
+		{
 			"js": [ "lib/jquery-3.5.0.min.js", "newTab.js" ],
 			"matches": [
 				"http://www.oddcast.com/ttsdemo/index.php",
@@ -26,28 +32,15 @@
 				"https://miraitranslate.com/en/trial/"
 			],
 			"run_at": "document_end"
-		},
-		{
-			"js": [ "lib/jquery-3.5.0.min.js", "bubble_lib.js", "currentTab.js" ],
-			"css": [
-				"currentTab.css",
-				"css/brands.min.css",
-				"css/solid.min.css",
-				"css/font-awesome.min.css",
-				"css/material-icons.css",
-				"css/materialdesignicons.min.css"
-			],
-			"matches": [ "\u003Call_urls>" ],
-			"run_at": "document_end"
 		}
 	],
-	"web_accessible_resources": [ "images/*", "webfonts/*", "icons/*", "*.json" ],
-	"content_security_policy": "script-src 'self' 'unsafe-eval' chrome-extension-resource: ; object-src 'self' ; child-src 'self' ; style-src 'unsafe-inline' ; frame-src 'self' ; default-src 'self' ; img-src 'self' data: *; connect-src 'self' ",
 	"icons": {
 		"16": "icons/icon_16.png",
 		"19": "icons/icon_19.png",
 		"38": "icons/icon_38.png",
 		"128": "icons/icon_128.png"
 	},
+	"web_accessible_resources": [ "images/*", "webfonts/*", "icons/*", "*.json" ],
+	"content_security_policy": "script-src 'self' 'unsafe-eval' chrome-extension-resource: ; object-src 'self' ; child-src 'self' ; style-src 'unsafe-inline' ; frame-src 'self' ; default-src 'self' ; img-src 'self' data: *; connect-src 'self' ",
 	"permissions": [ "storage", "activeTab", "tabs", "unlimitedStorage", "contextMenus", "downloads" ]
 }

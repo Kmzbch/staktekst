@@ -1,5 +1,5 @@
 // background.js instance
-const background = chrome.extension.getBackgroundPage();
+let background = chrome.extension.getBackgroundPage();
 
 // state variables
 let stack = [];
@@ -72,25 +72,6 @@ const preset = {
 	]
 };
 let options = {};
-
-// ========== UTILITIES ==========
-// https://stackoverflow.com/questions/25467009/internationalization-of-html-pages-for-my-google-chrome-extension/39810769
-const localizeHtmlPage = () => {
-	//Localize by replacing __MSG_***__ meta tags
-	var objects = document.getElementsByTagName('html');
-	for (var j = 0; j < objects.length; j++) {
-		var obj = objects[j];
-
-		var valStrH = obj.innerHTML.toString();
-		var valNewH = valStrH.replace(/__MSG_(\w+)__/g, function(match, v1) {
-			return v1 ? chrome.i18n.getMessage(v1) : '';
-		});
-
-		if (valNewH != valStrH) {
-			obj.innerHTML = valNewH;
-		}
-	}
-};
 
 const importNotesFromJSON = async (path) => {
 	const URL = chrome.runtime.getURL(path);
@@ -627,12 +608,6 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 		});
 	}
 	noteItemHTML += tagsHTML;
-
-	// hide tag input if the note has more than 4 tags;
-	// const classes = footnote.tags.length < 3 ? 'divWrap' : 'divWrap hidden';
-	// noteItemHTML += `<div class="${classes}"><input title="${chrome.i18n.getMessage(
-	// 	'hint_addtag'
-	// )}" type="text" class="tagadd"></div>`;
 
 	let classes;
 	if (type === 'clip') {
@@ -1580,6 +1555,9 @@ const initializeEventListeners = () => {
 
 	// save window state when the popup window is closed
 	$(window).on('unload blur', () => {
+		if (typeof background !== 'undefined') {
+			background = chrome.extension.getBackgroundPage();
+		}
 		windowState.closedDateTime = new Date().toISOString();
 		background.chrome.storage.local.set(windowState);
 	});
