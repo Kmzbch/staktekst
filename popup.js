@@ -579,7 +579,7 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 	let noteItemHTML = `<div class="stackwrapper ${type}" id="${id}">`;
 
 	// add content body
-	noteItemHTML += `<div class='content'>${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div>`;
+	noteItemHTML += `<div class='content'>&#8203;${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div>`;
 	noteItemHTML += `<i title="${chrome.i18n.getMessage('hint_editnote')}" class="mdi mdi-pencil edit"></i>`;
 	noteItemHTML += `<i title="${chrome.i18n.getMessage('hint_removenote')}" class="mdi mdi-check checkbox"></i>`;
 	noteItemHTML += `<input type="hidden" value="${id}">`;
@@ -1076,7 +1076,7 @@ const attachNoteContentEvents = (wrapper) => {
 			$(item).contents().unwrap();
 		}, '');
 
-		contentDIV.innerHTML = contentDIV.innerHTML.replace(String.fromCharCode(8203), '');
+		// contentDIV.innerHTML = contentDIV.innerHTML.replace(String.fromCharCode(8203), '');
 
 		// move caret to the end of the text
 		const node = contentDIV.childNodes[contentDIV.childNodes.length - 1];
@@ -1973,6 +1973,8 @@ const renderStack = () => {
 	stackStorage.get((raw) => {
 		if (typeof raw === 'undefined') {
 			stackStorage.reset();
+			let notesHTML = generateCurrentDateHTML();
+			document.querySelector('#textstack').insertAdjacentHTML('afterbegin', notesHTML);
 		} else {
 			// read and sort stack by date
 			stack = JSON.parse(raw);
