@@ -41,6 +41,6 @@
 		"128": "assets/images/icon_128.png"
 	},
 	"web_accessible_resources": [ "assets", "assets/images/*", "assets/webfonts/*", "*.json" ],
-	"content_security_policy": "script-src 'self' 'unsafe-eval' chrome-extension-resource: ; object-src 'self' ; child-src 'self' ; style-src 'unsafe-inline' ; frame-src 'self' ; default-src 'self' ; img-src 'self' data: *; connect-src 'self' ",
+	"content_security_policy": "script-src 'self' 'unsafe-eval' ; object-src 'self' ; child-src 'self' ; style-src 'unsafe-inline' ; frame-src 'self' ; default-src 'self' ; img-src 'self' data: *; connect-src 'self' ",
 	"permissions": [ "storage", "activeTab", "tabs", "unlimitedStorage", "contextMenus", "downloads" ]
 }
