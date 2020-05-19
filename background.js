@@ -12,50 +12,38 @@ const MENU_ITEMS = [
 		title: 'テキストをスタックにプッシュ',
 		contexts: [ 'page', 'selection' ]
 	},
-	// {
-	// 	id: 'twitter',
-	// 	title: 'Twitter',
-	// 	contexts: [ 'selection' ],
-	// 	url: 'https://twitter.com/search?q=%s'
-	// },
-	// {
-	// 	id: 'urban',
-	// 	title: 'Urban Dictionary',
-	// 	contexts: [ 'selection' ],
-	// 	url: 'https://www.urbandictionary.com/define.php?term=%s'
-	// },
 	{
-		id: 'google',
+		id: 'search1',
 		title: chrome.i18n.getMessage('se_google'),
 		contexts: [ 'selection' ],
 		url: 'https://encrypted.google.com/search?hl=en&gl=en&q=%s'
 	},
 	{
-		id: 'vocabulary',
+		id: 'search2',
 		title: chrome.i18n.getMessage('se_vocabulary'),
 		contexts: [ 'selection' ],
 		url: 'https://www.vocabulary.com/dictionary/%s'
 	},
 	{
-		id: 'dopeoplesayit',
+		id: 'search3',
 		title: chrome.i18n.getMessage('se_doppl'),
 		contexts: [ 'selection' ],
 		url: 'https://dopeoplesay.com/q/%s'
 	},
 	{
-		id: 'skell',
+		id: 'search4',
 		title: chrome.i18n.getMessage('se_skell'),
 		contexts: [ 'selection' ],
 		url: 'https://skell.sketchengine.co.uk/run.cgi/concordance?lpos=&query=%s'
 	},
 	{
-		id: 'netspeak',
+		id: 'search5',
 		title: chrome.i18n.getMessage('se_netspeak'),
 		contexts: [ 'selection' ],
 		url: 'https://netspeak.org/#q=%s&corpus=web-en'
 	},
 	{
-		id: 'youglish',
+		id: 'search6',
 		title: chrome.i18n.getMessage('se_youglish'),
 		contexts: [ 'selection' ],
 		url: 'https://youglish.com/search/%s'
@@ -105,8 +93,6 @@ const executeUserCommand = (commandId, text, tabTitle, tabUrl, tabId) => {
 			} else {
 				command = MENU_ITEMS.find((item) => item.id === commandId);
 			}
-
-			// let command = MENU_ITEMS.find((item) => item.id === commandId);
 			let urlWithQuery = command.url.replace('%s', text);
 			// open the URL
 			chrome.tabs.create({
@@ -214,7 +200,7 @@ function setSearchEngines() {
 				console.log(s.url);
 				USER_ITEMS.push({
 					id: s.id,
-					title: s.name,
+					title: s.title,
 					contexts: [ 'selection' ],
 					url: s.url
 				});

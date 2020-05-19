@@ -4,51 +4,43 @@ const SEARCH_ENGINE_ICONS = [
 	{
 		className: 'mdi mdi-magnify stackButton',
 		title: chrome.i18n.getMessage('se_google'),
-		innerText: '',
-		command: 'google'
+		command: 'search1'
 	},
 	{
 		className: 'mdi mdi-check stackButton',
 		title: chrome.i18n.getMessage('se_vocabulary'),
-		innerText: '',
-		command: 'vocabulary'
+		command: 'search2'
 	},
 
 	{
 		className: 'mdi mdi-account-multiple stackButton',
 		title: chrome.i18n.getMessage('se_doppl'),
-		innerText: '',
-		command: 'dopeoplesayit'
+		command: 'search3'
 	},
 	{
 		className: 'mdi mdi-alpha-s-box stackButton',
 		title: chrome.i18n.getMessage('se_skell'),
-		innerText: '',
-		command: 'skell'
+		command: 'search4'
 	},
 	{
 		className: 'mdi mdi-alpha-n-box stackButton',
 		title: chrome.i18n.getMessage('se_netspeak'),
-		innerText: '',
-		command: 'netspeak'
+		command: 'search5'
 	},
 	{
 		className: 'mdi mdi-youtube stackButton',
 		title: chrome.i18n.getMessage('se_youglish'),
-		innerText: '',
-		command: 'youglish'
+		command: 'search6'
 	},
 
 	{
 		className: 'mdi mdi-translate stackButton',
 		title: chrome.i18n.getMessage('se_mirai'),
-		innerText: '',
 		command: 'mirai'
 	},
 	{
 		className: 'mdi mdi-text-to-speech stackButton',
 		title: chrome.i18n.getMessage('se_oddcast'),
-		innerText: '',
 		command: 'oddcast'
 	}
 ];
@@ -57,13 +49,11 @@ const SYSTEM_COMMAND_ICONS = [
 	{
 		className: 'mdi mdi-import stackButton',
 		title: chrome.i18n.getMessage('com_push'),
-		innerText: '',
 		command: 'pushtext'
 	},
 	{
 		className: 'mdi mdi-clipboard-text stackButton',
 		title: chrome.i18n.getMessage('com_copy'),
-		innerText: '',
 		command: 'extendedcopy'
 	}
 ];
@@ -72,23 +62,21 @@ const FLOAT_COMMAND_ICONS = [
 	{
 		className: 'mdi mdi-bookmark-multiple bookmark-icon',
 		title: chrome.i18n.getMessage('com_bookmark'),
-		innerText: '',
 		command: 'bookmark'
 	},
 	{
 		className: 'mdi mdi-magnify-plus-outline zoom-icon',
 		title: chrome.i18n.getMessage('com_zoomin'),
-		innerText: '',
 		command: 'switchzoom'
 	}
 ];
 
 /* DOM creation and manipulation */
-const createIconDOM = ({ className, title, innerText = '', command }) => {
+const createIconDOM = ({ className, title, command }) => {
 	return $('<i>', {
 		addClass: className,
 		title: title,
-		text: innerText,
+		text: '',
 		on: {
 			mousedown: () => {
 				textHolder = window.getSelection().toString();
@@ -112,10 +100,6 @@ const createBubbleDOM = () => {
 	$(bubble).hide();
 
 	// // append icons on the bubble left
-	// SEARCH_ENGINE_ICONS.forEach((icon) => {
-	// 	createIconDOM(icon).appendTo(bubble.find('#leftContainer'));
-	// });
-
 	if (USER_DEFINED_ICONS.length !== 0) {
 		// append icons on the bubble left
 		USER_DEFINED_ICONS.forEach((icon) => {
@@ -196,19 +180,9 @@ let textHolder = '';
 const sendCommandMessage = (command) => {
 	let text = window.getSelection().toString();
 
-	console.log(text);
-
 	if (text == '') {
 		text = textHolder;
 	}
-	// only for popup.html
-	if (location.href.includes('chrome-extension://')) {
-		text = text.replace(/check\s$/, '');
-		// // get url and title from footnote
-		// let textitem = window.getSelection().getRangeAt(0).commonAncestorContainer.parentElement;
-	}
-
-	console.log(text);
 
 	chrome.runtime.sendMessage({
 		command: command,
@@ -223,9 +197,8 @@ chrome.storage.sync.get([ 'options' ], (res) => {
 			if (typeof res.options.searchEngines !== 'undefined') {
 				res.options.searchEngines.forEach((s) => {
 					USER_DEFINED_ICONS.push({
-						className: s.icon.class + ' stackButton',
+						className: s.class + ' stackButton',
 						title: s.name,
-						innerText: s.icon.text,
 						command: s.id
 					});
 				});

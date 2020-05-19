@@ -1,4 +1,4 @@
-const preset = {
+const defaultSettings = {
 	restoreEnabled: true,
 	duration: 30,
 	balloonMenuEnabled: true,
@@ -6,72 +6,54 @@ const preset = {
 	searchEngines: [
 		{
 			id: 'search1',
-			name: chrome.i18n.getMessage('se_google'),
+			title: chrome.i18n.getMessage('se_google'),
 			url: 'https://encrypted.google.com/search?hl=en&gl=en&q=%s',
-			icon: {
-				class: 'mdi mdi-magnify',
-				text: ''
-			}
+			class: 'mdi mdi-magnify'
 		},
 		{
 			id: 'search2',
-			name: chrome.i18n.getMessage('se_vocabulary'),
+			title: chrome.i18n.getMessage('se_vocabulary'),
 			url: 'https://www.vocabulary.com/dictionary/%s',
-			icon: {
-				class: 'mdi mdi-check',
-				text: ''
-			}
+			class: 'mdi mdi-check'
 		},
 		{
 			id: 'search3',
 
-			name: chrome.i18n.getMessage('se_doppl'),
+			title: chrome.i18n.getMessage('se_doppl'),
 			url: 'https://dopeoplesay.com/q/%s',
-			icon: {
-				class: 'mdi mdi-account-multiple',
-				text: ''
-			}
+			class: 'mdi mdi-account-multiple'
 		},
 		{
 			id: 'search4',
-			name: chrome.i18n.getMessage('se_skell'),
+			title: chrome.i18n.getMessage('se_skell'),
 			url: 'https://skell.sketchengine.co.uk/run.cgi/concordance?lpos=&query=%s',
-			icon: {
-				class: 'mdi mdi-alpha-s-box',
-				text: ''
-			}
+			class: 'mdi mdi-alpha-s-box'
 		},
 		{
 			id: 'search5',
 
-			name: chrome.i18n.getMessage('se_netspeak'),
+			title: chrome.i18n.getMessage('se_netspeak'),
 			url: 'https://netspeak.org/#q=%s&corpus=web-en',
-			icon: {
-				class: 'mdi mdi-alpha-n-box',
-				text: ''
-			}
+			class: 'mdi mdi-alpha-n-box'
 		},
 
 		{
 			id: 'search6',
-			name: chrome.i18n.getMessage('se_youglish'),
+			title: chrome.i18n.getMessage('se_youglish'),
 			url: 'https://youglish.com/search/%s',
-			icon: {
-				class: 'mdi mdi-youtube',
-				text: ''
-			}
+			class: 'mdi mdi-youtube'
 		}
 	]
 };
 
 // state variables
-let oldIcon;
+let iconToChange;
 let options = {};
 
 const initializeElements = () => {
 	// load options
 	chrome.storage.sync.get([ 'options' ], (res) => {
-		options = typeof res.options === 'undefined' ? preset : res.options;
+		options = typeof res.options === 'undefined' ? defaultSettings : res.options;
 
 		$('#restore').prop('checked', options.restoreEnabled);
 
@@ -85,34 +67,28 @@ const initializeElements = () => {
 		$('#balloon').prop('checked', options.balloonMenuEnabled);
 		$('#context').prop('checked', options.contextMenuEnabled);
 
-		$('#engine1_icon').attr('class', options.searchEngines[0].icon.class);
-		$('#engine1_icon').text(options.searchEngines[0].icon.text);
-		$('#engine1_name').val(options.searchEngines[0].name);
+		$('#engine1_icon').attr('class', options.searchEngines[0].class);
+		$('#engine1_name').val(options.searchEngines[0].title);
 		$('#engine1_url').val(options.searchEngines[0].url);
 
-		$('#engine2_icon').attr('class', options.searchEngines[1].icon.class);
-		$('#engine2_icon').text(options.searchEngines[1].icon.text);
-		$('#engine2_name').val(options.searchEngines[1].name);
+		$('#engine2_icon').attr('class', options.searchEngines[1].class);
+		$('#engine2_name').val(options.searchEngines[1].title);
 		$('#engine2_url').val(options.searchEngines[1].url);
 
-		$('#engine3_icon').attr('class', options.searchEngines[2].icon.class);
-		$('#engine3_icon').text(options.searchEngines[2].icon.text);
-		$('#engine3_name').val(options.searchEngines[2].name);
+		$('#engine3_icon').attr('class', options.searchEngines[2].class);
+		$('#engine3_name').val(options.searchEngines[2].title);
 		$('#engine3_url').val(options.searchEngines[2].url);
 
-		$('#engine4_icon').attr('class', options.searchEngines[3].icon.class);
-		$('#engine4_icon').text(options.searchEngines[3].icon.text);
-		$('#engine4_name').val(options.searchEngines[3].name);
+		$('#engine4_icon').attr('class', options.searchEngines[3].class);
+		$('#engine4_name').val(options.searchEngines[3].title);
 		$('#engine4_url').val(options.searchEngines[3].url);
 
-		$('#engine5_icon').attr('class', options.searchEngines[4].icon.class);
-		$('#engine5_icon').text(options.searchEngines[4].icon.text);
-		$('#engine5_name').val(options.searchEngines[4].name);
+		$('#engine5_icon').attr('class', options.searchEngines[4].class);
+		$('#engine5_name').val(options.searchEngines[4].title);
 		$('#engine5_url').val(options.searchEngines[4].url);
 
-		$('#engine6_icon').attr('class', options.searchEngines[5].icon.class);
-		$('#engine6_icon').text(options.searchEngines[5].icon.text);
-		$('#engine6_name').val(options.searchEngines[5].name);
+		$('#engine6_icon').attr('class', options.searchEngines[5].class);
+		$('#engine6_name').val(options.searchEngines[5].title);
 		$('#engine6_url').val(options.searchEngines[5].url);
 	});
 };
@@ -125,7 +101,6 @@ const initializeEvents = () => {
 				let icon = $(e.target).parent().find('i');
 				icon.removeClass();
 				icon.addClass(`mdi mdi-alpha-${name[0].toLowerCase()}-box`);
-				icon.text('');
 			}
 		}
 	});
@@ -140,27 +115,25 @@ const initializeEvents = () => {
 
 	// toggle icon Selection window
 	$('.form-group i').click((e) => {
-		oldIcon = e.target;
+		iconToChange = e.target;
 		if ($('#iconselection').hasClass('hidden')) {
-			let x = $(e.target).offset().left;
-			let y = $(e.target).offset().top;
-
-			$('#iconselection').offset({ top: y + 35, left: x });
-
+			const top = $(e.target).offset().top;
+			const left = $(e.target).offset().left;
+			$('#iconselection').offset({ top: top + 35, left: left });
 			$('#iconselection').removeClass('hidden');
 		} else {
 			$('#iconselection').offset({ top: 0, left: 0 });
-
 			$('#iconselection').addClass('hidden');
 		}
 	});
 
 	$('#iconselection i').click((e) => {
 		const newIcon = e.target;
-		$(oldIcon).removeClass();
-		$(oldIcon).addClass($(newIcon).attr('class'));
-		$(oldIcon).text($(newIcon).text());
-		$(oldIcon).trigger('click');
+		// change with the selected icon
+		$(iconToChange).removeClass();
+		$(iconToChange).addClass($(newIcon).attr('class'));
+		// close icon selection window
+		$(iconToChange).trigger('click');
 	});
 
 	$('#save').click((e) => {
@@ -172,66 +145,38 @@ const initializeEvents = () => {
 			searchEngines: [
 				{
 					id: 'search1',
-					icon: {
-						class: $('#engine1_icon').attr('class'),
-						text: $('#engine1_icon').text()
-					},
-					name: $('#engine1_name').val(),
+					class: $('#engine1_icon').attr('class'),
+					title: $('#engine1_name').val(),
 					url: $('#engine1_url').val()
 				},
 				{
 					id: 'search2',
-
-					icon: {
-						class: $('#engine2_icon').attr('class'),
-						text: $('#engine2_icon').text()
-					},
-
-					name: $('#engine2_name').val(),
+					class: $('#engine2_icon').attr('class'),
+					title: $('#engine2_name').val(),
 					url: $('#engine2_url').val()
 				},
 				{
 					id: 'search3',
-
-					icon: {
-						class: $('#engine3_icon').attr('class'),
-						text: $('#engine3_icon').text()
-					},
-
-					name: $('#engine3_name').val(),
+					class: $('#engine3_icon').attr('class'),
+					title: $('#engine3_name').val(),
 					url: $('#engine3_url').val()
 				},
 				{
 					id: 'search4',
-
-					icon: {
-						class: $('#engine4_icon').attr('class'),
-						text: $('#engine4_icon').text()
-					},
-
-					name: $('#engine4_name').val(),
+					class: $('#engine4_icon').attr('class'),
+					title: $('#engine4_name').val(),
 					url: $('#engine4_url').val()
 				},
 				{
 					id: 'search5',
-
-					icon: {
-						class: $('#engine5_icon').attr('class'),
-						text: $('#engine5_icon').text()
-					},
-
-					name: $('#engine5_name').val(),
+					class: $('#engine5_icon').attr('class'),
+					title: $('#engine5_name').val(),
 					url: $('#engine5_url').val()
 				},
 				{
 					id: 'search6',
-
-					icon: {
-						class: $('#engine6_icon').attr('class'),
-						text: $('#engine6_icon').text()
-					},
-
-					name: $('#engine6_name').val(),
+					class: $('#engine6_icon').attr('class'),
+					title: $('#engine6_name').val(),
 					url: $('#engine6_url').val()
 				}
 			]
@@ -253,7 +198,7 @@ const initializeEvents = () => {
 
 	// reset to default
 	$('#reset').click((e) => {
-		chrome.storage.sync.set({ options: preset });
+		chrome.storage.sync.set({ options: defaultSettings });
 	});
 };
 
