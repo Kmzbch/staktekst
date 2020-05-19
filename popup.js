@@ -278,7 +278,7 @@ const toggleEditorMode = (div, display = !$(div).attr('contentEditable') ? true 
 		$(div).focus();
 		// change visual styles
 		$(div).parent().addClass('editing');
-		$(div).next().hide(); // edit icon
+		$(div).parent().find('.mdi').attr('style', 'display: none !important'); // edit icon
 
 		updateStatusBoard($(div).html());
 	} else {
@@ -290,7 +290,7 @@ const toggleEditorMode = (div, display = !$(div).attr('contentEditable') ? true 
 		div.innerHTML = div.innerHTML.replace(String.fromCharCode(8203), '');
 		// change visual styles
 		$(div).parent().removeClass('editing');
-		$(div).next().show(); // edit icon
+		$(div).parent().find('.mdi').attr('style', ''); // edit icon
 	}
 };
 
@@ -581,9 +581,6 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 	// add content body
 	noteItemHTML += `<div class='content'>${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div>`;
 	noteItemHTML += `<i title="${chrome.i18n.getMessage('hint_editnote')}" class="mdi mdi-pencil edit"></i>`;
-	// noteItemHTML += `<div><i title="${chrome.i18n.getMessage(
-	// 	'hint_removenote'
-	// )}" class="material-icons checkbox">check</i></div>`;
 	noteItemHTML += `<i title="${chrome.i18n.getMessage('hint_removenote')}" class="mdi mdi-check checkbox"></i>`;
 	noteItemHTML += `<input type="hidden" value="${id}">`;
 	noteItemHTML += `<input class='itemDate' type='hidden' value="${date}">`;
@@ -648,9 +645,6 @@ const generateSeparatorHTML = ({ id, type, content, footnote, date }) => {
 	separatorHTML += `<input class="separatorInput" type="text" value="${content}" placeholder="${chrome.i18n.getMessage(
 		'hint_createseparator'
 	)}" spellcheck="false">`;
-	// separatorHTML += `<i class="material-icons separatorCheckbox" title="${chrome.i18n.getMessage(
-	// 	'hint_removeseparator'
-	// )}">check</i>`;
 	separatorHTML += `<i class="mdi mdi-check separatorCheckbox" title="${chrome.i18n.getMessage(
 		'hint_removeseparator'
 	)}"></i>`;
@@ -746,7 +740,7 @@ const generateListItemHTML = (tag) => {
 			}
 		});
 		liItem.append(editTagInput);
-		liItem.append(`<i title="${chrome.i18n.getMessage('hint_edittag')}" class="material-icons tagedit">edit</i>`);
+		liItem.append(`<i title="${chrome.i18n.getMessage('hint_edittag')}" class="mdi mdi-pencil tagedit"></i>`);
 	}
 
 	return liItem;
@@ -1078,15 +1072,11 @@ const attachNoteContentEvents = (wrapper) => {
 
 	contentDIV.addEventListener('focus', (e) => {
 		// remove html tags
-
 		Array.from(contentDIV.childNodes).forEach((item) => {
 			$(item).contents().unwrap();
 		}, '');
 
-		// insert decimal code as a zero-width space for displaying caret
-		if (!contentDIV.innerHTML.match(String.fromCharCode(8203))) {
-			contentDIV.innerHTML += '&#8203;';
-		}
+		contentDIV.innerHTML = contentDIV.innerHTML.replace(String.fromCharCode(8203), '');
 
 		// move caret to the end of the text
 		const node = contentDIV.childNodes[contentDIV.childNodes.length - 1];
@@ -1403,7 +1393,8 @@ const attachListItemEvents = (liItem) => {
 				const tagName = $(liSelected).find('.tageditInput').val();
 
 				// turn on tageditInput
-				$(e.target).hide();
+				// $(e.target).hide();
+				$(e.target).removeClass('mdi-pencil');
 				$(liSelected).find('span').hide();
 				$(liSelected).find('.tageditInput').show();
 				$(liSelected).find('.tageditInput').val(''); // to set caret at the end of text
@@ -1480,7 +1471,7 @@ const attachListItemEvents = (liItem) => {
 					// turn off tageditInput
 					$(e.target).parent().find('span').text(newTag);
 					$(e.target).parent().find('span').show();
-					$(e.target).parent().find('.tagedit').show();
+					$(e.target).parent().find('.tagedit').addClass('mdi-pencil');
 					$(e.target).hide();
 					//
 					tagSortable.save();
@@ -1513,7 +1504,8 @@ const attachListItemEvents = (liItem) => {
 		// turn off tageditInput
 		$(e.target).parent().find('span').text(oldTag);
 		$(e.target).parent().find('span').show();
-		$(e.target).parent().find('.tagedit').show();
+		// $(e.target).parent().find('.tagedit').show();
+		$(e.target).parent().find('.tagedit').addClass('mdi-pencil');
 		$(e.target).hide();
 	});
 };

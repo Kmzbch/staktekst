@@ -20,7 +20,7 @@
 	"content_scripts": [
 		{
 			"js": [ "lib/jquery-3.5.0.min.js", "bubble_lib.js", "currentTab.js" ],
-			"css": [ "css/currentTab.css", "css/material-icons.css", "css/materialdesignicons.min.css" ],
+			"css": [ "css/currentTab.css", "css/materialdesignicons.min.css" ],
 			"matches": [ "\u003Call_urls>" ],
 			"run_at": "document_end"
 		},
