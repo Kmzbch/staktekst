@@ -1,13 +1,13 @@
 {
 	"ext_name": { "message": "積んテク" },
-	"ext_desc": { "message": "Web上のテキストをかんたんに検索・保存・閲覧できる読み書き支援ツール" },
-
+	"ext_desc": { "message": "英語学習を支援するWebテキストかんたん検索・保存・閲覧ツール" },
 	"html_lang": { "message": "en" },
+
 	"button_label_ok": { "message": "OK" },
 	"button_label_cancel": { "message": "キャンセル" },
 
-	"button_label_clear": { "message": "スタックを空にする" },
-	"label_clear_title": { "message": "スタックのクリア" },
+	"button_label_clear": { "message": "ノートを空にする" },
+	"label_clear_title": { "message": "ノートのクリア" },
 	"label_clear_msg": { "message": "過去の保存データがすべて削除されます。<br>クリアしますか？" },
 
 	"hint_fileexport": { "message": "ファイルにエクスポート" },
@@ -58,7 +58,7 @@
 	"label_url": { "message": "URL" },
 
 	"button_save": { "message": "保存" },
-	"button_reset": { "message": "初期状態に戻す" },
+	"button_reset": { "message": "リセット" },
 
 	"se_google": { "message": "Google検索" },
 	"se_vocabulary": { "message": "Vocabulary.comで単語を検索" },
@@ -69,11 +69,11 @@
 	"se_mirai": { "message": "みらい翻訳で英→日翻訳" },
 	"se_oddcast": { "message": "Oddcastでテキストを読み上げ" },
 
-	"com_push": { "message": "テキストをスタックにプッシュ" },
-	"com_copy": { "message": "URLとタイトル付きでコピー" },
-	"com_bookmark": { "message": "ページをスタックにブックマーク" },
+	"com_push": { "message": "テキストをクリップ" },
+	"com_bookmark": { "message": "ページをブックマーク" },
+	"com_copy": { "message": "URLとタイトル付きでクリップボードにコピー" },
 	"com_zoomin": { "message": "ページを拡大" },
-	"com_zoomout": { "message": "ページ倍率をリセット" },
+	"com_zoomout": { "message": "ページ倍率を戻す" },
 
 	"msg_itemremoved": { "message": "削除しました" }
 }
