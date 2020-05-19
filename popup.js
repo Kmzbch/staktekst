@@ -547,7 +547,11 @@ const setDropdownListItems = () => {
 };
 
 const setTagAddAutoComplete = (jqueryDOM) => {
-	const tagSet = tagStack.map((item) => item.name).filter((tag) => isNaN(new Date(tag))).sort();
+	const tagSet = tagStack
+		.map((item) => item.name)
+		.filter((tag) => isNaN(new Date(tag)))
+		.filter((tag) => !tag.match(/pinned|📌/))
+		.sort();
 
 	$(jqueryDOM)
 		.autocomplete({

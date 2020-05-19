@@ -1,3 +1,9 @@
+/**
+ * Staktekst (https://github.com/Kmzbch/staktekst)
+ * Copyright 2020-present Kei Mizubuchi
+ * Licensed under MIT
+ */
+
 function copyTextWithTitleUrl(content, title, url) {
 	// use hidden DOM to copy text
 	let copyFrom = document.createElement('textarea');

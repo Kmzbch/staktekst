@@ -1,3 +1,8 @@
+ /*
+ * Modifications copyright (C) 2020 Kei Mizubuchi
+ * Modification details:
+ * - changed @font-face with local resources instead of using CDN
+ */
 @font-face {
 	font-family: "Material Design Icons";
 	src: url("chrome-extension://__MSG_@@extension_id__/assets/webfonts/materialdesignicons-webfont.eot");

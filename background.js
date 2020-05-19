@@ -3,12 +3,12 @@
 const MENU_ITEMS = [
 	{
 		id: 'extendedcopy',
-		title: 'URL付きでコピー',
+		title: chrome.i18n.getMessage('com_copy'),
 		contexts: [ 'selection' ]
 	},
 	{
 		id: 'pushtext',
-		title: 'テキストをスタックにプッシュ',
+		title: chrome.i18n.getMessage('com_push'),
 		contexts: [ 'page', 'selection' ]
 	},
 	{
@@ -62,6 +62,8 @@ const MENU_ITEMS = [
 ];
 
 let USER_ITEMS = [];
+let zoominPercentage;
+
 let command = '';
 
 const executeUserCommand = (commandId, text, tabTitle, tabUrl, tabId) => {
@@ -79,7 +81,8 @@ const executeUserCommand = (commandId, text, tabTitle, tabUrl, tabId) => {
 		case 'switchzoom':
 			chrome.tabs.getZoom(tabId, (zoomFactor) => {
 				// TODO: config
-				zoomFactor = zoomFactor === 1 ? 1.5 : 1;
+				// zoomFactor = zoomFactor === 1 ? 1.5 : 1;
+				zoomFactor = zoomFactor === 1 ? zoominPercentage / 100 : 1;
 				chrome.tabs.setZoom(tabId, zoomFactor, function(zoomFactor) {
 					console.log('zoom factor:' + zoomFactor);
 				});
@@ -124,8 +127,8 @@ const getMessage = (request, sender, sendResponse) => {
 					});
 					break;
 				case 'OPTIONS':
-					setContextMenus();
-					setSearchEngines();
+					loadSettings();
+					break;
 				default:
 					if (request.selection) {
 						executeUserCommand(request.command, request.selection, tabs[0].title, tabs[0].url, tabs[0].id);
@@ -169,7 +172,7 @@ chrome.contextMenus.onClicked.addListener((menuInfo, tab) => {
 });
 
 //
-function setContextMenus() {
+function loadSettings() {
 	chrome.storage.sync.get([ 'options' ], (res) => {
 		// load config
 		if (typeof res.options === 'undefined' || res.options.contextMenuEnabled) {
@@ -188,11 +191,7 @@ function setContextMenus() {
 		} else {
 			chrome.contextMenus.removeAll(() => {});
 		}
-	});
-}
 
-function setSearchEngines() {
-	chrome.storage.sync.get([ 'options' ], (res) => {
 		if (typeof res.options !== 'undefined') {
 			USER_ITEMS.length = 0;
 			res.options.searchEngines.forEach((s) => {
@@ -206,8 +205,9 @@ function setSearchEngines() {
 			});
 			USER_ITEMS = USER_ITEMS.concat(MENU_ITEMS.slice(-2));
 		}
+
+		zoominPercentage = typeof res.options !== 'undefined' ? res.options.zoominPercentage : 150;
 	});
 }
 
-setContextMenus();
-setSearchEngines();
+loadSettings();

@@ -45,6 +45,10 @@
 	"label_websearch_balloon": { "message": "Enable Balloon Launcher" },
 	"label_websearch_context": { "message": "Enable right-click context menus" },
 
+	"options_zoom_title": { "message": "Zoom in/out" },
+	"options_zoom_msg": { "message": "Specify the percentage of zooming in when zoom-in icon clicked" },
+	"label_options_zoominPercentage": { "message": "Percentage(%)" },
+
 	"options_searchengine_title": { "message": "Search Engines" },
 	"options_searchengine_msg": { "message": "Substitute keywords in the address with %s" },
 	"options_iconselect_title": { "message": "Select an icon:" },

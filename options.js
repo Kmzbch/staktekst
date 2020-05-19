@@ -1,6 +1,7 @@
 const defaultSettings = {
 	restoreEnabled: true,
 	duration: 30,
+	zoominPercentage: 150,
 	balloonMenuEnabled: true,
 	contextMenuEnabled: false,
 	searchEngines: [
@@ -62,6 +63,7 @@ const initializeElements = () => {
 		} else {
 			$('#duration').prop('disabled', true);
 		}
+		$('#zoominPercentage').val(options.zoominPercentage);
 		$('#duration').val(options.duration);
 
 		$('#balloon').prop('checked', options.balloonMenuEnabled);
@@ -140,6 +142,7 @@ const initializeEvents = () => {
 		options = {
 			restoreEnabled: $('#restore').prop('checked'),
 			duration: $('#duration').val(),
+			zoominPercentage: $('#zoominPercentage').val(),
 			balloonMenuEnabled: $('#balloon').prop('checked'),
 			contextMenuEnabled: $('#context').prop('checked'),
 			searchEngines: [
@@ -183,17 +186,17 @@ const initializeEvents = () => {
 		};
 
 		// save options
-		chrome.storage.sync.set({ options: options });
-
-		// send to background.js to reflect the change
-		chrome.runtime.sendMessage(
-			{
-				command: 'OPTIONS'
-			},
-			(response) => {
-				console.log('options changed!');
-			}
-		);
+		chrome.storage.sync.set({ options: options }, () => {
+			// send to background.js to reflect the change
+			chrome.runtime.sendMessage(
+				{
+					command: 'OPTIONS'
+				},
+				(response) => {
+					console.log('options changed!');
+				}
+			);
+		});
 	});
 
 	// reset to default

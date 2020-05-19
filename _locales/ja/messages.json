@@ -42,8 +42,12 @@
 	"options_restore_msg": { "message": "前回起動時のウィンドウ状態を復元する" },
 	"label_options_duration": { "message": "保存期間（秒）" },
 
+	"options_zoom_title": { "message": "ページの拡大／縮小" },
+	"options_zoom_msg": { "message": "フキダシランチャーでのページ拡大を以下の倍率で行う" },
+	"label_options_zoominPercentage": { "message": "倍率（％）" },
+
 	"options_websearch_title": { "message": "Web検索" },
-	"label_websearch_balloon": { "message": "フキダシ型ランチャーを設定" },
+	"label_websearch_balloon": { "message": "フキダシランチャーを設定" },
 	"label_websearch_context": { "message": "右クリックメニューを設定" },
 
 	"options_searchengine_title": { "message": "検索エンジン" },

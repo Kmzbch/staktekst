@@ -1,15 +1,16 @@
+# Staktekst: Paragraph-Based
+
+
 
 ## License
 
-Staktekst is published under the Apache License 2.0.
+Staktekst is published under the the MIT license. https://opensource.org/licenses/MIT
 
+## Third-party Data
 
-## Third-party data
+This project includes the work that is distributed in the Apache License 2.0:
 
-This project includes some third-party data:
-
-### 
-
-### Icons
 - Material Design Icons
-- License: Apache License 2.0. https://www.apache.org/licenses/LICENSE-2.0
+- License: Apache License Version 2.0. https://www.apache.org/licenses/
+
+## See also
