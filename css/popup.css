@@ -269,7 +269,7 @@ footer {
 	-moz-user-select: none;
 }
 
-.search-cancel-button {
+.search-cancel-button::before {
 	position: absolute;
 	display: none;
 	top: 14px;
@@ -393,6 +393,8 @@ footer {
 }
 
 .create {
+	margin-top: 2px !important;
+	transform: rotateX(180deg) scale(1.03);
 	color: white;
 	margin: 0px 9px;
 	opacity: 0.3;
@@ -408,6 +410,9 @@ footer {
 }
 
 .view {
+	margin-top: 1px !important;
+	transform: scale(1.02);
+
 	color: white;
 	opacity: 0.3;
 	top: 18px;
@@ -425,6 +430,9 @@ footer {
 }
 
 .export {
+	margin-top: 2px !important;
+	transform: scale(1.04);
+
 	color: white;
 	opacity: 0.3;
 	top: 13px;
@@ -864,7 +872,10 @@ input.tageditInput[type="text"]:focus {
 }
 
 /* remove */
-#textstack .stackwrapper:hover .checkbox {
+/* #textstack .stackwrapper:hover .checkbox {
+	right: 5px !important;
+} */
+#textstack .stackwrapper:hover .checkbox::before {
 	right: 5px !important;
 }
 
@@ -880,7 +891,7 @@ input.tageditInput[type="text"]:focus {
 	display: none;
 }
 
-.checkbox:hover {
+/* .checkbox:hover {
 	color: rgba(255, 255, 255, 0.3) !important;
 	padding: 0px;
 	margin-left: 8px;
@@ -903,6 +914,37 @@ input.tageditInput[type="text"]:focus {
 }
 
 .removed .checkbox {
+	color: white !important;
+	opacity: 1 !important;
+} */
+.checkbox:hover::before {
+	color: rgba(255, 255, 255, 0.3) !important;
+	padding: 0px;
+	margin-left: 8px;
+	cursor: pointer;
+	background-color: #3297fd;
+}
+
+.checkbox::before {
+	color: rgba(0, 0, 0, 0);
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	float: right;
+	font-size: 16px !important;
+	border: 1px dotted lightgray;
+	border-radius: 10%;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	margin-left: 8px;
+}
+
+.removed .checkbox::before {
+	color: white !important;
+	opacity: 1 !important;
+}
+
+.removed .separatorCheckbox::before {
 	color: white !important;
 	opacity: 1 !important;
 }

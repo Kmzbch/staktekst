@@ -24,31 +24,31 @@ const preset = {
 			name: chrome.i18n.getMessage('se_google'),
 			url: 'https://encrypted.google.com/search?hl=en&gl=en&q=%s',
 			icon: {
-				class: 'material-icons iconButton',
-				text: 'search'
+				class: 'mdi mdi-magnify',
+				text: ''
 			}
 		},
 		{
 			name: chrome.i18n.getMessage('se_vocabulary'),
 			url: 'https://www.vocabulary.com/dictionary/%s',
 			icon: {
-				class: 'material-icons iconButton',
-				text: 'check'
+				class: 'mdi mdi-check',
+				text: ''
 			}
 		},
 		{
 			name: chrome.i18n.getMessage('se_doppl'),
 			url: 'https://dopeoplesay.com/q/%s',
 			icon: {
-				class: 'material-icons iconButton',
-				text: 'people'
+				class: 'mdi mdi-account-multiple',
+				text: ''
 			}
 		},
 		{
 			name: chrome.i18n.getMessage('se_skell'),
 			url: 'https://skell.sketchengine.co.uk/run.cgi/concordance?lpos=&query=%s',
 			icon: {
-				class: 'mdi mdi-alpha-s-box iconButton iconButton',
+				class: 'mdi mdi-alpha-s-box',
 				text: ''
 			}
 		},
@@ -56,7 +56,7 @@ const preset = {
 			name: chrome.i18n.getMessage('se_netspeak'),
 			url: 'https://netspeak.org/#q=%s&corpus=web-en',
 			icon: {
-				class: 'mdi mdi-alpha-n-box iconButton iconButton',
+				class: 'mdi mdi-alpha-n-box',
 				text: ''
 			}
 		},
@@ -65,7 +65,7 @@ const preset = {
 			name: chrome.i18n.getMessage('se_youglish'),
 			url: 'https://youglish.com/search/%s',
 			icon: {
-				class: 'mdi mdi-youtube iconButton iconButton',
+				class: 'mdi mdi-youtube',
 				text: ''
 			}
 		}
@@ -242,13 +242,13 @@ const toggleSortOrder = (sortingByNew) => {
 		$('#sort').html(
 			`<span class="sortText">New </span><i title="${chrome.i18n.getMessage(
 				'hint_toggleorder'
-			)}" class="material-icons">arrow_upward</i>`
+			)}" class="mdi mdi-arrow-up"></i>`
 		);
 	} else {
 		$('#sort').html(
 			`<span class="sortText">Old </span><i title="${chrome.i18n.getMessage(
 				'hint_toggleorder'
-			)}" class="material-icons">arrow_downward</i>`
+			)}" class="mdi mdi-arrow-down"></i>`
 		);
 	}
 
@@ -332,11 +332,13 @@ const updateSearchResult = () => {
 		} else if (locale === 'ja') {
 			displayMessage(hits === 0 ? chrome.i18n.getMessage('label_noresult_msg') : `全${stack.length}中${hits}件`);
 		}
-		$('.search-cancel-button').show();
+		// $('.search-cancel-button').show();
+		$('.search-cancel-button').addClass('mdi-close-circle');
 		setTimeout(clearMessage, 3000);
 	} else {
 		clearMessage();
-		$('.search-cancel-button').hide();
+		$('.search-cancel-button').removeClass('mdi-close-circle');
+		// $('.search-cancel-button').hide();
 		hideDropdownList();
 	}
 
@@ -579,9 +581,10 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 	// add content body
 	noteItemHTML += `<div class='content'>${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div>`;
 	noteItemHTML += `<i title="${chrome.i18n.getMessage('hint_editnote')}" class="mdi mdi-pencil edit"></i>`;
-	noteItemHTML += `<div><i title="${chrome.i18n.getMessage(
-		'hint_removenote'
-	)}" class="material-icons checkbox">check</i></div>`;
+	// noteItemHTML += `<div><i title="${chrome.i18n.getMessage(
+	// 	'hint_removenote'
+	// )}" class="material-icons checkbox">check</i></div>`;
+	noteItemHTML += `<i title="${chrome.i18n.getMessage('hint_removenote')}" class="mdi mdi-check checkbox"></i>`;
 	noteItemHTML += `<input type="hidden" value="${id}">`;
 	noteItemHTML += `<input class='itemDate' type='hidden' value="${date}">`;
 	noteItemHTML += `<div class="spacer"></div>`;
@@ -645,9 +648,12 @@ const generateSeparatorHTML = ({ id, type, content, footnote, date }) => {
 	separatorHTML += `<input class="separatorInput" type="text" value="${content}" placeholder="${chrome.i18n.getMessage(
 		'hint_createseparator'
 	)}" spellcheck="false">`;
-	separatorHTML += `<i class="material-icons separatorCheckbox" title="${chrome.i18n.getMessage(
+	// separatorHTML += `<i class="material-icons separatorCheckbox" title="${chrome.i18n.getMessage(
+	// 	'hint_removeseparator'
+	// )}">check</i>`;
+	separatorHTML += `<i class="mdi mdi-check separatorCheckbox" title="${chrome.i18n.getMessage(
 		'hint_removeseparator'
-	)}">check</i>`;
+	)}"></i>`;
 
 	// add tags to footnote
 	separatorHTML += `<div class="footnote hidden">`;
@@ -1267,7 +1273,7 @@ const attachEventsToTextStack = () => {
 		} else if ($(targetElem).hasClass('checkbox')) {
 			// when checkbox clicked
 			$(targetElem).css('color', 'white !important');
-			let textItem = $(targetElem).parent().parent().get(0);
+			let textItem = $(targetElem).parent().get(0);
 			removeNoteItem(textItem);
 			// save sort order
 			if (sortable !== null) {
@@ -1697,7 +1703,9 @@ const initializeEventListeners = () => {
 
 				// show toolbox
 				clearMessage();
-				$('.search-cancel-button').hide();
+				// $('.search-cancel-button').hide();
+				$('.search-cancel-button').removeClass('mdi-close-circle');
+
 				$('footer').show();
 				hideDropdownList();
 
@@ -1954,7 +1962,9 @@ const clearAllItems = () => {
 		sortedByNew: true
 	};
 
-	$('.search-cancel-button').hide();
+	// $('.search-cancel-button').hide();
+	$('.search-cancel-button').removeClass('mdi-close-circle');
+
 	shadowNodes.length = 0;
 	shadowNodes.push(document.querySelector('#textstack').cloneNode(true));
 	toggleSortOrder(true);
@@ -2057,8 +2067,11 @@ const restorePreviousState = () => {
 					$('#sort').html(
 						`<span class="sortText">Old </span><i title="${chrome.i18n.getMessage(
 							'hint_toggleorder'
-						)}" class="material-icons">arrow_downward</i>`
+						)}" class="mdi mdi-arrow-down"></i>`
 					);
+					if (state.searchQuery !== '') {
+						$('#sort .sortText').hide();
+					}
 					if (sortable !== null) {
 						$(shadowNodes[0]).children().each(function(i, wrapper) {
 							$(shadowNodes[0]).prepend(wrapper);
