@@ -274,6 +274,9 @@ const toggleSortOrder = (sortingByNew) => {
 
 const toggleEditorMode = (div, display = !$(div).attr('contentEditable') ? true : false) => {
 	if (display) {
+		if (div.innerHTML === '') {
+			div.innerHTML = '&#8203;';
+		}
 		$(div).attr('contentEditable', true);
 		$(div).focus();
 		// change visual styles
@@ -288,6 +291,7 @@ const toggleEditorMode = (div, display = !$(div).attr('contentEditable') ? true 
 		div.innerHTML = div.innerHTML.replace(/\n+$/i, '');
 		div.innerHTML = div.innerHTML.replace(/\n/gi, '<br>');
 		div.innerHTML = div.innerHTML.replace(String.fromCharCode(8203), '');
+
 		// change visual styles
 		$(div).parent().removeClass('editing');
 		$(div).parent().find('.mdi').attr('style', ''); // edit icon
@@ -583,8 +587,11 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 	// add the most outer opening tag
 	let noteItemHTML = `<div class="stackwrapper ${type}" id="${id}">`;
 
+	if (content === '') {
+		content = '&#8203;';
+	}
 	// add content body
-	noteItemHTML += `<div class='content'>&#8203;${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div>`;
+	noteItemHTML += `<div class='content'>${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div>`;
 	noteItemHTML += `<i title="${chrome.i18n.getMessage('hint_editnote')}" class="mdi mdi-pencil edit"></i>`;
 	noteItemHTML += `<i title="${chrome.i18n.getMessage('hint_removenote')}" class="mdi mdi-check checkbox"></i>`;
 	noteItemHTML += `<input type="hidden" value="${id}">`;
@@ -1086,8 +1093,6 @@ const attachNoteContentEvents = (wrapper) => {
 		Array.from(contentDIV.childNodes).forEach((item) => {
 			$(item).contents().unwrap();
 		}, '');
-
-		// contentDIV.innerHTML = contentDIV.innerHTML.replace(String.fromCharCode(8203), '');
 
 		// move caret to the end of the text
 		const node = contentDIV.childNodes[contentDIV.childNodes.length - 1];
