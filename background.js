@@ -99,10 +99,20 @@ const executeUserCommand = (commandId, text, tabTitle, tabUrl, tabId) => {
 				command = MENU_ITEMS.find((item) => item.id === commandId);
 			}
 			let urlWithQuery = command.url.replace('%s', text);
-			// open the URL
-			chrome.tabs.create({
-				url: urlWithQuery
-			});
+			if (commandId === 'deepl') {
+				chrome.i18n.detectLanguage(text, (res) => {
+					urlWithQuery = urlWithQuery.replace(/translator#en/, 'translator#' + res.languages[0].language);
+					// open the URL
+					chrome.tabs.create({
+						url: urlWithQuery
+					});
+				});
+			} else {
+				// open the URL
+				chrome.tabs.create({
+					url: urlWithQuery
+				});
+			}
 			break;
 	}
 };

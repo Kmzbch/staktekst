@@ -836,8 +836,7 @@ const attachTagInputEvents = (stackWrapper) => {
 
 			// reset value
 			// ev.target.value = '';
-							ev.target.value = String.fromCharCode(8203);
-
+			ev.target.value = String.fromCharCode(8203);
 
 			// toggle divWrap visibility
 			if ($(stackWrapper).find('.tag').length >= 4) {
@@ -1616,7 +1615,8 @@ const initializeEventListeners = () => {
 				// create SortableJS instance
 				sortable = Sortable.create(document.querySelector('#textstack'), {
 					sort: true,
-					delay: 150,
+
+					delay: 230,
 					animation: 150,
 					dataIdAttr: 'id',
 					filter: '.date',
