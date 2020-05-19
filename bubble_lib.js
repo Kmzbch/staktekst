@@ -223,7 +223,7 @@ chrome.storage.sync.get([ 'options' ], (res) => {
 			if (typeof res.options.searchEngines !== 'undefined') {
 				res.options.searchEngines.forEach((s) => {
 					USER_DEFINED_ICONS.push({
-						className: s.icon.class.replace(/iconButton/, 'stackButton'),
+						className: s.icon.class + ' stackButton',
 						title: s.name,
 						innerText: s.icon.text,
 						command: s.id
