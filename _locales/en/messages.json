@@ -66,7 +66,7 @@
 	"se_skell": { "message": "SKELL" },
 	"se_netspeak": { "message": "Netspeak" },
 	"se_youglish": { "message": "Youglish" },
-	"se_mirai": { "message": "Mirai Translate" },
+	"se_deepl": { "message": "DeepL Translate" },
 	"se_oddcast": { "message": "Oddcast Text-to-Speech" },
 
 	"com_push": { "message": "Clip text" },

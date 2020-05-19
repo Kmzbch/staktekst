@@ -551,6 +551,7 @@ const setTagAddAutoComplete = (jqueryDOM) => {
 		.map((item) => item.name)
 		.filter((tag) => isNaN(new Date(tag)))
 		.filter((tag) => !tag.match(/pinned|📌/))
+		.filter((tag) => !tag.match(String.fromCharCode(8203)))
 		.sort();
 
 	$(jqueryDOM)
@@ -622,7 +623,7 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 
 	noteItemHTML += `<div class="${classes}"><input title="${chrome.i18n.getMessage(
 		'hint_addtag'
-	)}" type="text" class="tagadd"></div>`;
+	)}" type="text" class="tagadd" value="${String.fromCharCode(8203)}"></div>`;
 
 	// add the closing tag of footnote
 	noteItemHTML += '</div>';
@@ -806,7 +807,8 @@ const attachTagInputEvents = (stackWrapper) => {
 	// BLUR event
 	$(stackWrapper).find('.tagadd').blur((ev) => {
 		ev.preventDefault();
-		let tagName = ev.target.value.trim();
+		// let tagName = ev.target.value.trim();
+		let tagName = ev.target.value.trim().replace(String.fromCharCode(8203), '');
 		if (tagName !== '') {
 			// update tag information
 			const index = stack.findIndex((item) => item.id === $(stackWrapper).attr('id'));
@@ -833,7 +835,9 @@ const attachTagInputEvents = (stackWrapper) => {
 			divWrap.get(0).insertAdjacentHTML('beforebegin', tagsHTML);
 
 			// reset value
-			ev.target.value = '';
+			// ev.target.value = '';
+							ev.target.value = String.fromCharCode(8203);
+
 
 			// toggle divWrap visibility
 			if ($(stackWrapper).find('.tag').length >= 4) {
@@ -865,6 +869,7 @@ const attachTagInputEvents = (stackWrapper) => {
 		ev.preventDefault();
 
 		let tagName = ev.target.value;
+		// let tagName = ev.target.value.replace(String.fromCharCode(8203), '');
 
 		if (tagName[tagName.length - 1] === ' ' || ev.keyCode === Keys.ENTER) {
 			tagName = ev.target.value.trim();
@@ -895,7 +900,8 @@ const attachTagInputEvents = (stackWrapper) => {
 				divWrap.get(0).insertAdjacentHTML('beforebegin', tagsHTML);
 
 				// reset value
-				ev.target.value = '';
+				// ev.target.value = '';
+				ev.target.value = String.fromCharCode(8203);
 
 				// toggle divWrap visibility
 				if ($(stackWrapper).hasClass('clip')) {
@@ -1012,7 +1018,9 @@ const attachTagInputEvents = (stackWrapper) => {
 				}
 
 				// set value
-				$(tagInput).val(prevTagName);
+				// $(tagInput).val(prevTagName);
+				$(tagInput).val(String.fromCharCode(8203) + prevTagName.replace(String.fromCharCode(8203), ''));
+
 				$(tagInput).trigger('focus');
 			}
 		}
@@ -1464,6 +1472,8 @@ const attachListItemEvents = (liItem) => {
 
 					// update tagstack
 					if (tagStack.findIndex((t) => t.name === newTag) === -1) {
+						// TODO:FIX bug
+
 						tagStack.find((t) => t.name === oldTag).name = newTag;
 					} else {
 						tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1);

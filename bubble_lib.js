@@ -37,11 +37,10 @@ const SEARCH_ENGINE_ICONS = [
 		title: chrome.i18n.getMessage('se_youglish'),
 		command: 'search6'
 	},
-
 	{
 		className: 'mdi mdi-translate stackButton',
-		title: chrome.i18n.getMessage('se_mirai'),
-		command: 'mirai'
+		title: chrome.i18n.getMessage('se_deepl'),
+		command: 'deepl'
 	},
 	{
 		className: 'mdi mdi-text-to-speech stackButton',

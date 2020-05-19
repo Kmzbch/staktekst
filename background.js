@@ -48,11 +48,15 @@ const MENU_ITEMS = [
 		url: 'https://youglish.com/search/%s'
 	},
 	{
-		id: 'mirai',
-		url: 'https://miraitranslate.com/en/trial/',
-		title: chrome.i18n.getMessage('se_mirai'),
+		id: 'deepl',
+		url:
+			'https://www.deepl.com/translator#en/' +
+			(window.navigator.language || chrome.i18n.getMessage('html_lang')) +
+			'/%s',
+		title: chrome.i18n.getMessage('se_deepl'),
 		contexts: [ 'selection' ]
 	},
+
 	{
 		id: 'oddcast',
 		title: chrome.i18n.getMessage('se_oddcast'),
@@ -81,7 +85,6 @@ const executeUserCommand = (commandId, text, tabTitle, tabUrl, tabId) => {
 		case 'switchzoom':
 			chrome.tabs.getZoom(tabId, (zoomFactor) => {
 				// TODO: config
-				// zoomFactor = zoomFactor === 1 ? 1.5 : 1;
 				zoomFactor = zoomFactor === 1 ? zoominPercentage / 100 : 1;
 				chrome.tabs.setZoom(tabId, zoomFactor, function(zoomFactor) {
 					console.log('zoom factor:' + zoomFactor);
@@ -136,7 +139,7 @@ const getMessage = (request, sender, sendResponse) => {
 						commandHolder = request.command;
 					}
 					sendResponse({
-						text: selectionHolder, // only used for mirai translate and oddcast
+						text: selectionHolder, // only used for oddcast
 						command: commandHolder
 					});
 

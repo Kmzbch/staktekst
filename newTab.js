@@ -5,17 +5,6 @@ const DELAY = 4000;
 // send a message to background.js and receive which website has been queried
 chrome.runtime.sendMessage({}, (response) => {
 	switch (response.command) {
-		case 'mirai':
-			// enter necessary inputs
-			$('#translateSourceInput').val(response.text.replace(/ +|\n/g, ' '));
-			$('#sourceButtonUrlTranslation').val('en');
-			$('#targetButtonTextTranslation').val('ja');
-			// click the translation button
-			if ($('#translateSourceInput').val()) {
-				$('#translateButtonTextTranslation').prop('disabled', false);
-				$('#translateButtonTextTranslation').trigger('click');
-			}
-			break;
 		case 'oddcast':
 			// set parameters to the value/attributes
 			$('#flash-speck-area').val(response.text);
