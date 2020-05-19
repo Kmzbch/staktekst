@@ -1,6 +1,5 @@
 'use strict';
 
-// search engines for bubble menu
 const MENU_ITEMS = [
 	{
 		id: 'extendedcopy',
