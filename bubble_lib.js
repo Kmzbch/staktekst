@@ -203,7 +203,7 @@ chrome.storage.sync.get([ 'options' ], (res) => {
 				res.options.searchEngines.forEach((s) => {
 					USER_DEFINED_ICONS.push({
 						className: s.class + ' stackButton',
-						title: s.name,
+						title: s.title,
 						command: s.id
 					});
 				});

@@ -1,7 +1,7 @@
 {
 	"ext_name": { "message": "Staktekst" },
 	"ext_desc": {
-		"message": "A simple note-taking tool with search engines and text-clipping features for ESL Learners"
+		"message": "A simple note-taking tool with search engines and text-clip features for ESL Learners"
 	},
 	"html_lang": { "message": "en" },
 
@@ -70,7 +70,7 @@
 	"se_oddcast": { "message": "Oddcast Text-to-Speech" },
 
 	"com_push": { "message": "Clip text" },
-	"com_copy": { "message": "Copy to clipboard with the title and URL" },
+	"com_copy": { "message": "Copy with the title and URL" },
 	"com_bookmark": { "message": "Bookmark the page" },
 	"com_zoomin": { "message": "Zoom in" },
 	"com_zoomout": { "message": "Zoom out" },
