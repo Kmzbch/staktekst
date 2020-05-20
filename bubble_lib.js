@@ -23,12 +23,12 @@ const SEARCH_ENGINE_ICONS = [
 		command: 'search3'
 	},
 	{
-		className: 'mdi mdi-alpha-s-box stackButton',
+		className: 'mdi mdi-format-list-numbered stackButton',
 		title: chrome.i18n.getMessage('se_skell'),
 		command: 'search4'
 	},
 	{
-		className: 'mdi mdi-alpha-n-box stackButton',
+		className: 'mdi mdi-chart-histogram stackButton',
 		title: chrome.i18n.getMessage('se_netspeak'),
 		command: 'search5'
 	},
@@ -51,7 +51,7 @@ const SEARCH_ENGINE_ICONS = [
 
 const SYSTEM_COMMAND_ICONS = [
 	{
-		className: 'mdi mdi-import stackButton',
+		className: 'mdi mdi-paperclip stackButton',
 		title: chrome.i18n.getMessage('com_push'),
 		command: 'pushtext'
 	},

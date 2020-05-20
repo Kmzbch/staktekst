@@ -28,14 +28,14 @@ const defaultSettings = {
 			id: 'search4',
 			title: chrome.i18n.getMessage('se_skell'),
 			url: 'https://skell.sketchengine.co.uk/run.cgi/concordance?lpos=&query=%s',
-			class: 'mdi mdi-alpha-s-box'
+			class: 'mdi mdi-format-list-numbered'
 		},
 		{
 			id: 'search5',
 
 			title: chrome.i18n.getMessage('se_netspeak'),
 			url: 'https://netspeak.org/#q=%s&corpus=web-en',
-			class: 'mdi mdi-alpha-n-box'
+			class: 'mdi mdi-chart-histogram'
 		},
 
 		{
