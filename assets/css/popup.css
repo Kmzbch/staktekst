@@ -118,7 +118,7 @@
 }
 
 .spacer {
-	height: 16px;
+	height: 19px;
 }
 
 .filtered {
@@ -471,7 +471,8 @@ footer {
 .stackwrapper {
 	position: relative;
 	min-height: 44px;
-	padding: 15px;
+	/* padding: 15px; */
+	padding: 15px 15px 15px 15px;
 	border: 1px solid gray;
 	border-radius: 3px;
 	margin: 10px 15px 10px 15px;
@@ -718,6 +719,7 @@ input.disabled {
 .divWrap::before {
 	content: '#' !important;
 	color: rgba(0, 0, 0, 0.5) !important;
+	vertical-align: super;
 }
 
 .divWrap:hover::before {
@@ -734,11 +736,12 @@ input.disabled {
 }
 
 .tagadd {
+	margin-bottom: 1px !important;
+	vertical-align: text-bottom;
 	overflow: visible;
 	border-bottom: 1px solid lightgray !important;
 	font-size: 13px;
 	color: rgba(0, 0, 0, 0.6);
-	overflow: visible;
 	width: 50px;
 	background: none;
 	border: none;
@@ -796,7 +799,7 @@ input.tageditInput[type="text"]:focus {
 	display: inline-block;
 	margin-right: 5px;
 
-	max-height: 19px;
+	max-height: 22px;
 	max-width: 100px;
 	overflow: hidden;
 	/* white-space: nowrap; */
