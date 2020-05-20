@@ -31,7 +31,7 @@ Features:
 ## Popup WIndow
 ![sc02](https://github.com/Kmzbch/staktekst/blob/images/screenshot02.png)
 
-![sc03](https://github.com/Kmzbch/staktekst/blob/images/screenshot03.gif)
+<img src="https://github.com/Kmzbch/staktekst/blob/images/screenshot03.gif" width="400px">
 
 # License
 
