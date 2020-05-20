@@ -186,7 +186,7 @@ chrome.contextMenus.onClicked.addListener((menuInfo, tab) => {
 
 //
 function loadSettings() {
-	chrome.storage.sync.get([ 'options' ], (res) => {
+	chrome.storage.local.get([ 'options' ], (res) => {
 		// load config
 		if (typeof res.options === 'undefined' || res.options.contextMenuEnabled) {
 			// reset and create context menus
@@ -223,4 +223,8 @@ function loadSettings() {
 	});
 }
 
+//
+runFirstTime();
+
+//
 loadSettings();

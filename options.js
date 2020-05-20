@@ -53,7 +53,7 @@ let options = {};
 
 const initializeElements = () => {
 	// load options
-	chrome.storage.sync.get([ 'options' ], (res) => {
+	chrome.storage.local.get([ 'options' ], (res) => {
 		options = typeof res.options === 'undefined' ? defaultSettings : res.options;
 
 		$('#restore').prop('checked', options.restoreEnabled);
@@ -186,7 +186,7 @@ const initializeEvents = () => {
 		};
 
 		// save options
-		chrome.storage.sync.set({ options: options }, () => {
+		chrome.storage.local.set({ options: options }, () => {
 			// send to background.js to reflect the change
 			chrome.runtime.sendMessage(
 				{
@@ -201,7 +201,7 @@ const initializeEvents = () => {
 
 	// reset to default
 	$('#reset').click((e) => {
-		chrome.storage.sync.set({ options: defaultSettings });
+		chrome.storage.local.set({ options: defaultSettings });
 	});
 };
 

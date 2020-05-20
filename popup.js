@@ -2178,7 +2178,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	renderStack();
 
-	chrome.storage.sync.get([ 'options' ], (res) => {
+	chrome.storage.local.get([ 'options' ], (res) => {
 		if (typeof res.options === 'undefined') {
 			options = preset;
 		} else {
