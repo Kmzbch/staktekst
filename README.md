@@ -1,4 +1,4 @@
-# Staktekst: Simple note-taking tool for ESL Learners
+# Staktekst: Simple note-taking tool for English Learners
 
 ![logo](https://github.com/Kmzbch/staktekst/blob/images/icon_128.png)
 
@@ -8,11 +8,12 @@ Features:
 
 1. Balloon launcher
 
-- Clip selected text with the source URL and title
+- Clip selected text with the page URL and title
 - Bookmark web pages
 - Copy text with the page title and URL
 - Zoom in/out
 - Websearch by selected text on a search engine
+- User can register up to 6 search engines
 
 2. Popup window
 
@@ -29,6 +30,8 @@ Features:
 
 ## Popup WIndow
 ![sc02](https://github.com/Kmzbch/staktekst/blob/images/screenshot02.png)
+
+![sc03](https://github.com/Kmzbch/staktekst/blob/images/screenshot03.gif)
 
 # License
 

@@ -1,7 +1,7 @@
 {
-	"ext_name": { "message": "積んテク" },
+	"ext_name": { "message": "積んテク／Staktekst" },
 	"ext_desc": { "message": "英語学習を支援するWebテキストかんたん検索・保存・閲覧ツール" },
-	"html_lang": { "message": "en" },
+	"html_lang": { "message": "ja" },
 
 	"button_label_ok": { "message": "OK" },
 	"button_label_cancel": { "message": "キャンセル" },
@@ -38,6 +38,8 @@
 	"hint_removetag": { "message": "Enterキーでタグを削除" },
 	"label_noresult_msg": { "message": "検索結果: 0件" },
 
+	"options_page_title": { "message": "オプション - 積んテク／Staktekst" },
+
 	"options_restore_title": { "message": "ウィンドウ状態の復元" },
 	"options_restore_msg": { "message": "前回起動時のウィンドウ状態を復元する" },
 	"label_options_duration": { "message": "保存期間（秒）" },
@@ -54,20 +56,20 @@
 	"options_searchengine_msg": { "message": "アドレス内のキーワード部分を%sに置き換えて下さい" },
 	"options_iconselect_title": { "message": "アイコンを選択してください" },
 
-	"label_name": { "message": "名前" },
+	"label_name": { "message": "名称" },
 	"label_url": { "message": "URL" },
 
 	"button_save": { "message": "保存" },
 	"button_reset": { "message": "リセット" },
 
 	"se_google": { "message": "Google検索" },
-	"se_vocabulary": { "message": "Vocabulary.comで単語を検索" },
-	"se_doppl": { "message": "Do People Say Itでフレーズを検索" },
-	"se_skell": { "message": "SKELLで例文を検索" },
-	"se_netspeak": { "message": "Netspeakでフレーズを検索" },
-	"se_youglish": { "message": "Youglishで発音を検索" },
-	"se_deepl": { "message": "DeepLで日本語に翻訳" },
-	"se_oddcast": { "message": "Oddcastでテキストを読み上げ" },
+	"se_vocabulary": { "message": "Vocabulary.com単語検索" },
+	"se_doppl": { "message": "Do People Say It例文検索" },
+	"se_skell": { "message": "SKELL例文検索" },
+	"se_netspeak": { "message": "Netspeak例文検索" },
+	"se_youglish": { "message": "Youglish発音検索" },
+	"se_deepl": { "message": "DeepL日本語翻訳" },
+	"se_oddcast": { "message": "Oddcastテキスト読み上げデモ" },
 
 	"com_push": { "message": "テキストをクリップ" },
 	"com_bookmark": { "message": "ページをブックマーク" },

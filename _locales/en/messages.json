@@ -1,7 +1,7 @@
 {
 	"ext_name": { "message": "Staktekst" },
 	"ext_desc": {
-		"message": "A simple note-taking tool with search engines and text-clip features for ESL Learners"
+		"message": "A simple note-taking tool with search engines and text-clip features for English Learners"
 	},
 	"html_lang": { "message": "en" },
 
@@ -38,6 +38,8 @@
 
 	"hint_toggleorder": { "message": "Change Sort Order" },
 	"label_noresult_msg": { "message": "No results found" },
+
+	"options_page_title": { "message": "Options - Staktekst" },
 
 	"options_restore_title": { "message": "Restore Previous Session" },
 	"options_restore_msg": { "message": "Restore the previous session" },
