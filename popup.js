@@ -300,6 +300,9 @@ const toggleEditorMode = (div, display = !$(div).attr('contentEditable') ? true 
 
 // ========== FILTER ==========
 const updateSearchResult = () => {
+	// save window state
+	windowState.searchQuery = $('.searchbox').val().trim();
+
 	const query = $('.searchbox').val().trim().toLowerCase();
 	let hits;
 
@@ -308,12 +311,13 @@ const updateSearchResult = () => {
 		hits = filterNoteItemsByTag(query);
 		$('.separator .tag').each((index, tag) => {
 			// display separators associated to the tag
-			if ($(tag).text() === query) {
+			if ($(tag).text() === $('.searchbox').val().trim()) {
 				const separator = $(tag).parent().parent();
 				separator.removeClass('filtered');
 			}
 		});
-	} else if (query === ':d') {
+		// } else if (query === ':d') {
+	} else if (query[0] === ':') {
 		// search items with date tag
 		hits = filterNoteItemsByTag(query);
 	} else {
@@ -345,9 +349,6 @@ const updateSearchResult = () => {
 		// $('.search-cancel-button').hide();
 		hideDropdownList();
 	}
-
-	// save window state
-	windowState.searchQuery = query;
 };
 
 const filterNoteItemsByTag = (query) => {
@@ -359,8 +360,21 @@ const filterNoteItemsByTag = (query) => {
 		query = query.substring(1);
 		predicate = (q) => $(q).text().match(new RegExp(`^${escapeRegExp(query)}`, 'i'));
 	} else {
-		// filter by date
-		predicate = (q) => !isNaN(Date.parse($(q).text()));
+		if (query === ':d') {
+			// filter by date
+			predicate = (q) => !isNaN(Date.parse($(q).text()));
+		} else {
+			let tag = '';
+			if (query === ':b') {
+				tag = 'bookmark';
+			} else if (query === ':c') {
+				tag = 'clip';
+			} else if (query === ':n') {
+				tag = 'note';
+			}
+			tag = tag.toLowerCase();
+			predicate = (q) => $(q).text().match(new RegExp(`^${escapeRegExp(tag)}`, 'i'));
+		}
 	}
 
 	$('#textstack').children().each((index, textItem) => {
@@ -1579,7 +1593,8 @@ const initializeEventListeners = () => {
 	});
 
 	window.addEventListener('keyup', (e) => {
-		if (e.ctrlKey && e.keyCode === Keys.ENTER) {
+		e.preventDefault();
+		if ((e.ctrlKey && e.keyCode === Keys.ENTER) || (e.ctrlKey && e.keyCode === Keys.N)) {
 			// when another tag is on focus
 			if ($('.tagadd, .separatorInput').is(':focus')) {
 				return false;
@@ -1922,7 +1937,7 @@ const createSeparator = (wrapper) => {
 			type: 'separator',
 			content: '',
 			footnote: {
-				tags: [ query ],
+				tags: [ query.substring(1) ],
 				pageTitle: '',
 				pageURL: ''
 			},
@@ -2068,6 +2083,7 @@ const restorePreviousState = () => {
 			// restore searchbox
 			if (typeof state.searchQuery !== 'undefined') {
 				if (state.searchQuery !== '') {
+					console.log(state.searchQuery);
 					fireSearch(state.searchQuery);
 				}
 			}
@@ -2133,6 +2149,7 @@ const reverseStack = () => {
 
 // ========== INITIALIZATION ==========
 document.addEventListener('DOMContentLoaded', () => {
+	// importNotesFromJSON('_locales/ja/firstrun.json').then(() => {
 	localizeHtmlPage();
 
 	chrome.storage.local.get('tagStack', (res) => {
@@ -2171,4 +2188,5 @@ document.addEventListener('DOMContentLoaded', () => {
 			restorePreviousState();
 		}
 	});
+	// });
 });
