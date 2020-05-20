@@ -828,7 +828,7 @@ const attachTagInputEvents = (stackWrapper) => {
 			stackStorage.set(JSON.stringify(stack));
 
 			// change the tag to emoji
-			if (tagName.match(/pinned|📌/i)) {
+			if (tagName.match(/pinned|📌/i) || isNaN(tagName)) {
 				tagName = tagName.replace(/pinned/i, '📌');
 				$(stackWrapper).addClass('priority');
 			}
@@ -878,7 +878,7 @@ const attachTagInputEvents = (stackWrapper) => {
 		// let tagName = ev.target.value.replace(String.fromCharCode(8203), '');
 
 		if (tagName[tagName.length - 1] === ' ' || ev.keyCode === Keys.ENTER) {
-			tagName = ev.target.value.trim();
+			tagName = ev.target.value.trim().replace(String.fromCharCode(8203), '');
 
 			if (tagName !== '') {
 				// update tag information
@@ -892,7 +892,7 @@ const attachTagInputEvents = (stackWrapper) => {
 				stackStorage.set(JSON.stringify(stack));
 
 				// change the tag to emoji
-				if (tagName.match(/pinned|📌/i)) {
+				if (tagName.match(/pinned|📌/i) || isNaN(tagName)) {
 					tagName = tagName.replace(/pinned/i, '📌');
 					$(stackWrapper).addClass('priority');
 				}
