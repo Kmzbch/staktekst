@@ -135,10 +135,13 @@ function fitHeightToContent(textarea) {
 }
 
 function enableURLEmbededInText(text) {
-	return text.replace(
-		/(https?:[\.\/\w-%?&=#+;,']+)/g,
-		"<span class='pseudolink' href='$1' target='_blank'>$1</span>"
-	);
+	return text.replace(/(https?:[\.\/\w-%?&=#+;,']+)/g, encodeSingleQUote);
+
+	// url encode on single quote
+	function encodeSingleQUote(match) {
+		match = match.replace(/'/g, `%27`);
+		return `<span class='pseudolink' href='${match}' target='_blank'>${match}</span>`;
+	}
 }
 
 // ========== UTILITIES ==========
