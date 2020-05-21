@@ -12,7 +12,7 @@ const runFirstTime = () => {
 				id: '1cce6913-17bf-49b2-81ff-9982178be4b3',
 				type: 'separator',
 				content: '４．おわりに',
-				footnote: { tags: [ '#WELCOME!' ], pageTitle: '', pageURL: '' },
+				footnote: { tags: [ 'WELCOME!' ], pageTitle: '', pageURL: '' },
 				date: '2020-05-20T00:00:01.000Z'
 			},
 
@@ -74,7 +74,7 @@ const runFirstTime = () => {
 				id: '827724e1-e6e1-4505-84ce-179c0705e3f8',
 				type: 'separator',
 				content: '２．基本操作',
-				footnote: { tags: [ '#WELCOME!' ], pageTitle: '', pageURL: '' },
+				footnote: { tags: [ 'WELCOME!' ], pageTitle: '', pageURL: '' },
 				date: '2020-05-20T00:00:09.000Z'
 			},
 			{
@@ -105,7 +105,7 @@ const runFirstTime = () => {
 				id: '1cce6913-17bf-49b2-81ff-9982178be4b3',
 				type: 'separator',
 				content: '４．おわりに',
-				footnote: { tags: [ '#WELCOME!' ], pageTitle: '', pageURL: '' },
+				footnote: { tags: [ 'WELCOME!' ], pageTitle: '', pageURL: '' },
 				date: '2020-05-20T00:00:01.000Z'
 			},
 
@@ -168,7 +168,7 @@ const runFirstTime = () => {
 				id: '827724e1-e6e1-4505-84ce-179c0705e3f8',
 				type: 'separator',
 				content: '２．基本操作',
-				footnote: { tags: [ '#WELCOME!' ], pageTitle: '', pageURL: '' },
+				footnote: { tags: [ 'WELCOME!' ], pageTitle: '', pageURL: '' },
 				date: '2020-05-20T00:00:09.000Z'
 			},
 			{

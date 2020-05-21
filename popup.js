@@ -1354,10 +1354,19 @@ const attachSeparatorEvents = (stackwrapper) => {
 			ev.target.value = ev.target.defaultValue;
 		}
 
-		ev.target.classList.add('disabled');
+		if (shadowNodes[0]) {
+			// remove the item from duplicated textstack as well
+			$(shadowNodes[0]).children().each((index, item) => {
+				if ($(item).attr('id') === $(stackwrapper).attr('id')) {
+					$(item).find('input').val(separatorName);
+				}
+			});
+		}
+
+		// ev.target.classList.add('disabled');
 	});
 	$(stackwrapper).find('.separatorInput').on('click', (ev) => {
-		ev.target.classList.remove('disabled');
+		// ev.target.classList.remove('disabled');
 	});
 
 	$(stackwrapper).find('.separatorCheckbox').on('click', (ev) => {
@@ -1374,11 +1383,18 @@ const attachSeparatorEvents = (stackwrapper) => {
 			stackStorage.set(JSON.stringify(stack));
 			// remove item in the UI
 			$(targetElem).parent().remove();
+
+			//
+			$(shadowNodes[0]).children().each((index, item) => {
+				if ($(item).attr('id') === $(stackwrapper).attr('id')) {
+					$(item).remove();
+				}
+			});
 		}, 450);
 	});
 
 	$(stackwrapper).find('.separatorInput').on('focus', (ev) => {
-		ev.target.classList.remove('disabled');
+		// ev.target.classList.remove('disabled');
 	});
 
 	// KEYUP
@@ -1401,6 +1417,16 @@ const attachSeparatorEvents = (stackwrapper) => {
 				stack[index].content = separatorName;
 				stackStorage.set(JSON.stringify(stack));
 				$(ev.target).trigger('blur');
+
+				if (shadowNodes[0]) {
+					console.log(shadowNodes[0]);
+
+					$(shadowNodes[0]).children().each((index, item) => {
+						if ($(item).attr('id') === $(stackwrapper).attr('id')) {
+							$(item).find('input').val(separatorName);
+						}
+					});
+				}
 			}
 		}
 	});
@@ -1451,6 +1477,10 @@ const attachListItemEvents = (liItem) => {
 					if ($(elem).text() === oldTag) {
 						$(elem).remove();
 					}
+					let wrapper = $(elem).parent().parent();
+					if (wrapper.hasClass('separator')) {
+						wrapper.remove();
+					}
 				});
 				tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1);
 				chrome.storage.local.set({ tagStack: tagStack });
@@ -1458,7 +1488,16 @@ const attachListItemEvents = (liItem) => {
 				// remove the tag from stack
 				stack.forEach((item) => {
 					if (item.footnote.tags.includes(oldTag)) {
-						item.footnote.tags.splice(item.footnote.tags.findIndex((t) => t.name === oldTag), 1);
+						if (item.type === 'separator') {
+							stack.splice(
+								stack.findIndex((note) => {
+									note.id === item.id;
+								}),
+								1
+							);
+						} else {
+							item.footnote.tags.splice(item.footnote.tags.findIndex((t) => t.name === oldTag), 1);
+						}
 					}
 				});
 				stackStorage.set(JSON.stringify(stack));
@@ -1586,10 +1625,9 @@ const initializeEventListeners = () => {
 	// save window state when the popup window is closed
 	$(window).on('unload blur', () => {
 		if (typeof background !== 'undefined') {
-			background = chrome.extension.getBackgroundPage();
+			windowState.closedDateTime = new Date().toISOString();
+			background.chrome.storage.local.set(windowState);
 		}
-		windowState.closedDateTime = new Date().toISOString();
-		background.chrome.storage.local.set(windowState);
 	});
 
 	window.addEventListener('keyup', (e) => {
@@ -1952,10 +1990,24 @@ const createSeparator = (wrapper) => {
 		$(separatorDOM).find('input').focus();
 
 		attachSeparatorEvents(separatorDOM);
+
+		if (shadowNodes[0]) {
+			// remove the item from duplicated textstack as well
+			$(shadowNodes[0]).find('.stackwrapper').each((index, item) => {
+				if ($(item).attr('id') === $(wrapper).attr('id')) {
+					const sepClone = separatorDOM.cloneNode(true);
+					$(sepClone).insertAfter(item);
+					console.log(shadowNodes[0]);
+				}
+			});
+		}
 	}
 };
 
 const clearAllItems = () => {
+	// clear localstorage for sortableJS
+	localStorage.clear();
+
 	// clear storage
 	stackStorage.reset();
 
@@ -2149,7 +2201,6 @@ const reverseStack = () => {
 
 // ========== INITIALIZATION ==========
 document.addEventListener('DOMContentLoaded', () => {
-	// importNotesFromJSON('_locales/ja/firstrun.json').then(() => {
 	localizeHtmlPage();
 
 	chrome.storage.local.get('tagStack', (res) => {
@@ -2188,5 +2239,4 @@ document.addEventListener('DOMContentLoaded', () => {
 			restorePreviousState();
 		}
 	});
-	// });
 });
