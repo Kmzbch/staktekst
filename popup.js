@@ -332,23 +332,28 @@ const updateSearchResult = () => {
 		sortable.save();
 	}
 
-	// change styles on search
-	if (query) {
-		let locale = chrome.i18n.getUILanguage();
-		if (locale === 'en') {
-			displayMessage(hits === 0 ? chrome.i18n.getMessage('label_noresult_msg') : `${hits} of ${stack.length}`);
-		} else if (locale === 'ja') {
-			displayMessage(hits === 0 ? chrome.i18n.getMessage('label_noresult_msg') : `全${stack.length}中${hits}件`);
+	// update status board
+	doAfterInputIsDone(() => {
+		// change styles on search
+		if (query) {
+			let locale = chrome.i18n.getUILanguage();
+			if (locale === 'en') {
+				displayMessage(
+					hits === 0 ? chrome.i18n.getMessage('label_noresult_msg') : `${hits} of ${stack.length}`
+				);
+			} else if (locale === 'ja') {
+				displayMessage(hits === 0 ? chrome.i18n.getMessage('label_noresult_msg') : `全${stack.length}中${hits}件`);
+			}
+			// $('.search-cancel-button').show();
+			$('.search-cancel-button').addClass('mdi-close-circle');
+			setTimeout(clearMessage, 3000);
+		} else {
+			clearMessage();
+			$('.search-cancel-button').removeClass('mdi-close-circle');
+			// $('.search-cancel-button').hide();
+			hideDropdownList();
 		}
-		// $('.search-cancel-button').show();
-		$('.search-cancel-button').addClass('mdi-close-circle');
-		setTimeout(clearMessage, 3000);
-	} else {
-		clearMessage();
-		$('.search-cancel-button').removeClass('mdi-close-circle');
-		// $('.search-cancel-button').hide();
-		hideDropdownList();
-	}
+	}, 400);
 };
 
 const filterNoteItemsByTag = (query) => {
@@ -1655,6 +1660,36 @@ const initializeEventListeners = () => {
 				toggleEditorMode(newNote, true);
 				return false;
 			}
+		} else if (e.ctrlKey && e.keyCode === Keys.RIGHT) {
+			let query = $('.searchbox').val();
+			let index = tagStack.findIndex((t) => t.name === query.substring(1));
+			if (index === -1) {
+				index = 0;
+			}
+			let searchTag = tagStack[(index + 1) % tagStack.length].name;
+			fireSearch('#' + searchTag);
+		} else if (e.ctrlKey && e.keyCode === Keys.LEFT) {
+			let query = $('.searchbox').val();
+			let index = tagStack.findIndex((t) => t.name === query.substring(1));
+			let searchTag = '';
+
+			if (index === 0 || index === -1) {
+				searchTag = tagStack[(tagStack.length - 1) % tagStack.length].name;
+			} else {
+				searchTag = tagStack[(index - 1) % tagStack.length].name;
+			}
+			fireSearch('#' + searchTag);
+
+			$('.searchbox').val('');
+			$('.searchbox').focus();
+			$('.searchbox').val('#' + searchTag);
+		}
+	});
+
+	window.addEventListener('keydown', (e) => {
+		if ((e.ctrlKey && e.keyCode === Keys.LEFT) || (e.ctrlKey && e.keyCode === Keys.RIGHT)) {
+			e.preventDefault();
+			window.getSelection().removeAllRanges();
 		}
 	});
 
