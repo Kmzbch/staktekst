@@ -1891,6 +1891,10 @@ const createNoteItem = () => {
 	attachTagInputEvents(wrapper);
 	attachNoteContentEvents(wrapper);
 
+	if (windowState.searchQuery) {
+		$(wrapper).find('.sepGenerator').removeClass('hidden');
+	}
+
 	// render
 	if (windowState.sortedByNew) {
 		$('#textstack').prepend(wrapper);
