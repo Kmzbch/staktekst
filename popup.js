@@ -606,7 +606,10 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 	}
 	// add content body
 	noteItemHTML += `<div class='content'>${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div>`;
-	noteItemHTML += `<i title="${chrome.i18n.getMessage('hint_editnote')}" class="mdi mdi-pencil edit"></i>`;
+
+	if (type === 'note') {
+		noteItemHTML += `<i title="${chrome.i18n.getMessage('hint_editnote')}" class="mdi mdi-pencil edit"></i>`;
+	}
 	noteItemHTML += `<i title="${chrome.i18n.getMessage('hint_removenote')}" class="mdi mdi-check checkbox"></i>`;
 	noteItemHTML += `<input type="hidden" value="${id}">`;
 	noteItemHTML += `<input class='itemDate' type='hidden' value="${date}">`;
