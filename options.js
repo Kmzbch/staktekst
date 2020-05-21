@@ -8,13 +8,19 @@ const defaultSettings = {
 		{
 			id: 'search1',
 			title: chrome.i18n.getMessage('se_google'),
-			url: 'https://encrypted.google.com/search?hl=en&gl=en&q=%s',
+			url:
+				chrome.i18n.getMessage('html_lang') === 'ja'
+					? 'https://www.google.co.jp/search?hl=ja&q=%s'
+					: `https://www.google.com/search?hl=${window.navigator.language}&q=%s`,
+
+			contexts: [ 'selection' ],
 			class: 'mdi mdi-magnify'
 		},
 		{
 			id: 'search2',
 			title: chrome.i18n.getMessage('se_vocabulary'),
 			url: 'https://www.vocabulary.com/dictionary/%s',
+			contexts: [ 'selection' ],
 			class: 'mdi mdi-check'
 		},
 		{
@@ -22,12 +28,14 @@ const defaultSettings = {
 
 			title: chrome.i18n.getMessage('se_doppl'),
 			url: 'https://dopeoplesay.com/q/%s',
+			contexts: [ 'selection' ],
 			class: 'mdi mdi-account-multiple'
 		},
 		{
 			id: 'search4',
 			title: chrome.i18n.getMessage('se_skell'),
 			url: 'https://skell.sketchengine.co.uk/run.cgi/concordance?lpos=&query=%s',
+			contexts: [ 'selection' ],
 			class: 'mdi mdi-format-list-numbered'
 		},
 		{
@@ -35,6 +43,7 @@ const defaultSettings = {
 
 			title: chrome.i18n.getMessage('se_netspeak'),
 			url: 'https://netspeak.org/#q=%s&corpus=web-en',
+			contexts: [ 'selection' ],
 			class: 'mdi mdi-chart-histogram'
 		},
 
@@ -42,6 +51,7 @@ const defaultSettings = {
 			id: 'search6',
 			title: chrome.i18n.getMessage('se_youglish'),
 			url: 'https://youglish.com/search/%s',
+			contexts: [ 'selection' ],
 			class: 'mdi mdi-youtube'
 		}
 	]
@@ -150,36 +160,42 @@ const initializeEvents = () => {
 					id: 'search1',
 					class: $('#engine1_icon').attr('class'),
 					title: $('#engine1_name').val(),
+					contexts: [ 'selection' ],
 					url: $('#engine1_url').val()
 				},
 				{
 					id: 'search2',
 					class: $('#engine2_icon').attr('class'),
 					title: $('#engine2_name').val(),
+					contexts: [ 'selection' ],
 					url: $('#engine2_url').val()
 				},
 				{
 					id: 'search3',
 					class: $('#engine3_icon').attr('class'),
 					title: $('#engine3_name').val(),
+					contexts: [ 'selection' ],
 					url: $('#engine3_url').val()
 				},
 				{
 					id: 'search4',
 					class: $('#engine4_icon').attr('class'),
 					title: $('#engine4_name').val(),
+					contexts: [ 'selection' ],
 					url: $('#engine4_url').val()
 				},
 				{
 					id: 'search5',
 					class: $('#engine5_icon').attr('class'),
 					title: $('#engine5_name').val(),
+					contexts: [ 'selection' ],
 					url: $('#engine5_url').val()
 				},
 				{
 					id: 'search6',
 					class: $('#engine6_icon').attr('class'),
 					title: $('#engine6_name').val(),
+					contexts: [ 'selection' ],
 					url: $('#engine6_url').val()
 				}
 			]

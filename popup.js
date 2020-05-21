@@ -715,10 +715,6 @@ const generateTagsHTML = (tagName) => {
 	} else if (tagName.match(/\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu)) {
 		// emoji
 		tagsHTML = `<span title="${chrome.i18n.getMessage('hint_searchtag')}"  class="tag emoji">${tagName}</span>`;
-	} else if (tagName === 'today') {
-		tagsHTML = `<span title="${chrome.i18n.getMessage(
-			'hint_searchtag'
-		)}"  class="tag tagDate">${formatDate()}</span>`;
 	} else if (!isNaN(new Date(tagName))) {
 		// datetag
 		tagsHTML = `<span title="${chrome.i18n.getMessage('hint_searchtag')}"  class="tag tagDate">${tagName}</span>`;
@@ -1467,12 +1463,12 @@ const attachListItemEvents = (liItem) => {
 			if (newTag === '') {
 				// remove the tag from tagstack
 				$('.tag').each((index, elem) => {
-					if ($(elem).text() === oldTag) {
-						$(elem).remove();
-					}
 					let wrapper = $(elem).parent().parent();
 					if (wrapper.hasClass('separator')) {
 						wrapper.remove();
+					}
+					if ($(elem).text() === oldTag) {
+						$(elem).remove();
 					}
 				});
 				tagStack.splice(tagStack.findIndex((t) => t.name === oldTag), 1);
@@ -1927,8 +1923,10 @@ const removeNoteItem = (noteItem) => {
 		noteItem.remove();
 
 		let noTag = true;
+		let separatorsToRemove = [];
+
 		tagsToRemove.forEach((tagName) => {
-			$('.tag').each((index, item) => {
+			$('.stackwrapper .tag').each((index, item) => {
 				const tagRegex = new RegExp(`${escapeRegExp(tagName)}`, 'i');
 				if ($(item).text().match(tagRegex)) {
 					noTag = false;
@@ -1936,9 +1934,16 @@ const removeNoteItem = (noteItem) => {
 				}
 			});
 			// remove the tag from tagstack if no other notes have the tag
-			if (noTag) {
+			if (noTag && windowState.searchQuery === '') {
 				tagStack.splice(tagStack.findIndex((t) => t.name === tagName), 1);
 				noTag = true;
+				$('.separator').each((index, item) => {
+					const tagRegex = new RegExp(`${escapeRegExp(tagName)}`, 'i');
+					if ($(item).find('.footnote .tag').html().match(tagRegex)) {
+						separatorsToRemove.push($(item).attr('id'));
+						item.remove();
+					}
+				});
 			}
 		});
 
@@ -1953,7 +1958,7 @@ const removeNoteItem = (noteItem) => {
 		if (shadowNodes[0]) {
 			// remove the item from duplicated textstack as well
 			$(shadowNodes[0]).find('.stackwrapper').each((index, item) => {
-				if ($(item).attr('id') === id) {
+				if ($(item).attr('id') === id || separatorsToRemove.includes(id)) {
 					$(item).remove();
 					return false;
 				}

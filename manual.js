@@ -11,7 +11,7 @@ const runFirstTime = async () => {
 			{
 				id: '1cce6913-17bf-49b2-81ff-9982178be4b3',
 				type: 'separator',
-				content: '４．おわりに',
+				content: '５．おわりに',
 				footnote: { tags: [ 'WELCOME!' ], pageTitle: '', pageURL: '' },
 				date: '2020-05-20T00:00:01.000Z'
 			},
@@ -20,7 +20,7 @@ const runFirstTime = async () => {
 				type: 'note',
 				content:
 					'・オプションの設定→Chrome拡張アイコンを右クリック\n・ノート中のリンクをバックグラウンドタブで開く→Ctrl＋リンクをクリック\n・重要なノートの閲覧→「重要なノート」をクリック\n※#pinnedタグ付きノートと日付・数字タグ付きのノートが表示されます。\n#pinnedタグはタグ追加時に📌に変換、日付・数字タグは青字で強調表示されます。\n・ノートのエクスポート→「ノートのエクスポート」をクリック',
-				footnote: { tags: [ 'WELCOME!', 'pinned', 'today' ], pageTitle: '', pageURL: '' },
+				footnote: { tags: [ 'WELCOME!', 'pinned', '2020-05-21' ], pageTitle: '', pageURL: '' },
 				date: '2020-05-20T00:00:02.000Z'
 			},
 			{
@@ -121,7 +121,7 @@ const runFirstTime = async () => {
 				type: 'note',
 				content:
 					'- Options -- Right-click on the extension icon\n- Open link in a note in new background tab -- Ctrl+click on the link&nbsp;\n- View important notes -- from "Important Notes" Icon\n* Search for #pinned notes and date tag notes. #pinned tag is converted into the emoji 📌\nDate tags are colored in blue.\n- Export notes as a file(txt/json)',
-				footnote: { tags: [ 'WELCOME!', 'pinned', 'today' ], pageTitle: '', pageURL: '' },
+				footnote: { tags: [ 'WELCOME!', 'pinned', '2020-05-21' ], pageTitle: '', pageURL: '' },
 				date: '2020-05-20T00:00:02.000Z'
 			},
 			{

@@ -197,7 +197,20 @@ function loadSettings() {
 		if (typeof res.options === 'undefined' || res.options.contextMenuEnabled) {
 			// reset and create context menus
 			chrome.contextMenus.removeAll(() => {
-				MENU_ITEMS.forEach((item) => {
+				// MENU_ITEMS.forEach((item) => {
+				// 	let picked = (({ id, title, type, contexts }) => ({
+				// 		id,
+				// 		title,
+				// 		type,
+				// 		contexts
+				// 	}))(item);
+				// 	chrome.contextMenus.create(picked);
+				// });
+				let menuItems =
+					typeof res.options === 'undefined'
+						? MENU_ITEMS
+						: MENU_ITEMS.slice(0, 2).concat(res.options.searchEngines);
+				menuItems.forEach((item) => {
 					let picked = (({ id, title, type, contexts }) => ({
 						id,
 						title,
