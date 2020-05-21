@@ -1253,12 +1253,12 @@ const attachEventsToTextStack = () => {
 					stackWrapper.find('.footnote').find('.divWrap').removeClass('hidden');
 				}
 			} else {
-				// TODO: fix lowering search query bug
 				// when hashtag clicked
 				if (!isNaN(Date.parse($(targetElem).html()))) {
 					filterNoteItemsByTag(':d');
 
 					$('.searchbox').val(':d');
+					$('.search-cancel-button').addClass('mdi-close-circle');
 
 					$('#statusboard').removeClass('entering');
 				} else {
