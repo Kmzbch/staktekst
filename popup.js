@@ -789,11 +789,17 @@ const attachEventsAndClassesToNotes = () => {
 
 	$('.sepGenerator').addClass('hidden');
 
+	let adjust = -60;
+	let speed = 0;
+
 	$('.current a').click((e) => {
 		e.preventDefault();
 
 		if (windowState.sortedByNew) {
-			location.href = '#' + formatDate(new Date(dateStack[dateStack.length - 1]));
+			let href = '#' + formatDate(new Date(dateStack[dateStack.length - 1]));
+			let target = $(href == '#' || href == '' ? 'html' : href);
+			let position = target.offset().top + adjust;
+			$('body,html').animate({ scrollTop: position }, speed, 'swing');
 		}
 	});
 
@@ -804,22 +810,25 @@ const attachEventsAndClassesToNotes = () => {
 
 		if (windowState.sortedByNew) {
 			if (index === 0) {
-				// location.href = '#' + 'current';
-				window.scrollTo(0, 0);
+				$('body,html').animate({ scrollTop: 0 }, speed, 'swing');
 			} else {
-				location.href = '#' + formatDate(new Date(nextDate));
-				// window.scrollBy(0, -530);
+				// https://125naroom.com/web/2899
+				let href = '#' + formatDate(new Date(nextDate));
+				let target = $(href == '#' || href == '' ? 'html' : href);
+				let position = target.offset().top + adjust;
+				$('body,html').animate({ scrollTop: position }, speed, 'swing');
+
+				// location.href = '#' + formatDate(new Date(nextDate));
 			}
 		} else {
 			if ($(e.target).parent().hasClass('current')) {
-				window.scrollTo(0, 0);
+				// window.scrollTo(0, 0);
+				$('body,html').animate({ scrollTop: 0 }, speed, 'swing');
 			} else {
-				if (index === dateStack.length - 1) {
-					// location.href = '#' + formatDate(new Date(dateStack[0]));
-					location.href = '#' + 'current';
-				} else {
-					location.href = '#' + formatDate(new Date(nextDate));
-				}
+				let href = index === dateStack.length - 1 ? '#' + 'current' : '#' + formatDate(new Date(nextDate));
+				let target = $(href == '#' || href == '' ? 'html' : href);
+				let position = target.offset().top + adjust;
+				$('body,html').animate({ scrollTop: position }, speed, 'swing');
 			}
 		}
 	});
