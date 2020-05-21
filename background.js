@@ -142,6 +142,12 @@ const getMessage = (request, sender, sendResponse) => {
 				case 'OPTIONS':
 					loadSettings();
 					break;
+				// case 'CHECK_RUNFIRSTTIME':
+				// 	runFirstTime();
+				// 	sendResponse({
+				// 		message: 'checked!'
+				// 	});
+				// 	break;
 				default:
 					if (request.selection) {
 						executeUserCommand(request.command, request.selection, tabs[0].title, tabs[0].url, tabs[0].id);
@@ -224,7 +230,7 @@ function loadSettings() {
 }
 
 //
-runFirstTime();
+// runFirstTime();
 
 //
 loadSettings();

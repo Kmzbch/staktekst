@@ -21,8 +21,8 @@
 
 	"hint_jumpdate": { "message": "日付を移動" },
 	"hint_createnew": { "message": "新規ノートを作成" },
-	"hint_showimportant": { "message": "重要なノートを表示" },
-	"hint_showallnotes": { "message": "重要なノート表示を解除" },
+	"hint_showimportant": { "message": "重要なノート" },
+	"hint_showallnotes": { "message": "重要なノートの閲覧を解除" },
 
 	"hint_toggleorder": { "message": "ノートを並び替え" },
 
@@ -31,7 +31,7 @@
 	"hint_addtag": { "message": "タグを追加" },
 
 	"hint_searchtag": { "message": "タグを検索" },
-	"hint_createseparator": { "message": "セパレータを新規作成" },
+	"hint_createseparator": { "message": "新規セパレータ" },
 	"hint_edittag": { "message": "タグを編集" },
 	"hint_removeseparator": { "message": "セパレータを削除" },
 

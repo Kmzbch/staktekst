@@ -702,11 +702,13 @@ const generateTagsHTML = (tagName) => {
 		tagsHTML = `<span title="${chrome.i18n.getMessage(
 			'hint_searchtag'
 		)}" class="tag pinned emoji">${tagName}</span>`;
-	} else if (tagName.match(/fav|★|☆|✭|⭐/i)) {
+		// } else if (tagName.match(/fav|★|☆|✭|⭐/i)) {
+	} else if (tagName.match(/★|☆|✭|⭐/i)) {
 		// favourite
 		// tagsHTML = `<span class="tag fav">${tagName}</span>`
 		tagsHTML = `<span title="${chrome.i18n.getMessage('hint_searchtag')}"  class="tag fav">⭐</span>`;
-	} else if (tagName.match(/like|♡|💛|♥|❤/i)) {
+		// } else if (tagName.match(/like|♡|💛|♥|❤/i)) {
+	} else if (tagName.match(/♡|💛|♥|❤/i)) {
 		// likes
 		// tagsHTML = `<span class="tag like">${tagName}</span>`
 		tagsHTML = `<span title="${chrome.i18n.getMessage('hint_searchtag')}"  class="tag like">❤</span>`;
@@ -1071,15 +1073,6 @@ const attachNoteContentEvents = (wrapper) => {
 		if (e.target.classList.contains('tagadd')) {
 			return false;
 		}
-		// if (e.target.classList.contains('sepGenerator')) {
-		// 	if (!e.target.classList.contains('hidden')) {
-		// 		createSeparator(wrapper);
-		// 		if (sortable !== null) {
-		// 			sortable.save();
-		// 		}
-		// 	}
-		// 	return false;
-		// }
 		if (wrapper.classList.contains('note')) {
 			// fire only when the area out of text body double clicked
 			if (!e.target.classList.contains('content')) {
@@ -2206,7 +2199,6 @@ const reverseStack = () => {
 // ========== INITIALIZATION ==========
 document.addEventListener('DOMContentLoaded', () => {
 	localizeHtmlPage();
-
 	chrome.storage.local.get('tagStack', (res) => {
 		if (typeof res.tagStack === 'undefined' || res.tagStack.length === 0) {
 			tagStack = [
