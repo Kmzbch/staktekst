@@ -1660,36 +1660,44 @@ const initializeEventListeners = () => {
 				toggleEditorMode(newNote, true);
 				return false;
 			}
-		} else if (e.ctrlKey && e.keyCode === Keys.RIGHT) {
-			let query = $('.searchbox').val();
-			let index = tagStack.findIndex((t) => t.name === query.substring(1));
-			if (index === -1) {
-				index = 0;
+		} else {
+			if (!$('.searchbox').is(':focus')) {
+				return;
 			}
-			let searchTag = tagStack[(index + 1) % tagStack.length].name;
-			fireSearch('#' + searchTag);
-		} else if (e.ctrlKey && e.keyCode === Keys.LEFT) {
-			let query = $('.searchbox').val();
-			let index = tagStack.findIndex((t) => t.name === query.substring(1));
-			let searchTag = '';
 
-			if (index === 0 || index === -1) {
-				searchTag = tagStack[(tagStack.length - 1) % tagStack.length].name;
-			} else {
-				searchTag = tagStack[(index - 1) % tagStack.length].name;
+			if (e.ctrlKey && e.keyCode === Keys.RIGHT) {
+				let query = $('.searchbox').val();
+				let index = tagStack.findIndex((t) => t.name === query.substring(1));
+				if (index === -1) {
+					index = 0;
+				}
+				let searchTag = tagStack[(index + 1) % tagStack.length].name;
+				fireSearch('#' + searchTag);
+			} else if (e.ctrlKey && e.keyCode === Keys.LEFT) {
+				let query = $('.searchbox').val();
+				let index = tagStack.findIndex((t) => t.name === query.substring(1));
+				let searchTag = '';
+
+				if (index === 0 || index === -1) {
+					searchTag = tagStack[(tagStack.length - 1) % tagStack.length].name;
+				} else {
+					searchTag = tagStack[(index - 1) % tagStack.length].name;
+				}
+				fireSearch('#' + searchTag);
+
+				$('.searchbox').val('');
+				$('.searchbox').focus();
+				$('.searchbox').val('#' + searchTag);
 			}
-			fireSearch('#' + searchTag);
-
-			$('.searchbox').val('');
-			$('.searchbox').focus();
-			$('.searchbox').val('#' + searchTag);
 		}
 	});
 
 	window.addEventListener('keydown', (e) => {
 		if ((e.ctrlKey && e.keyCode === Keys.LEFT) || (e.ctrlKey && e.keyCode === Keys.RIGHT)) {
-			e.preventDefault();
-			window.getSelection().removeAllRanges();
+			if ($('.searchbox').is(':focus')) {
+				e.preventDefault();
+				window.getSelection().removeAllRanges();
+			}
 		}
 	});
 
