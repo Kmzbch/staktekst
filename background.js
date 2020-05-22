@@ -53,21 +53,30 @@ const MENU_ITEMS = [
 		url: 'https://youglish.com/search/%s'
 	},
 	{
-		id: 'deepl',
+		id: 'search7',
 		url:
 			'https://www.deepl.com/translator#en/' +
 			(window.navigator.language || chrome.i18n.getMessage('html_lang')) +
 			'/%s',
+
 		title: chrome.i18n.getMessage('se_deepl'),
 		contexts: [ 'selection' ]
 	},
-
 	{
-		id: 'oddcast',
-		title: chrome.i18n.getMessage('se_oddcast'),
-		contexts: [ 'selection' ],
-		url: 'http://www.oddcast.com/ttsdemo/index.php'
+		id: 'search8',
+		url:
+			'https://translate.google.com/?hl=' +
+			(window.navigator.language || chrome.i18n.getMessage('html_lang')) +
+			'#view=home&op=translate&sl=auto&tl=ja&text=%s',
+		title: chrome.i18n.getMessage('se_googletranslate'),
+		contexts: [ 'selection' ]
 	}
+	// {
+	// 	id: 'oddcast',
+	// 	title: chrome.i18n.getMessage('se_oddcast'),
+	// 	contexts: [ 'selection' ],
+	// 	url: 'http://www.oddcast.com/ttsdemo/index.php'
+	// }
 ];
 
 let USER_ITEMS = [];
@@ -104,20 +113,20 @@ const executeUserCommand = (commandId, text, tabTitle, tabUrl, tabId) => {
 				command = MENU_ITEMS.find((item) => item.id === commandId);
 			}
 			let urlWithQuery = command.url.replace('%s', text);
-			if (commandId === 'deepl') {
-				chrome.i18n.detectLanguage(text, (res) => {
-					urlWithQuery = urlWithQuery.replace(/translator#en/, 'translator#' + res.languages[0].language);
-					// open the URL
-					chrome.tabs.create({
-						url: urlWithQuery
-					});
-				});
-			} else {
-				// open the URL
-				chrome.tabs.create({
-					url: urlWithQuery
-				});
-			}
+			// if (tabUrl.match(/www\.deepl\.com/)) {
+			// 	chrome.i18n.detectLanguage(text, (res) => {
+			// 		urlWithQuery = urlWithQuery.replace(/translator#en/, 'translator#' + res.languages[0].language);
+			// 		// open the URL
+			// 		chrome.tabs.create({
+			// 			url: urlWithQuery
+			// 		});
+			// 	});
+			// } else {
+			// open the URL
+			chrome.tabs.create({
+				url: urlWithQuery
+			});
+			// }
 			break;
 	}
 };

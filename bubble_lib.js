@@ -40,13 +40,18 @@ const SEARCH_ENGINE_ICONS = [
 	{
 		className: 'mdi mdi-translate stackButton',
 		title: chrome.i18n.getMessage('se_deepl'),
-		command: 'deepl'
+		command: 'search7'
 	},
 	{
 		className: 'mdi mdi-text-to-speech stackButton',
-		title: chrome.i18n.getMessage('se_oddcast'),
-		command: 'oddcast'
+		title: chrome.i18n.getMessage('se_googletranslate'),
+		command: 'search8'
 	}
+	// {
+	// 	className: 'mdi mdi-text-to-speech stackButton',
+	// 	title: chrome.i18n.getMessage('se_oddcast'),
+	// 	command: 'oddcast'
+	// }
 ];
 
 const SYSTEM_COMMAND_ICONS = [
@@ -207,7 +212,7 @@ chrome.storage.local.get([ 'options' ], (res) => {
 					});
 				});
 
-				USER_DEFINED_ICONS = USER_DEFINED_ICONS.concat(SEARCH_ENGINE_ICONS.slice(-2));
+				// USER_DEFINED_ICONS = USER_DEFINED_ICONS.concat(SEARCH_ENGINE_ICONS.slice(-2));
 			}
 
 			// attach bubble

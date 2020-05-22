@@ -69,6 +69,8 @@
 	"se_netspeak": { "message": "Netspeak例文検索" },
 	"se_youglish": { "message": "Youglish発音検索" },
 	"se_deepl": { "message": "DeepL日本語翻訳" },
+	"se_googletranslate": { "message": "Google翻訳" },
+
 	"se_oddcast": { "message": "Oddcastテキスト読み上げデモ" },
 
 	"com_push": { "message": "テキストをクリップ" },

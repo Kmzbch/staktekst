@@ -69,6 +69,7 @@
 	"se_netspeak": { "message": "Netspeak" },
 	"se_youglish": { "message": "Youglish" },
 	"se_deepl": { "message": "DeepL Translate" },
+	"se_googletranslate": { "message": "Google Translate" },
 	"se_oddcast": { "message": "Oddcast Text-to-Speech" },
 
 	"com_push": { "message": "Clip text" },

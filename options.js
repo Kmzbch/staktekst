@@ -53,6 +53,28 @@ const defaultSettings = {
 			url: 'https://youglish.com/search/%s',
 			contexts: [ 'selection' ],
 			class: 'mdi mdi-youtube'
+		},
+		{
+			id: 'search7',
+			title: chrome.i18n.getMessage('se_deepl'),
+			url:
+				'https://www.deepl.com/translator#en/' +
+				(window.navigator.language || chrome.i18n.getMessage('html_lang')) +
+				'/%s',
+			contexts: [ 'selection' ],
+			class: 'mdi mdi-translate'
+		},
+		{
+			id: 'search8',
+			title: chrome.i18n.getMessage('se_googletranslate'),
+			url:
+				'https://translate.google.com/?hl=' +
+				(window.navigator.language || chrome.i18n.getMessage('html_lang')) +
+				'#view=home&op=translate&sl=auto&tl=' +
+				(window.navigator.language || chrome.i18n.getMessage('html_lang')) +
+				'&text=%s',
+			contexts: [ 'selection' ],
+			class: 'mdi mdi-text-to-speech'
 		}
 	]
 };
@@ -102,11 +124,21 @@ const initializeElements = () => {
 		$('#engine6_icon').attr('class', options.searchEngines[5].class);
 		$('#engine6_name').val(options.searchEngines[5].title);
 		$('#engine6_url').val(options.searchEngines[5].url);
+
+		$('#engine7_icon').attr('class', options.searchEngines[6].class);
+		$('#engine7_name').val(options.searchEngines[6].title);
+		$('#engine7_url').val(options.searchEngines[6].url);
+
+		$('#engine8_icon').attr('class', options.searchEngines[7].class);
+		$('#engine8_name').val(options.searchEngines[7].title);
+		$('#engine8_url').val(options.searchEngines[7].url);
 	});
 };
 
 const initializeEvents = () => {
-	$('#engine1_name, #engine2_name, #engine3_name, #engine4_name, #engine5_name, #engine6_name').on({
+	$(
+		'#engine1_name, #engine2_name, #engine3_name, #engine4_name, #engine5_name, #engine6_name, #engine7_name, #engine8_name'
+	).on({
 		change: (e) => {
 			let name = e.target.value;
 			if (name.match(/^[a-zA-Z]/)) {
@@ -197,6 +229,20 @@ const initializeEvents = () => {
 					title: $('#engine6_name').val(),
 					contexts: [ 'selection' ],
 					url: $('#engine6_url').val()
+				},
+				{
+					id: 'search7',
+					class: $('#engine7_icon').attr('class'),
+					title: $('#engine7_name').val(),
+					contexts: [ 'selection' ],
+					url: $('#engine7_url').val()
+				},
+				{
+					id: 'search8',
+					class: $('#engine8_icon').attr('class'),
+					title: $('#engine8_name').val(),
+					contexts: [ 'selection' ],
+					url: $('#engine8_url').val()
 				}
 			]
 		};

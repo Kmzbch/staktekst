@@ -4,8 +4,7 @@ const runFirstTime = async () => {
 			{
 				id: 'e74ad1bb-ead3-4213-9a3e-dd7de7b096ab',
 				type: 'bookmark',
-				content:
-					'Best Text-to-Speech Demo: Create Talking Avatars and Online Characters | Oddcast TTS Demo\nhttps://ttsdemo.com/',
+				content: 'Google翻訳\nhttps://translate.google.com',
 				footnote: { tags: [], pageTitle: '', pageURL: '' },
 				date: '2020-05-20T00:00:00.000Z'
 			},
@@ -77,7 +76,7 @@ const runFirstTime = async () => {
 			{
 				id: '2b88cd0e-2153-4e03-8c01-5556688477f0',
 				type: 'note',
-				content: 'デフォルト検索エンジンの詳細は#bookmarkからご確認ください。\n\n※検索エンジンや各種設定はオプションから変更可能です。',
+				content: '各種設定はオプションから変更可能です。ブラウザの言語設定が「英語」で翻訳サイト等を検索エンジンとして使用したい方は、翻訳元と翻訳先の言語をご確認ください。',
 				footnote: { tags: [ 'WELCOME!', 'bookmark' ], pageTitle: '', pageURL: '' },
 				date: '2020-05-20T00:00:10.000Z'
 			},
@@ -169,8 +168,7 @@ const runFirstTime = async () => {
 			{
 				id: 'e74ad1bb-ead3-4213-9a3e-dd7de7b096ab',
 				type: 'bookmark',
-				content:
-					'Best Text-to-Speech Demo: Create Talking Avatars and Online Characters | Oddcast TTS Demo\nhttps://ttsdemo.com/',
+				content: 'Google Translate\nhttps://translate.google.com',
 				footnote: { tags: [], pageTitle: '', pageURL: '' },
 				date: '2020-05-20T00:00:00.000Z'
 			},
@@ -244,7 +242,7 @@ const runFirstTime = async () => {
 				id: '2b88cd0e-2153-4e03-8c01-5556688477f0',
 				type: 'note',
 				content:
-					'Search by #bookmark for the default search engines of Balloon Launcher\n\nYou can change search engines and settings from the options page. ',
+					'You can change settings in the opition page. Please confirm the source and target languages if your browser language is English and you want to use web translators.',
 				footnote: { tags: [ 'WELCOME!', 'bookmark' ], pageTitle: '', pageURL: '' },
 				date: '2020-05-20T00:00:10.000Z'
 			},
