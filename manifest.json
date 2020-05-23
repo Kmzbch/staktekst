@@ -23,11 +23,6 @@
 			"css": [ "assets/css/materialdesignicons.min.css", "assets/css/currentTab.css" ],
 			"matches": [ "\u003Call_urls>" ],
 			"run_at": "document_end"
-		},
-		{
-			"js": [ "lib/jquery-3.5.0.min.js", "newTab.js" ],
-			"matches": [ "http://www.oddcast.com/ttsdemo/index.php" ],
-			"run_at": "document_end"
 		}
 	],
 	"icons": {
@@ -38,5 +33,5 @@
 	},
 	"web_accessible_resources": [ "assets", "assets/images/*", "assets/webfonts/*", "*.json" ],
 	"content_security_policy": "script-src 'self' 'unsafe-eval' ; object-src 'self' ; child-src 'self' ; style-src 'unsafe-inline' ; frame-src 'self' ; default-src 'self' ; img-src 'self' data: *; connect-src 'self' ",
-	"permissions": [ "storage", "activeTab", "tabs", "unlimitedStorage", "contextMenus", "downloads" ]
+	"permissions": [ "activeTab", "storage", "tabs", "unlimitedStorage", "contextMenus", "downloads" ]
 }
