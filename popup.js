@@ -612,9 +612,10 @@ const generateNoteItemHTML = ({ id, type, content, footnote, date }) => {
 	// add content body
 	noteItemHTML += `<div class='content'>${enableURLEmbededInText(content).replace(/\n/gi, '<br>')}</div>`;
 
-	if (type === 'note') {
-		noteItemHTML += `<i title="${chrome.i18n.getMessage('hint_editnote')}" class="mdi mdi-pencil edit"></i>`;
-	}
+	// TODO: add a setting for editables
+	// if (type === 'note') {
+	noteItemHTML += `<i title="${chrome.i18n.getMessage('hint_editnote')}" class="mdi mdi-pencil edit"></i>`;
+	// }
 	noteItemHTML += `<i title="${chrome.i18n.getMessage('hint_removenote')}" class="mdi mdi-check checkbox"></i>`;
 	noteItemHTML += `<input type="hidden" value="${id}">`;
 	noteItemHTML += `<input class='itemDate' type='hidden' value="${date}">`;
@@ -1086,6 +1087,7 @@ const attachNoteContentEvents = (wrapper) => {
 		if (e.target.classList.contains('tagadd')) {
 			return false;
 		}
+
 		if (wrapper.classList.contains('note')) {
 			// fire only when the area out of text body double clicked
 			if (!e.target.classList.contains('content')) {
@@ -1141,10 +1143,11 @@ const attachNoteContentEvents = (wrapper) => {
 
 		// remove copied text styles
 		let text = e.clipboardData.getData('text/plain');
-		document.execCommand('insertHTML', false, text);
+		document.execCommand('insertText', false, text);
 
 		fireChange(e);
 	});
+
 	wrapper.addEventListener('copy', fireChange);
 	wrapper.addEventListener('cut', fireChange);
 	// wrapper.addEventListener('mouseup', fireChange);
@@ -1152,7 +1155,7 @@ const attachNoteContentEvents = (wrapper) => {
 	// fire div change event used for content change event
 	wrapper.addEventListener('change', (e) => {
 		if (!e.target.classList.contains('tagadd')) {
-			let newHTML = contentDIV.innerHTML.replace(/<br>$/, '');
+			let newHTML = contentDIV.innerHTML.replace(/<br>$/, '\n');
 			updateStatusBoard(newHTML);
 
 			// find note item index
@@ -1425,8 +1428,6 @@ const attachSeparatorEvents = (stackwrapper) => {
 				$(ev.target).trigger('blur');
 
 				if (shadowNodes[0]) {
-					console.log(shadowNodes[0]);
-
 					$(shadowNodes[0]).children().each((index, item) => {
 						if ($(item).attr('id') === $(stackwrapper).attr('id')) {
 							$(item).find('input').val(separatorName);
@@ -2054,7 +2055,6 @@ const createSeparator = (wrapper) => {
 				if ($(item).attr('id') === $(wrapper).attr('id')) {
 					const sepClone = separatorDOM.cloneNode(true);
 					$(sepClone).insertAfter(item);
-					console.log(shadowNodes[0]);
 				}
 			});
 		}
@@ -2192,7 +2192,6 @@ const restorePreviousState = () => {
 			// restore searchbox
 			if (typeof state.searchQuery !== 'undefined') {
 				if (state.searchQuery !== '') {
-					console.log(state.searchQuery);
 					fireSearch(state.searchQuery);
 				}
 			}
