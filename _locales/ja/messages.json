@@ -40,7 +40,7 @@
 
 	"options_page_title": { "message": "オプション - 積んテク／Staktekst" },
 
-	"options_restore_title": { "message": "ウィンドウ状態の復元" },
+	"options_restore_title": { "message": "ポップアップウィンドウ状態の復元" },
 	"options_restore_msg": { "message": "前回起動時のウィンドウ状態を復元する" },
 	"label_options_duration": { "message": "保存期間（秒）" },
 

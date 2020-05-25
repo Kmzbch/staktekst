@@ -702,7 +702,8 @@ input.disabled {
 	display: inline-block;
 	margin-top: 0;
 }
-.clip .pseudolink {
+
+.clip .footnote .pseudolink {
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
@@ -712,7 +713,7 @@ input.disabled {
 	width: 40%;
 }
 
-.clip .pseudolink:hover {
+.clip .footnote .pseudolink:hover {
 	color: rgba(32, 123, 156, 1) !important;
 }
 
