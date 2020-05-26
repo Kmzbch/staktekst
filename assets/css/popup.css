@@ -1011,7 +1011,7 @@ input.tageditInput[type="text"]:focus {
 	display: flex;
 	flex-wrap: nowrap;
 	position: absolute;
-	width: 160px;
+	width: 170px;
 	height: 70px;
 	top: 0px;
 	left: 0px;
