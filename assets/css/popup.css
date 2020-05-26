@@ -1056,7 +1056,6 @@ input.tageditInput[type="text"]:focus {
 	display: none !important;
 	flex-direction: column;
 	flex-wrap: wrap;
-	/* width: 20%; */
 	height: 100%;
 	padding-left: 5px;
 	border-left: 1px solid rgba(255, 255, 255, 0.4);
