@@ -113,20 +113,10 @@ const executeUserCommand = (commandId, text, tabTitle, tabUrl, tabId) => {
 				command = MENU_ITEMS.find((item) => item.id === commandId);
 			}
 			let urlWithQuery = command.url.replace('%s', text);
-			// if (tabUrl.match(/www\.deepl\.com/)) {
-			// 	chrome.i18n.detectLanguage(text, (res) => {
-			// 		urlWithQuery = urlWithQuery.replace(/translator#en/, 'translator#' + res.languages[0].language);
-			// 		// open the URL
-			// 		chrome.tabs.create({
-			// 			url: urlWithQuery
-			// 		});
-			// 	});
-			// } else {
 			// open the URL
 			chrome.tabs.create({
 				url: urlWithQuery
 			});
-			// }
 			break;
 	}
 };
@@ -156,12 +146,6 @@ const getMessage = (request, sender, sendResponse) => {
 				case 'OPTIONS':
 					loadSettings();
 					break;
-				// case 'CHECK_RUNFIRSTTIME':
-				// 	runFirstTime();
-				// 	sendResponse({
-				// 		message: 'checked!'
-				// 	});
-				// 	break;
 				default:
 					if (request.selection) {
 						executeUserCommand(request.command, request.selection, tabs[0].title, tabs[0].url, tabs[0].id);
@@ -247,8 +231,4 @@ function loadSettings() {
 	});
 }
 
-//
-// runFirstTime();
-
-//
 loadSettings();

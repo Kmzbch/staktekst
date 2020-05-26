@@ -1,8 +1,3 @@
-/**
- * Staktekst (https://github.com/Kmzbch/staktekst)
- * Copyright 2020-present Kei Mizubuchi
- * Licensed under MIT
- */
 'use strict';
 
 const SEARCH_ENGINE_ICONS = [

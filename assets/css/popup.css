@@ -1011,7 +1011,7 @@ input.tageditInput[type="text"]:focus {
 	display: flex;
 	flex-wrap: nowrap;
 	position: absolute;
-	width: 200px;
+	width: 160px;
 	height: 70px;
 	top: 0px;
 	left: 0px;
@@ -1047,15 +1047,16 @@ input.tageditInput[type="text"]:focus {
 	display: flex;
 	flex-direction: column;
 	flex-wrap: wrap;
-	width: 80%;
+	width: 100%;
 	height: 100%;
 }
 
 /* container for system commands */
 #rightContainer {
+	display: none !important;
 	flex-direction: column;
 	flex-wrap: wrap;
-	width: 20%;
+	/* width: 20%; */
 	height: 100%;
 	padding-left: 5px;
 	border-left: 1px solid rgba(255, 255, 255, 0.4);

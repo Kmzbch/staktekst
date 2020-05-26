@@ -3,7 +3,7 @@
 	"default_locale": "en",
 	"name": "__MSG_ext_name__",
 	"description": "__MSG_ext_desc__",
-	"version": "1.0.0",
+	"version": "1.0.2",
 	"background": {
 		"persistent": false,
 		"scripts": [ "common_lib.js", "manual.js", "background.js" ]
