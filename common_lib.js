@@ -135,7 +135,7 @@ function fitHeightToContent(textarea) {
 }
 
 function enableURLEmbededInText(text) {
-	return text.replace(/(https?:[\.\/\w-%?&=#+;,\(\)@']+)/g, encodeSingleQUote);
+	return text.replace(/(https?:[\.\/\w-%?!&=#+;,\(\)@']+)/g, encodeSingleQUote);
 
 	// url encode on single quote
 	function encodeSingleQUote(match) {
